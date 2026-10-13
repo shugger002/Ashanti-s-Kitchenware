@@ -1,5 +1,5 @@
 import { addProductImage } from "@/server/catalog/admin";
-import { matchSkuFromFilename } from "@/server/catalog/image-names";
+import { matchProductFromFilename } from "@/server/catalog/image-names";
 import { query } from "@/server/db/pool";
 import { assertImageUpload, extensionForType, getStorage, randomObjectKey } from "@/server/storage";
 import { ALLOWED_IMAGE_TYPES } from "@/server/storage/port";
@@ -49,19 +49,18 @@ export async function attachPhotosBySku(files: File[]): Promise<{ attached: stri
      FROM products p
      WHERE p.archived_at IS NULL`,
   );
-  const skus = products.rows.map((row) => row.sku);
   const bySku = new Map(products.rows.map((row) => [row.sku.toLowerCase(), row]));
   const grouped = new Map<string, File[]>();
 
   for (const file of usable) {
-    const sku = matchSkuFromFilename(file.name, skus);
-    if (!sku) {
+    const match = matchProductFromFilename(file.name, products.rows);
+    if (!match) {
       unmatched.push(file.name);
       continue;
     }
-    const list = grouped.get(sku.toLowerCase()) ?? [];
+    const list = grouped.get(match.sku.toLowerCase()) ?? [];
     list.push(file);
-    grouped.set(sku.toLowerCase(), list);
+    grouped.set(match.sku.toLowerCase(), list);
   }
 
   for (const [skuKey, skuFiles] of grouped) {

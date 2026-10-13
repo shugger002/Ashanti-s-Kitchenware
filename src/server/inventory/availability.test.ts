@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { parseInventoryCsv } from "./csv";
 import { parseProductCsv } from "../catalog/csv";
-import { matchSkuFromFilename } from "../catalog/image-names";
+import { matchProductFromFilename, matchSkuFromFilename } from "../catalog/image-names";
 
 function available(onHand: number, reserved: number): number {
   return onHand - reserved;
@@ -52,4 +52,16 @@ test("product photo filenames match a SKU", () => {
   assert.equal(matchSkuFromFilename("ak-kettle-2.webp", skus), "AK-KETTLE");
   assert.equal(matchSkuFromFilename("AK_1.png", skus), "AK");
   assert.equal(matchSkuFromFilename("kettle.jpg", skus), null);
+});
+
+test("product photo filenames match a product name", () => {
+  const products = [
+    { sku: "AK-KETTLE", name: "Stainless Kettle" },
+    { sku: "AK-POT", name: "Cooking Pot" },
+  ];
+  assert.equal(matchProductFromFilename("Stainless Kettle.jpg", products)?.sku, "AK-KETTLE");
+  assert.equal(matchProductFromFilename("stainless-kettle-2.webp", products)?.sku, "AK-KETTLE");
+  assert.equal(matchProductFromFilename("Cooking Pot.png", products)?.sku, "AK-POT");
+  assert.equal(matchProductFromFilename("AK-KETTLE.jpg", products)?.sku, "AK-KETTLE");
+  assert.equal(matchProductFromFilename("random.jpg", products), null);
 });

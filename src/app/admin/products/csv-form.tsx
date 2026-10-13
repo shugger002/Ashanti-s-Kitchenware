@@ -12,9 +12,11 @@ export function ProductCsvForm() {
       <p className="mt-1 text-sm leading-relaxed text-muted">
         Download the template and add one row per piece. Required: <span className="text-foreground">name</span>,{" "}
         <span className="text-foreground">sku</span>, <span className="text-foreground">price</span> in Ghana Cedis.
-        Set <span className="text-foreground">listed</span> to yes to publish. Name photographs after the SKU
-        (<span className="text-foreground">AK-KETTLE.jpg</span>, extra shots <span className="text-foreground">AK-KETTLE-2.jpg</span>).
-        Existing SKUs are skipped; matching photos still attach.
+        Set <span className="text-foreground">listed</span> to yes to publish. Name photographs after the SKU or the
+        product name (<span className="text-foreground">AK-KETTLE.jpg</span> or{" "}
+        <span className="text-foreground">Stainless Kettle.jpg</span>; extra shots{" "}
+        <span className="text-foreground">Stainless Kettle-2.jpg</span>). SKU wins if both could match. Existing SKUs
+        are skipped; matching photos still attach.
       </p>
       <div className="mt-4">
         <a href="/admin/products/template" className="text-sm text-accent">
