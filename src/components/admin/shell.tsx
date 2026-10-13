@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   BarChart3,
   Boxes,
@@ -63,46 +63,39 @@ const AUTH_PATHS = ["/admin/login", "/admin/forgot-password", "/admin/reset-pass
 function Nav({ user, onNavigate }: { user: AdminUser; onNavigate?: () => void }) {
   const pathname = usePathname();
   return (
-    <>
-      <Link href="/admin" className="flex flex-col gap-2 bg-background px-5 py-5" onClick={onNavigate}>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={brand.logoSrc} alt="" className="h-9 w-auto max-w-[9rem] object-contain brightness-0" />
-        <span className="text-[11px] uppercase tracking-[0.16em] text-muted">Desk</span>
-      </Link>
-      <nav className="flex flex-1 flex-col gap-6 overflow-y-auto px-3 pb-4" aria-label="Admin">
-        {groups.map((group) => {
-          const items = group.items.filter((item) => hasPermission(user.roles, item.permission));
-          if (items.length === 0) return null;
-          return (
-            <div key={group.label}>
-              <p className="px-3 pb-1.5 text-[10px] font-medium uppercase tracking-[0.16em] text-background/45">
-                {group.label}
-              </p>
-              <div className="flex flex-col gap-0.5 text-sm">
-                {items.map((link) => {
-                  const Icon = link.icon;
-                  const active = isActive(pathname, link.href);
-                  return (
-                    <Link
-                      key={link.href}
-                      href={link.href}
-                      onClick={onNavigate}
-                      className={cn(
-                        "flex items-center gap-2.5 rounded-lg px-3 py-2",
-                        active ? "bg-accent text-white" : "text-background/75 hover:bg-white/10 hover:text-background",
-                      )}
-                    >
-                      <Icon className="h-4 w-4 shrink-0" strokeWidth={1.5} />
-                      {link.label}
-                    </Link>
-                  );
-                })}
-              </div>
+    <nav className="flex flex-1 flex-col gap-6 overflow-y-auto px-3 py-4" aria-label="Admin">
+      {groups.map((group) => {
+        const items = group.items.filter((item) => hasPermission(user.roles, item.permission));
+        if (items.length === 0) return null;
+        return (
+          <div key={group.label}>
+            <p className="px-3 pb-1.5 text-[10px] font-medium uppercase tracking-[0.16em] text-background/45">
+              {group.label}
+            </p>
+            <div className="flex flex-col gap-0.5 text-sm">
+              {items.map((link) => {
+                const Icon = link.icon;
+                const active = isActive(pathname, link.href);
+                return (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    onClick={onNavigate}
+                    className={cn(
+                      "flex items-center gap-2.5 rounded-lg px-3 py-2",
+                      active ? "bg-accent text-white" : "text-background/75 hover:bg-white/10 hover:text-background",
+                    )}
+                  >
+                    <Icon className="h-4 w-4 shrink-0" strokeWidth={1.5} />
+                    {link.label}
+                  </Link>
+                );
+              })}
             </div>
-          );
-        })}
-      </nav>
-    </>
+          </div>
+        );
+      })}
+    </nav>
   );
 }
 
@@ -110,7 +103,22 @@ export function AdminShell({ user, children }: { user: AdminUser; children: Reac
   const router = useRouter();
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
-  if (AUTH_PATHS.some((path) => pathname === path || pathname.startsWith(`${path}/`))) {
+  const onAuthPath = AUTH_PATHS.some((path) => pathname === path || pathname.startsWith(`${path}/`));
+
+  useEffect(() => {
+    setMenuOpen(false);
+  }, [pathname]);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previous;
+    };
+  }, [menuOpen]);
+
+  if (onAuthPath) {
     return children;
   }
 
@@ -120,57 +128,67 @@ export function AdminShell({ user, children }: { user: AdminUser; children: Reac
   }
 
   return (
-    <div className="min-h-dvh bg-surface lg:flex">
-      <header className="sticky top-0 z-40 flex items-center gap-3 border-b border-border bg-background px-4 py-3 lg:hidden">
+    <div className="min-h-dvh bg-surface">
+      <header className="sticky top-0 z-40 flex items-center gap-3 border-b border-border bg-background px-4 py-3 sm:px-6">
         <button
           type="button"
-          className="inline-flex size-10 items-center justify-center"
+          className="-ml-1 inline-flex size-10 shrink-0 items-center justify-center"
           aria-label={menuOpen ? "Close menu" : "Open menu"}
           aria-expanded={menuOpen}
+          aria-controls="admin-menu"
           onClick={() => setMenuOpen((open) => !open)}
         >
-          {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          {menuOpen ? <X className="h-5 w-5" strokeWidth={1.75} /> : <Menu className="h-5 w-5" strokeWidth={1.75} />}
         </button>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={brand.logoSrc} alt={brand.name} className="h-8 w-auto max-w-[9rem] object-contain brightness-0" />
-        <Link href="/" className="ml-auto text-sm text-accent">
-          Store
+        <Link href="/admin" className="min-w-0" aria-label={`${brand.name} desk`}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={brand.logoSrc} alt={brand.name} className="h-8 w-auto max-w-[9.5rem] object-contain brightness-0 sm:h-9 sm:max-w-[12rem]" />
         </Link>
+        <p className="hidden text-[11px] uppercase tracking-[0.16em] text-muted sm:block">Desk</p>
+        <div className="ml-auto flex items-center gap-4 text-sm">
+          <Link href="/" className="text-accent">
+            Store
+          </Link>
+          <button type="button" className="hidden text-muted sm:inline" onClick={signOut}>
+            Sign out
+          </button>
+        </div>
       </header>
 
       {menuOpen ? (
-        <div className="fixed inset-0 z-50 lg:hidden">
+        <div className="fixed inset-0 z-50" id="admin-menu">
           <button type="button" className="absolute inset-0 bg-foreground/40" aria-label="Close menu" onClick={() => setMenuOpen(false)} />
-          <aside className="relative flex h-full w-[min(18rem,86vw)] flex-col bg-foreground text-background">
+          <aside className="relative flex h-full w-[min(18.5rem,88vw)] flex-col bg-foreground text-background shadow-[var(--shadow)]">
+            <div className="flex items-center gap-2 border-b border-white/10 bg-background px-4 py-3">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={brand.logoSrc} alt="" className="h-8 w-auto max-w-[9rem] object-contain brightness-0" />
+              <button
+                type="button"
+                className="ml-auto inline-flex size-10 items-center justify-center text-foreground"
+                aria-label="Close menu"
+                onClick={() => setMenuOpen(false)}
+              >
+                <X className="h-5 w-5" strokeWidth={1.75} />
+              </button>
+            </div>
             <Nav user={user} onNavigate={() => setMenuOpen(false)} />
             <div className="border-t border-white/10 px-5 py-4 text-sm">
               <p className="truncate">{user.fullName || user.email}</p>
-              <button type="button" className="mt-2 text-xs text-background/80" onClick={signOut}>
-                Sign out
-              </button>
+              <p className="truncate text-xs text-background/50">{user.email}</p>
+              <div className="mt-3 flex flex-col items-start gap-1.5 text-xs">
+                <Link href="/" className="text-background/80 hover:text-background" onClick={() => setMenuOpen(false)}>
+                  View store
+                </Link>
+                <button type="button" className="text-background/80 hover:text-background" onClick={signOut}>
+                  Sign out
+                </button>
+              </div>
             </div>
           </aside>
         </div>
       ) : null}
 
-      <aside className="sticky top-0 hidden h-dvh w-60 shrink-0 flex-col bg-foreground text-background lg:flex">
-        <Nav user={user} />
-        <div className="border-t border-white/10 px-5 py-4 text-sm">
-          <p className="truncate text-background">{user.fullName || user.email}</p>
-          <p className="truncate text-xs text-background/50">{user.email}</p>
-          <div className="mt-3 flex flex-col items-start gap-1.5 text-xs">
-            <Link href="/" className="text-background/80 hover:text-background">
-              View store
-            </Link>
-            <button type="button" className="text-background/80 hover:text-background" onClick={signOut}>
-              Sign out
-            </button>
-          </div>
-        </div>
-      </aside>
-      <div className="min-w-0 flex-1 overflow-x-auto">
-        <div className="mx-auto max-w-6xl px-5 py-7 sm:px-8 sm:py-9">{children}</div>
-      </div>
+      <div className="mx-auto max-w-6xl px-5 py-7 sm:px-8 sm:py-9">{children}</div>
     </div>
   );
 }
