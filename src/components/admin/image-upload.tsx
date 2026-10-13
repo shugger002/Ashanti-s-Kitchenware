@@ -32,6 +32,7 @@ export function ImageUpload({ productId }: { productId: string }) {
         <input type="checkbox" name="isPrimary" /> Primary photograph
       </label>
       <input name="file" type="file" accept="image/jpeg,image/png,image/webp" required />
+      <p className="text-xs text-muted">JPEG, PNG, or WebP. 6 MB or smaller.</p>
       <button type="submit" className={adminButton()}>
         Upload
       </button>

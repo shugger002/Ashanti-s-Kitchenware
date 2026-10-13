@@ -12,20 +12,27 @@ export function ProductCsvForm() {
       <p className="mt-1 text-sm leading-relaxed text-muted">
         Download the template and add one row per piece. Required: <span className="text-foreground">name</span>,{" "}
         <span className="text-foreground">sku</span>, <span className="text-foreground">price</span> in Ghana Cedis.
-        Set <span className="text-foreground">listed</span> to yes to publish. Photos can be a site path or image URL —
-        photograph the shelf before going live. Existing SKUs are skipped.
+        Set <span className="text-foreground">listed</span> to yes to publish. Name photographs after the SKU
+        (<span className="text-foreground">AK-KETTLE.jpg</span>, extra shots <span className="text-foreground">AK-KETTLE-2.jpg</span>).
+        Existing SKUs are skipped; matching photos still attach.
       </p>
       <div className="mt-4">
         <a href="/admin/products/template" className="text-sm text-accent">
           Download template
         </a>
       </div>
-      <form action={action} className="mt-4 flex flex-wrap items-end gap-3">
-        <label className="block min-w-0 flex-1 text-sm">
-          CSV file
-          <input name="file" type="file" accept=".csv,text/csv" required className="input mt-1" />
-        </label>
-        <button className={adminButton("shrink-0")} type="submit" disabled={pending}>
+      <form action={action} className="mt-4 space-y-3">
+        <div className="flex flex-wrap items-end gap-3">
+          <label className="block min-w-0 flex-1 text-sm">
+            CSV file
+            <input name="file" type="file" accept=".csv,text/csv" className="input mt-1" />
+          </label>
+          <label className="block min-w-0 flex-1 text-sm">
+            Photographs
+            <input name="images" type="file" accept="image/jpeg,image/png,image/webp" multiple className="input mt-1" />
+          </label>
+        </div>
+        <button className={adminButton()} type="submit" disabled={pending}>
           {pending ? "Adding…" : "Add products"}
         </button>
       </form>
@@ -37,6 +44,12 @@ export function ProductCsvForm() {
           ) : null}
           {state.skipped.length > 0 ? (
             <p className="text-muted">Already on the desk: {state.skipped.join(", ")}</p>
+          ) : null}
+          {state.attached.length > 0 ? (
+            <p className="text-muted">Photos: {state.attached.join("; ")}</p>
+          ) : null}
+          {state.unmatched.length > 0 ? (
+            <p className="text-accent">No SKU match: {state.unmatched.join(", ")}</p>
           ) : null}
           {state.errors.length > 0 ? (
             <ul className="space-y-1 text-accent">

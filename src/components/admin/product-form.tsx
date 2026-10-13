@@ -101,21 +101,13 @@ export function ProductForm({
   categories: Category[];
   product?: ProductDetail;
 }) {
-  const [message, setMessage] = useState<string | null>(null);
   const specText = product
     ? Object.entries(product.specifications)
         .map(([k, v]) => `${k}: ${v}`)
         .join("\n")
     : "";
   return (
-    <form
-      className="mt-8 max-w-2xl space-y-8"
-      onSubmit={async (event) => {
-        event.preventDefault();
-        await saveProduct(new FormData(event.currentTarget));
-        setMessage("Saved.");
-      }}
-    >
+    <form action={saveProduct} className="mt-8 max-w-2xl space-y-8">
       {product ? <input type="hidden" name="id" value={product.id} /> : null}
       <section className="space-y-4 rounded-2xl border border-border bg-background p-5">
         <h2 className="font-serif text-xl">Listing</h2>
@@ -176,6 +168,18 @@ export function ProductForm({
           <textarea name="specifications" defaultValue={specText} rows={4} className="input mt-1" />
         </label>
       </section>
+      {!product ? (
+        <section className="space-y-4 rounded-2xl border border-border bg-background p-5">
+          <h2 className="font-serif text-xl">Photographs</h2>
+          <p className="text-sm text-muted">
+            JPEG, PNG, or WebP, 6 MB each. The first file becomes the primary photograph. You can add more after saving.
+          </p>
+          <label className="block text-sm">
+            Upload photos
+            <input name="images" type="file" accept="image/jpeg,image/png,image/webp" multiple className="input mt-1" />
+          </label>
+        </section>
+      ) : null}
       <ColorOptionsEditor product={product} />
       <section className="space-y-4 rounded-2xl border border-border bg-background p-5">
         <h2 className="font-serif text-xl">Visibility</h2>
@@ -198,7 +202,6 @@ export function ProductForm({
         </label>
       </section>
       <Button type="submit">Save product</Button>
-      {message ? <p className="text-sm text-muted">{message}</p> : null}
     </form>
   );
 }

@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requirePermission } from "@/server/auth/authorize";
 import { archiveProduct, upsertProduct } from "@/server/catalog/admin";
+import { saveProductPhoto } from "@/server/catalog/images";
 import { setReviewPublished } from "@/server/reviews/service";
 
 function bool(formData: FormData, name: string): boolean {
@@ -52,7 +53,17 @@ export async function saveProduct(formData: FormData) {
     user.id,
     id,
   );
+  const photos = formData.getAll("images").filter((item): item is File => item instanceof File && item.size > 0);
+  for (const [index, file] of photos.entries()) {
+    await saveProductPhoto({
+      productId: savedId,
+      file,
+      alt: String(formData.get("name") ?? "Product"),
+      isPrimary: !id && index === 0,
+    });
+  }
   revalidatePath("/admin/products");
+  revalidatePath(`/admin/products/${savedId}`);
   revalidatePath("/shop");
   redirect(`/admin/products/${savedId}`);
 }
