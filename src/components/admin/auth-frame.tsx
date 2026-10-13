@@ -13,7 +13,7 @@ export function AdminAuthFrame({
     <div className="grid min-h-full lg:grid-cols-[minmax(18rem,22rem)_1fr]">
       <div className="hidden flex-col justify-between bg-foreground px-10 py-12 text-background lg:flex">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={brand.logoSrc} alt={brand.name} className="h-10 w-auto max-w-[11rem] object-contain invert" />
+        <img src={brand.logoSrc} alt={brand.name} className="h-10 w-auto max-w-[11rem] object-contain brightness-0 invert" />
         <div>
           <p className="inline-block rounded bg-accent px-2 py-1 text-[10px] font-medium uppercase tracking-[0.16em] text-white">
             Staff only

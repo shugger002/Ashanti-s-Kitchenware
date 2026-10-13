@@ -66,7 +66,7 @@ function Nav({ user, onNavigate }: { user: AdminUser; onNavigate?: () => void })
     <>
       <Link href="/admin" className="flex flex-col gap-2 px-5 py-5" onClick={onNavigate}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={brand.logoSrc} alt="" className="h-9 w-auto max-w-[9rem] object-contain invert" />
+        <img src={brand.logoSrc} alt="" className="h-9 w-auto max-w-[9rem] object-contain brightness-0 invert" />
         <span className="text-[11px] uppercase tracking-[0.16em] text-background/55">Desk</span>
       </Link>
       <nav className="flex flex-1 flex-col gap-6 overflow-y-auto px-3 pb-4" aria-label="Admin">
