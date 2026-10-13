@@ -1,7 +1,7 @@
 "use server";
 
 import { requirePermission } from "@/server/auth/authorize";
-import { applyInventoryCsv } from "@/server/inventory/service";
+import { applyInventoryCsv, listInventory } from "@/server/inventory/service";
 import { assertTableUploadSize, extractInventorySpreadsheetText } from "@/lib/table-upload";
 import { parseInventoryCsv } from "@/server/inventory/csv";
 import { revalidatePath } from "next/cache";
@@ -46,11 +46,17 @@ export async function importInventoryCsv(
       errors: [],
     };
   }
-  const parsed = parseInventoryCsv(text);
+  const shelf = await listInventory();
+  const catalog = shelf.flatMap((row) => {
+    const names = [row.productName];
+    if (row.variantName) names.push(`${row.productName} ${row.variantName}`, row.variantName);
+    return names.map((name) => ({ sku: row.sku, name }));
+  });
+  const parsed = parseInventoryCsv(text, catalog);
   if (parsed.rows.length === 0) {
     return {
       ok: false,
-      message: parsed.errors[0] ?? "No product rows to apply.",
+      message: "Could not read restock rows from that file.",
       updated: [],
       skipped: [],
       errors: parsed.errors,

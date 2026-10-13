@@ -10,9 +10,9 @@ export function InventoryCsvForm() {
     <div className="rounded-xl border border-border bg-white p-5">
       <h2 className="text-lg font-medium">Upload restock file</h2>
       <p className="mt-1 text-sm leading-relaxed text-muted">
-        CSV or a spreadsheet saved as PDF from Chrome. Fill <span className="text-foreground">restock</span> with
-        pieces arriving, or change <span className="text-foreground">on_hand</span> to the new shelf count. Match SKUs
-        exactly. Unknown SKUs are skipped.
+        CSV or a spreadsheet saved as PDF from Chrome. Use a <span className="text-foreground">sku</span> or product
+        name column, plus <span className="text-foreground">restock</span> (pieces arriving) or{" "}
+        <span className="text-foreground">on_hand</span> (new shelf count).
       </p>
       <div className="mt-4 flex flex-wrap items-center gap-3">
         <a href="/admin/inventory/template" className="text-sm text-accent">
@@ -49,11 +49,13 @@ export function InventoryCsvForm() {
           {state.skipped.length > 0 ? (
             <p className="text-accent">Unknown SKU: {state.skipped.join(", ")}</p>
           ) : null}
-          {state.errors.length > 0 ? (
+          {state.errors.filter((error) => error !== state.message).length > 0 ? (
             <ul className="space-y-1 text-accent">
-              {state.errors.map((error) => (
-                <li key={error}>{error}</li>
-              ))}
+              {state.errors
+                .filter((error) => error !== state.message)
+                .map((error) => (
+                  <li key={error}>{error}</li>
+                ))}
             </ul>
           ) : null}
         </div>

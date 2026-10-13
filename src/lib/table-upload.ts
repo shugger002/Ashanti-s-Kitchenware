@@ -51,7 +51,7 @@ export function tabularTextToCsv(raw: string): string {
 
 function looksLikeInventoryTable(table: string[][]): boolean {
   const header = (table[0] ?? []).map((cell) => cell.toLowerCase().replace(/[\s-]+/g, "_")).join(" ");
-  return /\bsku\b/.test(header);
+  return /sku|product|item|code|qty|quantity|stock|restock|on.?hand|\bname\b/.test(header);
 }
 
 export async function extractInventorySpreadsheetText(file: File): Promise<string> {
@@ -63,13 +63,18 @@ export async function extractInventorySpreadsheetText(file: File): Promise<strin
   const parser = new PDFParse({ data: bytes.slice() });
   try {
     const tables = await parser.getTable();
-    const candidates = [...(tables.mergedTables ?? []), ...(tables.pages ?? []).flatMap((page) => page.tables)].filter(
-      (table) => table.length > 1,
-    );
-    const withSku = candidates.filter(looksLikeInventoryTable).sort((a, b) => b.length - a.length);
-    if (withSku[0]) return tableToCsv(withSku[0]);
     const text = await parser.getText();
-    return tabularTextToCsv(text.text ?? "");
+    const candidates = [...(tables.mergedTables ?? []), ...(tables.pages ?? []).flatMap((page) => page.tables)].filter(
+      (table) => table.length > 0,
+    );
+    const ranked = [
+      ...candidates.filter(looksLikeInventoryTable),
+      ...candidates.sort((a, b) => b.length * (b[0]?.length ?? 0) - a.length * (a[0]?.length ?? 0)),
+    ];
+    const chunks = ranked.map((table) => tableToCsv(table));
+    chunks.push(tabularTextToCsv(text.text ?? ""));
+    chunks.push(text.text ?? "");
+    return chunks.filter(Boolean).join("\n\n");
   } finally {
     await parser.destroy();
   }

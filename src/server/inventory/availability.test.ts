@@ -42,10 +42,28 @@ test("inventory CSV finds a sku header under a printed title", () => {
   assert.equal(parsed.rows[0]?.restock, 3);
 });
 
-test("inventory CSV rejects a missing sku header", () => {
-  const parsed = parseInventoryCsv("name,qty\nKettle,2\n");
+test("inventory CSV rejects a sheet with no product column", () => {
+  const parsed = parseInventoryCsv("colour,size\nNavy,M\n");
   assert.equal(parsed.rows.length, 0);
-  assert.match(parsed.errors[0] ?? "", /sku/i);
+  assert.match(parsed.errors[0] ?? "", /sku|product name/i);
+});
+
+test("inventory CSV matches a product name column", () => {
+  const parsed = parseInventoryCsv("product,qty\nStainless Kettle,6\n", [
+    { sku: "AK-KETTLE", name: "Stainless Kettle" },
+  ]);
+  assert.equal(parsed.rows[0]?.sku, "AK-KETTLE");
+  assert.equal(parsed.rows[0]?.restock, 6);
+});
+
+test("inventory PDF lines match SKU and a quantity", () => {
+  const parsed = parseInventoryCsv("Stainless Kettle 4\nAK-POT 9\n", [
+    { sku: "AK-KETTLE", name: "Stainless Kettle" },
+    { sku: "AK-POT", name: "Cooking Pot" },
+  ]);
+  assert.equal(parsed.rows.length, 2);
+  assert.equal(parsed.rows[0]?.sku, "AK-KETTLE");
+  assert.equal(parsed.rows[1]?.restock, 9);
 });
 
 test("product CSV requires name sku and price", () => {
