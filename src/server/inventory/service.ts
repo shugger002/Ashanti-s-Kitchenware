@@ -9,6 +9,8 @@ export type InventoryRow = {
   sku: string;
   variantId: string | null;
   variantName: string | null;
+  imageUrl: string | null;
+  imageAlt: string | null;
   onHand: number;
   reserved: number;
   available: number;
@@ -23,16 +25,24 @@ export async function listInventory(): Promise<InventoryRow[]> {
     sku: string;
     variant_id: string | null;
     variant_name: string | null;
+    image_url: string | null;
+    image_alt: string | null;
     on_hand: string;
     reserved: string;
     low_stock_threshold: number;
   }>(
     `SELECT i.id, i.product_id, p.name AS product_name, COALESCE(v.sku, p.sku) AS sku,
-            i.variant_id, v.name AS variant_name, i.on_hand::text, i.reserved::text,
-            i.low_stock_threshold
+            i.variant_id, v.name AS variant_name, img.url AS image_url, img.alt AS image_alt,
+            i.on_hand::text, i.reserved::text, i.low_stock_threshold
      FROM inventory i
      JOIN products p ON p.id = i.product_id
      LEFT JOIN product_variants v ON v.id = i.variant_id
+     LEFT JOIN LATERAL (
+       SELECT pi.url, pi.alt FROM product_images pi
+       WHERE pi.product_id = p.id
+       ORDER BY pi.is_primary DESC, pi.sort_order ASC
+       LIMIT 1
+     ) img ON TRUE
      WHERE p.archived_at IS NULL
      ORDER BY p.name, v.name NULLS FIRST`,
   );
@@ -43,6 +53,8 @@ export async function listInventory(): Promise<InventoryRow[]> {
     sku: row.sku,
     variantId: row.variant_id,
     variantName: row.variant_name,
+    imageUrl: row.image_url,
+    imageAlt: row.image_alt,
     onHand: Number(row.on_hand),
     reserved: Number(row.reserved),
     available: Number(row.on_hand) - Number(row.reserved),

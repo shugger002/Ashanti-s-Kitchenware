@@ -100,15 +100,29 @@ export default async function InventoryPage() {
                   className={cn("border-b border-border last:border-0 align-top", tight ? "bg-accent/5" : "hover:bg-surface")}
                 >
                   <td className="px-4 py-3">
-                    <Link href={`/admin/products/${row.productId}`} className="font-medium">
-                      {row.productName}
-                    </Link>
-                    {row.variantName ? <span className="block text-xs text-muted">{row.variantName}</span> : null}
-                    {tight ? (
-                      <span className="mt-1 inline-block">
-                        <StatusPill value={outOfStock ? "Out" : "Low"} tone="attention" />
+                    <Link href={`/admin/products/${row.productId}`} className="flex items-start gap-3">
+                      {row.imageUrl ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={row.imageUrl}
+                          alt={row.imageAlt || row.productName}
+                          className="h-14 w-14 shrink-0 rounded-lg object-cover"
+                        />
+                      ) : (
+                        <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg border border-border bg-white text-[10px] text-muted">
+                          No photo
+                        </span>
+                      )}
+                      <span>
+                        <span className="font-medium">{row.productName}</span>
+                        {row.variantName ? <span className="mt-0.5 block text-xs text-muted">{row.variantName}</span> : null}
+                        {tight ? (
+                          <span className="mt-1 inline-block">
+                            <StatusPill value={outOfStock ? "Out" : "Low"} tone="attention" />
+                          </span>
+                        ) : null}
                       </span>
-                    ) : null}
+                    </Link>
                   </td>
                   <td className="px-4 py-3 text-muted">{row.sku}</td>
                   <td className="px-4 py-3 tabular-nums">{row.onHand}</td>
