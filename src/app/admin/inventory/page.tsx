@@ -3,6 +3,7 @@ import { requirePermission } from "@/server/auth/authorize";
 import { adjustStock, listInventory } from "@/server/inventory/service";
 import { revalidatePath } from "next/cache";
 import { adminButton, AdminPageHeader, AdminTable, EmptyState, StatusPill } from "@/components/admin/ui";
+import { InventoryCsvForm } from "@/app/admin/inventory/csv-form";
 import { cn } from "@/lib/utils";
 
 async function adjust(formData: FormData) {
@@ -43,8 +44,11 @@ export default async function InventoryPage() {
     <div>
       <AdminPageHeader
         title="Inventory"
-        description="Restock adds pieces to the shelf. Available is on hand minus reserved. DEMO SKUs must not reach a live checkout."
+        description="Upload a CSV to restock many SKUs at once, or add pieces one row at a time. Available is on hand minus reserved."
       />
+      <div className="mt-6">
+        <InventoryCsvForm />
+      </div>
       {rows.length > 0 ? (
         <ul className="mt-6 grid gap-3 sm:grid-cols-3">
           <li className="rounded-2xl border border-border bg-background px-4 py-3">

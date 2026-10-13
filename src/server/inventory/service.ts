@@ -199,6 +199,86 @@ export async function releaseReservation(
   }
 }
 
+export type CsvImportResult = {
+  updated: { sku: string; from: number; to: number }[];
+  skipped: string[];
+  errors: string[];
+};
+
+export async function applyInventoryCsv(input: {
+  rows: { line: number; sku: string; restock: number | null; onHand: number | null }[];
+  actorUserId: string;
+}): Promise<CsvImportResult> {
+  const updated: CsvImportResult["updated"] = [];
+  const skipped: string[] = [];
+  const errors: string[] = [];
+  const seen = new Map<string, (typeof input.rows)[number]>();
+  for (const row of input.rows) {
+    seen.set(row.sku.trim().toLowerCase(), row);
+  }
+
+  await withTransaction(async (client) => {
+    for (const row of seen.values()) {
+      const match = await client.query<{ id: string; on_hand: number; reserved: number; sku: string }>(
+        `SELECT i.id, i.on_hand, i.reserved, COALESCE(v.sku, p.sku) AS sku
+         FROM inventory i
+         JOIN products p ON p.id = i.product_id
+         LEFT JOIN product_variants v ON v.id = i.variant_id
+         WHERE p.archived_at IS NULL AND lower(COALESCE(v.sku, p.sku)) = lower($1)
+         FOR UPDATE OF i`,
+        [row.sku],
+      );
+      const current = match.rows[0];
+      if (!current) {
+        skipped.push(row.sku);
+        continue;
+      }
+      let next = current.on_hand;
+      let reason = "CSV restock";
+      if (row.restock != null && row.restock > 0) {
+        next = current.on_hand + row.restock;
+        reason = "CSV restock";
+      } else if (row.onHand != null) {
+        next = row.onHand;
+        reason = "CSV set on-hand";
+      } else {
+        continue;
+      }
+      if (next === current.on_hand) continue;
+      if (next < current.reserved) {
+        errors.push(
+          `${current.sku}: cannot set on-hand to ${next} while ${current.reserved} are reserved.`,
+        );
+        continue;
+      }
+      const delta = next - current.on_hand;
+      await client.query(`UPDATE inventory SET on_hand = $2, updated_at = now() WHERE id = $1`, [
+        current.id,
+        next,
+      ]);
+      await client.query(
+        `INSERT INTO inventory_movements
+           (inventory_id, delta_on_hand, reason, source, actor_user_id, notes)
+         VALUES ($1, $2, $3, 'restock', $4, $5)`,
+        [current.id, delta, reason, input.actorUserId, `CSV line ${row.line}`],
+      );
+      await writeAuditLog(
+        {
+          actorUserId: input.actorUserId,
+          action: "inventory.csv",
+          entityType: "inventory",
+          entityId: current.id,
+          metadata: { sku: current.sku, from: current.on_hand, to: next },
+        },
+        client,
+      );
+      updated.push({ sku: current.sku, from: current.on_hand, to: next });
+    }
+  });
+
+  return { updated, skipped, errors };
+}
+
 export async function listMovements(inventoryId: string) {
   const result = await query<{
     id: string;
