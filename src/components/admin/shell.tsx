@@ -6,19 +6,17 @@ import { useEffect, useState } from "react";
 import {
   Activity,
   BarChart3,
-  Boxes,
   ClipboardList,
   Home,
   Menu,
   Package,
+  PanelLeft,
   Percent,
   Plus,
   Settings,
-  ShoppingBag,
-  Truck,
+  TicketPercent,
   UserPlus,
   Users,
-  Warehouse,
   X,
 } from "lucide-react";
 import { logoutAdmin } from "@/app/admin/logout/action";
@@ -42,19 +40,11 @@ const groups: { label: string; items: NavItem[] }[] = [
       { href: "/admin", label: "Home", permission: "orders.read", icon: Home, exact: true },
       { href: "/admin/products", label: "Products", permission: "products.read", icon: Package },
       { href: "/admin/products/new", label: "Add Product", permission: "products.write", icon: Plus, exact: true },
-      { href: "/admin/inventory", label: "Inventory", permission: "inventory.write", icon: Warehouse },
       { href: "/admin/promotions", label: "Discounts", permission: "products.write", icon: Percent },
+      { href: "/admin/coupons", label: "Coupons", permission: "products.write", icon: TicketPercent },
       { href: "/admin/orders", label: "Orders", permission: "orders.read", icon: ClipboardList },
       { href: "/admin/analytics", label: "Analytics", permission: "reports.read", icon: BarChart3 },
       { href: "/admin/services", label: "Service Health", permission: "settings.write", icon: Activity },
-    ],
-  },
-  {
-    label: "Shop",
-    items: [
-      { href: "/admin/categories", label: "Categories", permission: "products.write", icon: Boxes },
-      { href: "/admin/customers", label: "Customers", permission: "customers.read", icon: ShoppingBag },
-      { href: "/admin/delivery", label: "Delivery", permission: "settings.write", icon: Truck },
     ],
   },
   {
@@ -75,8 +65,13 @@ function isActive(pathname: string, item: NavItem) {
   if (item.href === "/admin/products") {
     return (
       pathname === "/admin/products" ||
-      (pathname.startsWith("/admin/products/") && pathname !== "/admin/products/new")
+      (pathname.startsWith("/admin/products/") &&
+        pathname !== "/admin/products/new" &&
+        !pathname.startsWith("/admin/products/discounts"))
     );
+  }
+  if (item.href === "/admin/promotions") {
+    return pathname === "/admin/promotions" || pathname.startsWith("/admin/products/discounts");
   }
   if (item.href === "/admin/users") {
     return pathname === "/admin/users" || (pathname.startsWith("/admin/users/") && pathname !== "/admin/users/new");
@@ -113,32 +108,24 @@ function Nav({
         className={cn("flex items-center gap-3 px-4 py-5", collapsed && "justify-center px-2")}
         onClick={onNavigate}
       >
-        <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-accent text-xs font-semibold text-white">
+        <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-[#7c5cfc] text-xs font-semibold text-white">
           AK
         </span>
         {collapsed ? null : (
           <span className="min-w-0">
-            <span className="block truncate text-sm font-medium text-background">{brand.name}</span>
-            <span className="block text-[11px] text-background/50">Admin Portal</span>
+            <span className="block truncate text-sm font-medium text-foreground">{brand.name}</span>
+            <span className="block text-[11px] text-muted">Admin Portal</span>
           </span>
         )}
       </Link>
-      <div className={cn("mx-4 mb-4 rounded-sm bg-background px-3 py-2", collapsed && "mx-2 px-1")}>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={brand.logoSrc}
-          alt=""
-          className={cn("h-7 w-auto object-contain brightness-0", collapsed ? "mx-auto max-w-[2.25rem]" : "max-w-[9rem]")}
-        />
-      </div>
-      <nav className="flex flex-1 flex-col gap-5 overflow-y-auto px-3 pb-4" aria-label="Admin">
+      <nav className="flex flex-1 flex-col gap-6 overflow-y-auto px-3 pb-4" aria-label="Admin">
         {groups.map((group) => {
           const items = group.items.filter((item) => hasPermission(user.roles, item.permission));
           if (items.length === 0) return null;
           return (
             <div key={group.label}>
               {collapsed ? null : (
-                <p className="px-3 pb-1.5 text-[10px] font-medium uppercase tracking-[0.16em] text-background/45">
+                <p className="px-3 pb-1.5 text-[10px] font-medium uppercase tracking-[0.16em] text-muted">
                   {group.label}
                 </p>
               )}
@@ -155,7 +142,7 @@ function Nav({
                       className={cn(
                         "flex items-center gap-2.5 rounded-lg px-3 py-2",
                         collapsed && "justify-center px-2",
-                        active ? "bg-accent text-white" : "text-background/75 hover:bg-white/10 hover:text-background",
+                        active ? "bg-white/10 text-foreground" : "text-muted hover:bg-white/5 hover:text-foreground",
                       )}
                     >
                       <Icon className="h-4 w-4 shrink-0" strokeWidth={1.5} />
@@ -200,8 +187,8 @@ export function AdminShell({ user, children }: { user: AdminUser; children: Reac
   }
 
   return (
-    <div className="min-h-dvh bg-surface lg:flex">
-      <header className="sticky top-0 z-40 flex items-center gap-3 border-b border-border bg-background px-4 py-3 lg:hidden">
+    <div className="min-h-dvh lg:flex">
+      <header className="sticky top-0 z-40 flex items-center gap-3 border-b border-border bg-surface px-4 py-3 lg:hidden">
         <button
           type="button"
           className="inline-flex size-10 items-center justify-center"
@@ -211,29 +198,28 @@ export function AdminShell({ user, children }: { user: AdminUser; children: Reac
         >
           {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
         </button>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={brand.logoSrc} alt={brand.name} className="h-8 w-auto max-w-[9rem] object-contain brightness-0" />
-        <Link href="/" className="ml-auto text-sm text-accent">
+        <span className="text-sm font-medium">{brand.name}</span>
+        <Link href="/" className="ml-auto text-sm text-muted">
           Store
         </Link>
       </header>
 
       {menuOpen ? (
         <div className="fixed inset-0 z-50 lg:hidden">
-          <button type="button" className="absolute inset-0 bg-foreground/40" aria-label="Close menu" onClick={() => setMenuOpen(false)} />
-          <aside className="relative flex h-full w-[min(18rem,86vw)] flex-col bg-foreground text-background">
+          <button type="button" className="absolute inset-0 bg-black/50" aria-label="Close menu" onClick={() => setMenuOpen(false)} />
+          <aside className="relative flex h-full w-[min(18rem,86vw)] flex-col border-r border-border bg-surface">
             <Nav user={user} collapsed={false} onNavigate={() => setMenuOpen(false)} />
-            <div className="border-t border-white/10 px-4 py-4 text-sm">
+            <div className="border-t border-border px-4 py-4 text-sm">
               <div className="flex items-center gap-3">
                 <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-white/10 text-[11px] font-medium">
                   {initials(user)}
                 </span>
                 <span className="min-w-0">
                   <p className="truncate">{user.fullName || user.email}</p>
-                  <p className="truncate text-xs text-background/50">{user.email}</p>
+                  <p className="truncate text-xs text-muted">{user.email}</p>
                 </span>
               </div>
-              <button type="button" className="mt-3 text-xs text-background/80" onClick={signOut}>
+              <button type="button" className="mt-3 text-xs text-muted" onClick={signOut}>
                 Sign out
               </button>
             </div>
@@ -243,46 +229,46 @@ export function AdminShell({ user, children }: { user: AdminUser; children: Reac
 
       <aside
         className={cn(
-          "sticky top-0 hidden h-dvh shrink-0 flex-col bg-foreground text-background lg:flex",
+          "sticky top-0 hidden h-dvh shrink-0 flex-col border-r border-border bg-surface lg:flex",
           collapsed ? "w-[4.25rem]" : "w-60",
         )}
       >
-        <div className="flex justify-end px-2 pt-3">
-          <button
-            type="button"
-            className="inline-flex size-8 items-center justify-center rounded-md text-background/70 hover:bg-white/10 hover:text-background"
-            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-            onClick={toggleCollapsed}
-          >
-            <Menu className="h-4 w-4" />
-          </button>
-        </div>
         <Nav user={user} collapsed={collapsed} />
-        <div className={cn("border-t border-white/10 py-4 text-sm", collapsed ? "px-2" : "px-4")}>
+        <div className={cn("border-t border-border py-4 text-sm", collapsed ? "px-2" : "px-4")}>
           <div className={cn("flex items-center gap-3", collapsed && "justify-center")}>
             <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-white/10 text-[11px] font-medium">
               {initials(user)}
             </span>
             {collapsed ? null : (
               <span className="min-w-0">
-                <p className="truncate text-background">{user.fullName || user.email}</p>
-                <p className="truncate text-xs text-background/50">{user.email}</p>
+                <p className="truncate">{user.fullName || user.email}</p>
+                <p className="truncate text-xs text-muted">{user.email}</p>
               </span>
             )}
           </div>
           {collapsed ? null : (
             <div className="mt-3 flex flex-col items-start gap-1.5 text-xs">
-              <Link href="/" className="text-background/80 hover:text-background">
+              <Link href="/" className="text-muted hover:text-foreground">
                 View store
               </Link>
-              <button type="button" className="text-background/80 hover:text-background" onClick={signOut}>
+              <button type="button" className="text-muted hover:text-foreground" onClick={signOut}>
                 Sign out
               </button>
             </div>
           )}
         </div>
       </aside>
-      <div className="min-w-0 flex-1 overflow-x-auto">
+      <div className="min-w-0 flex-1">
+        <div className="sticky top-0 z-30 hidden h-12 items-center border-b border-border bg-background px-3 lg:flex">
+          <button
+            type="button"
+            className="inline-flex size-8 items-center justify-center rounded-md text-muted hover:bg-white/5 hover:text-foreground"
+            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+            onClick={toggleCollapsed}
+          >
+            <PanelLeft className="h-4 w-4" />
+          </button>
+        </div>
         <div className="mx-auto max-w-6xl px-5 py-7 sm:px-8 sm:py-9">{children}</div>
       </div>
     </div>

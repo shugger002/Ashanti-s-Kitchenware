@@ -2,7 +2,10 @@ import Link from "next/link";
 import { requirePermission } from "@/server/auth/authorize";
 import { searchProducts } from "@/server/catalog/queries";
 import { formatGhs } from "@/lib/money";
-import { adminButton, AdminPageHeader, AdminTable, EmptyState, StatusPill, Toolbar } from "@/components/admin/ui";
+import { archiveProductAction } from "@/app/admin/products/actions";
+import { adminButton, AdminPageHeader, AdminTable, EmptyState, Toolbar } from "@/components/admin/ui";
+
+const LOW_STOCK_ALERT = 5;
 
 export default async function AdminProductsPage({
   searchParams,
@@ -12,14 +15,38 @@ export default async function AdminProductsPage({
   await requirePermission("products.read");
   const { q } = await searchParams;
   const { items } = await searchProducts({ q, includeInactive: true, pageSize: 50 });
+  const low = items.filter((p) => p.available > 0 && p.available <= LOW_STOCK_ALERT);
+
   return (
     <div>
+      {low.length > 0 ? (
+        <div className="mb-6 rounded-xl border border-amber-700/60 bg-amber-950/40 p-4">
+          <h2 className="text-sm font-medium text-amber-400">
+            Low Stock Alert: {low.length} item{low.length === 1 ? "" : "s"} need restocking
+          </h2>
+          <p className="mt-1 text-xs text-amber-200/80">Threshold: ≤ {LOW_STOCK_ALERT} units</p>
+          <ul className="mt-3 space-y-1 text-sm">
+            {low.map((p) => (
+              <li key={p.id} className="flex items-center justify-between gap-3">
+                <span>
+                  {p.name}
+                  <span className="ml-2 text-amber-200/70">{p.available} left</span>
+                </span>
+                <Link href="/admin/inventory" className="text-xs text-amber-200 underline">
+                  Edit stock
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+
       <AdminPageHeader
-        title="Products"
-        description="Photograph, price, and publish what is actually on the shelf."
+        title="Admin Products Page"
+        description="Manage your products here."
         action={
           <Link href="/admin/products/new" className={adminButton()}>
-            New product
+            Add Product
           </Link>
         }
       />
@@ -41,14 +68,10 @@ export default async function AdminProductsPage({
         <div className="mt-6">
           <EmptyState
             title={q ? "No matches" : "Catalogue is empty"}
-            body={
-              q
-                ? "Try another name or SKU."
-                : "Add a photographed piece with a Ghana Cedi price before listing it in the shop."
-            }
+            body={q ? "Try another name or SKU." : "Add a photographed piece with a Ghana Cedi price."}
             action={
               <Link href="/admin/products/new" className={adminButton()}>
-                New product
+                Add Product
               </Link>
             }
           />
@@ -57,33 +80,21 @@ export default async function AdminProductsPage({
         <AdminTable className="mt-4">
           <thead>
             <tr className="border-b border-border bg-surface text-xs text-muted">
-              <th className="px-4 py-3 font-medium">Product</th>
-              <th className="px-4 py-3 font-medium">SKU</th>
+              <th className="px-4 py-3 font-medium">S/N</th>
+              <th className="px-4 py-3 font-medium">Name</th>
+              <th className="px-4 py-3 font-medium">Category</th>
               <th className="px-4 py-3 font-medium">Price</th>
-              <th className="px-4 py-3 font-medium">Stock</th>
-              <th className="px-4 py-3 font-medium">Status</th>
+              <th className="px-4 py-3 font-medium">Actions</th>
             </tr>
           </thead>
           <tbody>
-            {items.map((p) => (
+            {items.map((p, index) => (
               <tr key={p.id} className="border-b border-border last:border-0 hover:bg-surface">
-                <td className="px-4 py-3">
-                  <Link href={`/admin/products/${p.id}`} className="flex items-center gap-3">
-                    {p.primaryImage ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={p.primaryImage.url} alt="" className="h-11 w-11 rounded-lg object-cover" />
-                    ) : (
-                      <span className="flex h-11 w-11 items-center justify-center rounded-lg bg-surface text-[10px] text-muted">
-                        No photo
-                      </span>
-                    )}
-                    <span>
-                      <span className="block font-medium">{p.name}</span>
-                      {p.categoryName ? <span className="text-xs text-muted">{p.categoryName}</span> : null}
-                    </span>
-                  </Link>
+                <td className="px-4 py-3 tabular-nums text-muted">{index + 1}</td>
+                <td className="px-4 py-3 font-medium">
+                  <Link href={`/admin/products/${p.id}`}>{p.name}</Link>
                 </td>
-                <td className="px-4 py-3 text-muted">{p.sku}</td>
+                <td className="px-4 py-3 uppercase text-muted">{p.categoryName ?? "—"}</td>
                 <td className="px-4 py-3 tabular-nums">
                   {p.salePrice ? (
                     <>
@@ -94,17 +105,18 @@ export default async function AdminProductsPage({
                     formatGhs(Number(p.price))
                   )}
                 </td>
-                <td className={`px-4 py-3 tabular-nums ${p.available <= 0 ? "text-accent" : ""}`}>{p.available}</td>
                 <td className="px-4 py-3">
-                  <span className="flex flex-wrap gap-1">
-                    <StatusPill value={p.isActive ? "Listed" : "Hidden"} tone={p.isActive ? "ok" : "muted"} />
-                    {p.isFeatured ? <StatusPill value="Featured" tone="attention" /> : null}
-                    {p.isNew ? <StatusPill value="New" /> : null}
-                    {p.salePrice ? <StatusPill value="Promo" tone="attention" /> : null}
-                    {p.sku.toUpperCase().startsWith("DEMO") ? (
-                      <StatusPill value="Demo" tone="attention" />
-                    ) : null}
-                  </span>
+                  <div className="flex flex-wrap gap-2 text-sm">
+                    <Link href={`/admin/products/${p.id}`} className="text-muted hover:text-foreground">
+                      Edit product
+                    </Link>
+                    <form action={archiveProductAction}>
+                      <input type="hidden" name="id" value={p.id} />
+                      <button type="submit" className="text-accent">
+                        Delete product
+                      </button>
+                    </form>
+                  </div>
                 </td>
               </tr>
             ))}

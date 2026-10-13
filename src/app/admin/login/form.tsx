@@ -30,7 +30,7 @@ export function AdminLoginForm() {
         <input name="password" type="password" required className="input mt-1" />
       </label>
       {error ? <p className="text-sm text-accent">{error}</p> : null}
-      <Button type="submit">Sign in</Button>
+      <Button type="submit">Log In</Button>
       <p className="text-sm">
         <a href="/admin/forgot-password">Forgot password</a>
       </p>

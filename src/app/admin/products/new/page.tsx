@@ -9,7 +9,7 @@ export default async function NewProductPage() {
   return (
     <div>
       <BackLink href="/admin/products">All products</BackLink>
-      <AdminPageHeader title="New product" description="Add a photographed piece with a Ghana Cedi price." />
+      <AdminPageHeader title="Add Product" description="Add a photographed piece with a Ghana Cedi price." />
       <ProductForm categories={categories} />
     </div>
   );

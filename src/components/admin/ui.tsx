@@ -11,20 +11,37 @@ export function AdminPageHeader({
   title,
   description,
   action,
+  align = "start",
 }: {
   title: string;
   description?: string;
   action?: React.ReactNode;
+  align?: "start" | "center";
 }) {
   return (
-    <div className="flex flex-wrap items-start justify-between gap-4">
+    <div
+      className={cn(
+        "flex flex-wrap gap-4",
+        align === "center" ? "flex-col items-center text-center" : "items-start justify-between",
+      )}
+    >
       <div>
         <h1 className="text-[1.75rem] leading-tight">{title}</h1>
-        {description ? <p className="mt-1.5 max-w-xl text-sm leading-relaxed text-muted">{description}</p> : null}
+        {description ? (
+          <p className={cn("mt-1.5 text-sm leading-relaxed text-muted", align === "center" ? "max-w-lg" : "max-w-xl")}>
+            {description}
+          </p>
+        ) : null}
       </div>
       {action ? <div className="flex flex-wrap items-center gap-2">{action}</div> : null}
     </div>
   );
+}
+
+export function liveOrderBadge(paymentStatus: string, status: string) {
+  if (status === "delivered" || status === "collected") return "FULFILLED";
+  if (paymentStatus === "paid") return "PAID";
+  return "PENDING";
 }
 
 export function statusLabel(value: string) {
@@ -89,7 +106,7 @@ export function AdminTable({
   className?: string;
 }) {
   return (
-    <div className={cn("overflow-x-auto rounded-2xl border border-border bg-background", className)}>
+    <div className={cn("overflow-x-auto rounded-xl border border-border bg-surface", className)}>
       <table className="w-full text-left text-sm">{children}</table>
     </div>
   );
@@ -105,7 +122,7 @@ export function EmptyState({
   action?: React.ReactNode;
 }) {
   return (
-    <div className="rounded-2xl border border-dashed border-border bg-background px-6 py-12 text-center">
+    <div className="rounded-xl border border-dashed border-border bg-surface px-6 py-12 text-center">
       <p className="font-serif text-xl">{title}</p>
       <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-muted">{body}</p>
       {action ? <div className="mt-5">{action}</div> : null}

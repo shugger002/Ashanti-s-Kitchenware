@@ -74,4 +74,5 @@ export async function archiveProductAction(formData: FormData) {
   const user = await requirePermission("products.write");
   await archiveProduct(String(formData.get("id")), user.id);
   revalidatePath("/admin/products");
+  redirect("/admin/products");
 }

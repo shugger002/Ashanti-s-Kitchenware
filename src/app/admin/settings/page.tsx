@@ -70,7 +70,7 @@ export default async function SettingsPage() {
         title="Settings"
         description="Legal name Ashanti's Kitchenware. The homepage photo is the utensils wall — it is not uploaded here. Delivery is quoted on WhatsApp, not charged at checkout."
       />
-      <form action={saveContact} className="max-w-xl space-y-4 rounded-2xl border border-border bg-background p-5">
+      <form action={saveContact} className="max-w-xl space-y-4 rounded-xl border border-border bg-surface p-5">
         <h2 className="font-serif text-xl">Contact</h2>
         <Field name="legalName" label="Legal name" defaultValue={config.contact.legalName} />
         <Field name="tradingName" label="Trading name" defaultValue={config.contact.tradingName} />
@@ -88,7 +88,7 @@ export default async function SettingsPage() {
           Save contact
         </button>
       </form>
-      <form action={saveHero} className="max-w-xl space-y-4 rounded-2xl border border-border bg-background p-5">
+      <form action={saveHero} className="max-w-xl space-y-4 rounded-xl border border-border bg-surface p-5">
         <h2 className="font-serif text-xl">Homepage copy</h2>
         <p className="text-sm leading-relaxed text-muted">
           These lines sit under the utensils photo. The announcement bar is the strip at the very top of the shop.
@@ -106,14 +106,26 @@ export default async function SettingsPage() {
           Save homepage
         </button>
       </form>
-      <section className="max-w-xl rounded-2xl border border-border bg-background p-5">
-        <h2 className="font-serif text-xl">Delivery</h2>
+      <section className="max-w-xl rounded-xl border border-border bg-surface p-5">
+        <h2 className="text-xl">Shop extras</h2>
         <p className="mt-2 text-sm leading-relaxed text-muted">
-          Coverage, collection, and Ghana Cedi rates are managed on the Delivery desk.
+          Categories, customers, inventory counts, and WhatsApp delivery sit here so the main rail matches the live
+          admin.
         </p>
-        <a href="/admin/delivery" className={adminButton("mt-4 inline-flex w-fit")}>
-          Open delivery
-        </a>
+        <div className="mt-4 flex flex-wrap gap-3 text-sm">
+          <a href="/admin/inventory" className={adminButton("inline-flex w-fit")}>
+            Inventory
+          </a>
+          <a href="/admin/categories" className="text-muted hover:text-foreground">
+            Categories
+          </a>
+          <a href="/admin/customers" className="text-muted hover:text-foreground">
+            Customers
+          </a>
+          <a href="/admin/delivery" className="text-muted hover:text-foreground">
+            Delivery
+          </a>
+        </div>
       </section>
     </div>
   );
