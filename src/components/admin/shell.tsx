@@ -64,10 +64,10 @@ function Nav({ user, onNavigate }: { user: AdminUser; onNavigate?: () => void })
   const pathname = usePathname();
   return (
     <>
-      <Link href="/admin" className="flex flex-col gap-2 px-5 py-5" onClick={onNavigate}>
+      <Link href="/admin" className="flex flex-col gap-2 bg-background px-5 py-5" onClick={onNavigate}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={brand.logoSrc} alt="" className="h-9 w-auto max-w-[9rem] object-contain brightness-0 invert" />
-        <span className="text-[11px] uppercase tracking-[0.16em] text-background/55">Desk</span>
+        <img src={brand.logoSrc} alt="" className="h-9 w-auto max-w-[9rem] object-contain brightness-0" />
+        <span className="text-[11px] uppercase tracking-[0.16em] text-muted">Desk</span>
       </Link>
       <nav className="flex flex-1 flex-col gap-6 overflow-y-auto px-3 pb-4" aria-label="Admin">
         {groups.map((group) => {
@@ -132,7 +132,7 @@ export function AdminShell({ user, children }: { user: AdminUser; children: Reac
           {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
         </button>
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={brand.logoSrc} alt={brand.name} className="h-8 w-auto max-w-[9rem] object-contain dark:invert" />
+        <img src={brand.logoSrc} alt={brand.name} className="h-8 w-auto max-w-[9rem] object-contain brightness-0" />
         <Link href="/" className="ml-auto text-sm text-accent">
           Store
         </Link>
