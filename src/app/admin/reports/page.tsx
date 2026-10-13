@@ -9,7 +9,7 @@ export default async function ReportsPage() {
   return (
     <div>
       <AdminPageHeader
-        title="Reports"
+        title="Analytics"
         description="Revenue counts only paid orders that are not cancelled or refunded."
       />
       <dl className="mt-8 grid gap-3 sm:grid-cols-3">

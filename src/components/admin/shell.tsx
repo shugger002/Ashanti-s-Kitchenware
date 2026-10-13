@@ -2,98 +2,164 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
+  Activity,
   BarChart3,
   Boxes,
   ClipboardList,
-  LayoutGrid,
+  Home,
   Menu,
   Package,
   Percent,
+  Plus,
   Settings,
   ShoppingBag,
   Truck,
+  UserPlus,
   Users,
   Warehouse,
   X,
 } from "lucide-react";
 import { logoutAdmin } from "@/app/admin/logout/action";
 import { brand } from "@/config/brand";
-import type { AdminUser } from "@/server/auth/types";
+import type { AdminUser, Permission } from "@/server/auth/types";
 import { hasPermission } from "@/server/auth/types";
 import { cn } from "@/lib/utils";
 
-const groups = [
+type NavItem = {
+  href: string;
+  label: string;
+  permission: Permission;
+  icon: typeof Home;
+  exact?: boolean;
+};
+
+const groups: { label: string; items: NavItem[] }[] = [
   {
-    label: "Floor",
+    label: "Overview",
     items: [
-      { href: "/admin", label: "Overview", permission: "orders.read" as const, icon: LayoutGrid },
-      { href: "/admin/orders", label: "Orders", permission: "orders.read" as const, icon: ClipboardList },
-      { href: "/admin/products", label: "Products", permission: "products.read" as const, icon: Package },
-      { href: "/admin/inventory", label: "Inventory", permission: "inventory.write" as const, icon: Warehouse },
+      { href: "/admin", label: "Home", permission: "orders.read", icon: Home, exact: true },
+      { href: "/admin/products", label: "Products", permission: "products.read", icon: Package },
+      { href: "/admin/products/new", label: "Add Product", permission: "products.write", icon: Plus, exact: true },
+      { href: "/admin/inventory", label: "Inventory", permission: "inventory.write", icon: Warehouse },
+      { href: "/admin/promotions", label: "Discounts", permission: "products.write", icon: Percent },
+      { href: "/admin/orders", label: "Orders", permission: "orders.read", icon: ClipboardList },
+      { href: "/admin/analytics", label: "Analytics", permission: "reports.read", icon: BarChart3 },
+      { href: "/admin/services", label: "Service Health", permission: "settings.write", icon: Activity },
     ],
   },
   {
     label: "Shop",
     items: [
-      { href: "/admin/categories", label: "Categories", permission: "products.write" as const, icon: Boxes },
-      { href: "/admin/promotions", label: "Promotions", permission: "products.write" as const, icon: Percent },
-      { href: "/admin/customers", label: "Customers", permission: "customers.read" as const, icon: ShoppingBag },
+      { href: "/admin/categories", label: "Categories", permission: "products.write", icon: Boxes },
+      { href: "/admin/customers", label: "Customers", permission: "customers.read", icon: ShoppingBag },
+      { href: "/admin/delivery", label: "Delivery", permission: "settings.write", icon: Truck },
     ],
   },
   {
-    label: "Office",
+    label: "User Management",
     items: [
-      { href: "/admin/delivery", label: "Delivery", permission: "settings.write" as const, icon: Truck },
-      { href: "/admin/reports", label: "Reports", permission: "reports.read" as const, icon: BarChart3 },
-      { href: "/admin/settings", label: "Settings", permission: "settings.write" as const, icon: Settings },
-      { href: "/admin/users", label: "Staff", permission: "users.write" as const, icon: Users },
+      { href: "/admin/users", label: "Users", permission: "users.write", icon: Users },
+      { href: "/admin/users/new", label: "Add Users", permission: "users.write", icon: UserPlus, exact: true },
     ],
+  },
+  {
+    label: "Settings",
+    items: [{ href: "/admin/settings", label: "Settings", permission: "settings.write", icon: Settings }],
   },
 ];
 
-function isActive(pathname: string, href: string) {
-  if (href === "/admin") return pathname === "/admin";
-  return pathname === href || pathname.startsWith(`${href}/`);
+function isActive(pathname: string, item: NavItem) {
+  if (item.exact || item.href === "/admin") return pathname === item.href;
+  if (item.href === "/admin/products") {
+    return (
+      pathname === "/admin/products" ||
+      (pathname.startsWith("/admin/products/") && pathname !== "/admin/products/new")
+    );
+  }
+  if (item.href === "/admin/users") {
+    return pathname === "/admin/users" || (pathname.startsWith("/admin/users/") && pathname !== "/admin/users/new");
+  }
+  if (item.href === "/admin/analytics") {
+    return pathname === "/admin/analytics" || pathname.startsWith("/admin/reports");
+  }
+  return pathname === item.href || pathname.startsWith(`${item.href}/`);
 }
 
 const AUTH_PATHS = ["/admin/login", "/admin/forgot-password", "/admin/reset-password"];
 
-function Nav({ user, onNavigate }: { user: AdminUser; onNavigate?: () => void }) {
+function initials(user: AdminUser) {
+  const parts = user.fullName.trim().split(/\s+/).filter(Boolean);
+  if (parts.length >= 2) return `${parts[0]![0]}${parts[1]![0]}`.toUpperCase();
+  if (parts[0]) return parts[0].slice(0, 2).toUpperCase();
+  return user.email.slice(0, 2).toUpperCase();
+}
+
+function Nav({
+  user,
+  collapsed,
+  onNavigate,
+}: {
+  user: AdminUser;
+  collapsed: boolean;
+  onNavigate?: () => void;
+}) {
   const pathname = usePathname();
   return (
     <>
-      <Link href="/admin" className="flex flex-col gap-2 bg-background px-5 py-5" onClick={onNavigate}>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={brand.logoSrc} alt="" className="h-9 w-auto max-w-[9rem] object-contain brightness-0" />
-        <span className="text-[11px] uppercase tracking-[0.16em] text-muted">Desk</span>
+      <Link
+        href="/admin"
+        className={cn("flex items-center gap-3 px-4 py-5", collapsed && "justify-center px-2")}
+        onClick={onNavigate}
+      >
+        <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-accent text-xs font-semibold text-white">
+          AK
+        </span>
+        {collapsed ? null : (
+          <span className="min-w-0">
+            <span className="block truncate text-sm font-medium text-background">{brand.name}</span>
+            <span className="block text-[11px] text-background/50">Admin Portal</span>
+          </span>
+        )}
       </Link>
-      <nav className="flex flex-1 flex-col gap-6 overflow-y-auto px-3 pb-4" aria-label="Admin">
+      <div className={cn("mx-4 mb-4 rounded-sm bg-background px-3 py-2", collapsed && "mx-2 px-1")}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={brand.logoSrc}
+          alt=""
+          className={cn("h-7 w-auto object-contain brightness-0", collapsed ? "mx-auto max-w-[2.25rem]" : "max-w-[9rem]")}
+        />
+      </div>
+      <nav className="flex flex-1 flex-col gap-5 overflow-y-auto px-3 pb-4" aria-label="Admin">
         {groups.map((group) => {
           const items = group.items.filter((item) => hasPermission(user.roles, item.permission));
           if (items.length === 0) return null;
           return (
             <div key={group.label}>
-              <p className="px-3 pb-1.5 text-[10px] font-medium uppercase tracking-[0.16em] text-background/45">
-                {group.label}
-              </p>
+              {collapsed ? null : (
+                <p className="px-3 pb-1.5 text-[10px] font-medium uppercase tracking-[0.16em] text-background/45">
+                  {group.label}
+                </p>
+              )}
               <div className="flex flex-col gap-0.5 text-sm">
                 {items.map((link) => {
                   const Icon = link.icon;
-                  const active = isActive(pathname, link.href);
+                  const active = isActive(pathname, link);
                   return (
                     <Link
                       key={link.href}
                       href={link.href}
+                      title={link.label}
                       onClick={onNavigate}
                       className={cn(
                         "flex items-center gap-2.5 rounded-lg px-3 py-2",
+                        collapsed && "justify-center px-2",
                         active ? "bg-accent text-white" : "text-background/75 hover:bg-white/10 hover:text-background",
                       )}
                     >
                       <Icon className="h-4 w-4 shrink-0" strokeWidth={1.5} />
-                      {link.label}
+                      {collapsed ? <span className="sr-only">{link.label}</span> : link.label}
                     </Link>
                   );
                 })}
@@ -110,8 +176,22 @@ export function AdminShell({ user, children }: { user: AdminUser; children: Reac
   const router = useRouter();
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
+
+  useEffect(() => {
+    setCollapsed(window.localStorage.getItem("ak_admin_nav_collapsed") === "1");
+  }, []);
+
   if (AUTH_PATHS.some((path) => pathname === path || pathname.startsWith(`${path}/`))) {
     return children;
+  }
+
+  function toggleCollapsed() {
+    setCollapsed((current) => {
+      const next = !current;
+      window.localStorage.setItem("ak_admin_nav_collapsed", next ? "1" : "0");
+      return next;
+    });
   }
 
   async function signOut() {
@@ -142,10 +222,18 @@ export function AdminShell({ user, children }: { user: AdminUser; children: Reac
         <div className="fixed inset-0 z-50 lg:hidden">
           <button type="button" className="absolute inset-0 bg-foreground/40" aria-label="Close menu" onClick={() => setMenuOpen(false)} />
           <aside className="relative flex h-full w-[min(18rem,86vw)] flex-col bg-foreground text-background">
-            <Nav user={user} onNavigate={() => setMenuOpen(false)} />
-            <div className="border-t border-white/10 px-5 py-4 text-sm">
-              <p className="truncate">{user.fullName || user.email}</p>
-              <button type="button" className="mt-2 text-xs text-background/80" onClick={signOut}>
+            <Nav user={user} collapsed={false} onNavigate={() => setMenuOpen(false)} />
+            <div className="border-t border-white/10 px-4 py-4 text-sm">
+              <div className="flex items-center gap-3">
+                <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-white/10 text-[11px] font-medium">
+                  {initials(user)}
+                </span>
+                <span className="min-w-0">
+                  <p className="truncate">{user.fullName || user.email}</p>
+                  <p className="truncate text-xs text-background/50">{user.email}</p>
+                </span>
+              </div>
+              <button type="button" className="mt-3 text-xs text-background/80" onClick={signOut}>
                 Sign out
               </button>
             </div>
@@ -153,19 +241,45 @@ export function AdminShell({ user, children }: { user: AdminUser; children: Reac
         </div>
       ) : null}
 
-      <aside className="sticky top-0 hidden h-dvh w-60 shrink-0 flex-col bg-foreground text-background lg:flex">
-        <Nav user={user} />
-        <div className="border-t border-white/10 px-5 py-4 text-sm">
-          <p className="truncate text-background">{user.fullName || user.email}</p>
-          <p className="truncate text-xs text-background/50">{user.email}</p>
-          <div className="mt-3 flex flex-col items-start gap-1.5 text-xs">
-            <Link href="/" className="text-background/80 hover:text-background">
-              View store
-            </Link>
-            <button type="button" className="text-background/80 hover:text-background" onClick={signOut}>
-              Sign out
-            </button>
+      <aside
+        className={cn(
+          "sticky top-0 hidden h-dvh shrink-0 flex-col bg-foreground text-background lg:flex",
+          collapsed ? "w-[4.25rem]" : "w-60",
+        )}
+      >
+        <div className="flex justify-end px-2 pt-3">
+          <button
+            type="button"
+            className="inline-flex size-8 items-center justify-center rounded-md text-background/70 hover:bg-white/10 hover:text-background"
+            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+            onClick={toggleCollapsed}
+          >
+            <Menu className="h-4 w-4" />
+          </button>
+        </div>
+        <Nav user={user} collapsed={collapsed} />
+        <div className={cn("border-t border-white/10 py-4 text-sm", collapsed ? "px-2" : "px-4")}>
+          <div className={cn("flex items-center gap-3", collapsed && "justify-center")}>
+            <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-white/10 text-[11px] font-medium">
+              {initials(user)}
+            </span>
+            {collapsed ? null : (
+              <span className="min-w-0">
+                <p className="truncate text-background">{user.fullName || user.email}</p>
+                <p className="truncate text-xs text-background/50">{user.email}</p>
+              </span>
+            )}
           </div>
+          {collapsed ? null : (
+            <div className="mt-3 flex flex-col items-start gap-1.5 text-xs">
+              <Link href="/" className="text-background/80 hover:text-background">
+                View store
+              </Link>
+              <button type="button" className="text-background/80 hover:text-background" onClick={signOut}>
+                Sign out
+              </button>
+            </div>
+          )}
         </div>
       </aside>
       <div className="min-w-0 flex-1 overflow-x-auto">

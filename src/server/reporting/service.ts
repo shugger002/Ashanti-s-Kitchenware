@@ -55,15 +55,44 @@ export async function dashboardMetrics() {
      LIMIT 5`,
   );
 
-  const catalogue = await query<{ demo: string; promo: string }>(
+  const catalogue = await query<{ demo: string; promo: string; total_products: string }>(
     `SELECT
+       count(*) FILTER (WHERE archived_at IS NULL)::text AS total_products,
        count(*) FILTER (WHERE sku ILIKE 'DEMO-%')::text AS demo,
        count(*) FILTER (WHERE sale_price IS NOT NULL AND sale_price < price)::text AS promo
      FROM products`,
   );
 
+  const today = await query<{
+    today_orders: string;
+    today_revenue: string;
+    fulfilled_today: string;
+    new_customers_today: string;
+  }>(
+    `WITH gh AS (
+       SELECT (CURRENT_TIMESTAMP AT TIME ZONE 'Africa/Accra')::date AS day
+     )
+     SELECT
+       (SELECT count(*)::text FROM orders o, gh
+         WHERE (o.created_at AT TIME ZONE 'Africa/Accra')::date = gh.day) AS today_orders,
+       (SELECT COALESCE(SUM(o.total), 0)::text FROM orders o, gh
+         WHERE (o.created_at AT TIME ZONE 'Africa/Accra')::date = gh.day
+           AND o.payment_status = 'paid'
+           AND o.status NOT IN ('cancelled','refunded')) AS today_revenue,
+       (SELECT count(*)::text FROM orders o, gh
+         WHERE o.status IN ('delivered','collected')
+           AND (o.updated_at AT TIME ZONE 'Africa/Accra')::date = gh.day) AS fulfilled_today,
+       (SELECT count(*)::text FROM customers c, gh
+         WHERE (c.created_at AT TIME ZONE 'Africa/Accra')::date = gh.day) AS new_customers_today`,
+  );
+
   return {
     ...totals.rows[0],
+    total_products: catalogue.rows[0]?.total_products ?? "0",
+    today_orders: today.rows[0]?.today_orders ?? "0",
+    today_revenue: today.rows[0]?.today_revenue ?? "0",
+    fulfilled_today: today.rows[0]?.fulfilled_today ?? "0",
+    new_customers_today: today.rows[0]?.new_customers_today ?? "0",
     lowStock: stock.rows[0]?.low ?? "0",
     outOfStock: stock.rows[0]?.out ?? "0",
     demoListings: catalogue.rows[0]?.demo ?? "0",
