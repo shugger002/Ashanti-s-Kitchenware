@@ -1,10 +1,6 @@
 import { requirePermission } from "@/server/auth/authorize";
 import { listInventory } from "@/server/inventory/service";
-
-function csvCell(value: string) {
-  if (/[",\n]/.test(value)) return `"${value.replaceAll('"', '""')}"`;
-  return value;
-}
+import { csvCell } from "@/lib/csv";
 
 export async function GET() {
   await requirePermission("inventory.write");

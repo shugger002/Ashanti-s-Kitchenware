@@ -2,7 +2,8 @@
 
 import { requirePermission } from "@/server/auth/authorize";
 import { applyInventoryCsv } from "@/server/inventory/service";
-import { assertCsvSize, parseInventoryCsv } from "@/server/inventory/csv";
+import { assertCsvSize } from "@/lib/csv";
+import { parseInventoryCsv } from "@/server/inventory/csv";
 import { revalidatePath } from "next/cache";
 
 export type InventoryCsvState = {

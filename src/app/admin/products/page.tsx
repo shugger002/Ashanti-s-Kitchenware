@@ -3,7 +3,9 @@ import { requirePermission } from "@/server/auth/authorize";
 import { searchProducts } from "@/server/catalog/queries";
 import { formatGhs } from "@/lib/money";
 import { archiveProductAction } from "@/app/admin/products/actions";
+import { ProductCsvForm } from "@/app/admin/products/csv-form";
 import { adminButton, AdminPageHeader, AdminTable, EmptyState, Toolbar } from "@/components/admin/ui";
+import { hasPermission } from "@/server/auth/types";
 
 const LOW_STOCK_ALERT = 5;
 
@@ -12,7 +14,8 @@ export default async function AdminProductsPage({
 }: {
   searchParams: Promise<{ q?: string }>;
 }) {
-  await requirePermission("products.read");
+  const user = await requirePermission("products.read");
+  const canWrite = hasPermission(user.roles, "products.write");
   const { q } = await searchParams;
   const { items } = await searchProducts({ q, includeInactive: true, pageSize: 50 });
   const low = items.filter((p) => p.available > 0 && p.available <= LOW_STOCK_ALERT);
@@ -50,6 +53,11 @@ export default async function AdminProductsPage({
           </Link>
         }
       />
+      {canWrite ? (
+        <div className="mt-6">
+          <ProductCsvForm />
+        </div>
+      ) : null}
       <Toolbar>
         <form method="get" className="flex min-w-0 flex-1">
           <label htmlFor="product-q" className="sr-only">

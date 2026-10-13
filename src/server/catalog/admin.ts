@@ -201,6 +201,96 @@ async function syncProductColours(
   }
 }
 
+export async function importProductsFromCsv(input: {
+  rows: {
+    line: number;
+    name: string;
+    sku: string;
+    price: number;
+    salePrice: number | null;
+    stock: number;
+    category: string;
+    description: string;
+    listed: boolean;
+    featured: boolean;
+    isNew: boolean;
+    lowStock: number;
+    slug: string;
+    imageUrl: string;
+  }[];
+  actorId: string;
+}): Promise<{ created: string[]; skipped: string[]; errors: string[] }> {
+  const created: string[] = [];
+  const skipped: string[] = [];
+  const errors: string[] = [];
+  const categories = await query<{ id: string; name: string; slug: string }>(
+    `SELECT id, name, slug FROM categories`,
+  );
+  const categoryByKey = new Map<string, string>();
+  for (const row of categories.rows) {
+    categoryByKey.set(row.name.trim().toLowerCase(), row.id);
+    categoryByKey.set(row.slug.trim().toLowerCase(), row.id);
+  }
+
+  for (const row of input.rows) {
+    const existing = await query<{ id: string }>(
+      `SELECT id FROM products WHERE lower(sku) = lower($1) AND archived_at IS NULL`,
+      [row.sku],
+    );
+    if (existing.rows[0]) {
+      skipped.push(row.sku);
+      continue;
+    }
+    let categoryId: string | null = null;
+    if (row.category) {
+      categoryId = categoryByKey.get(row.category.trim().toLowerCase()) ?? null;
+      if (!categoryId) {
+        errors.push(`Line ${row.line} (${row.sku}): unknown category "${row.category}".`);
+        continue;
+      }
+    }
+    try {
+      let slug = (row.slug || slugify(row.name)).slice(0, 80);
+      const slugTaken = await query(`SELECT 1 FROM products WHERE slug = $1`, [slug]);
+      if (slugTaken.rows[0]) slug = `${slug}-${slugify(row.sku)}`.slice(0, 80);
+      const id = await upsertProduct(
+        {
+          name: row.name,
+          sku: row.sku,
+          slug,
+          description: row.description,
+          categoryId,
+          price: row.price,
+          salePrice: row.salePrice,
+          specifications: {},
+          isActive: row.listed,
+          isFeatured: row.featured,
+          isNew: row.isNew,
+          lowStockThreshold: row.lowStock,
+          seoTitle: null,
+          seoDescription: null,
+          initialStock: row.stock,
+        },
+        input.actorId,
+      );
+      if (row.imageUrl) {
+        await addProductImage({
+          productId: id,
+          url: row.imageUrl,
+          storageKey: `csv:${row.sku}`,
+          alt: row.name,
+          isPrimary: true,
+        });
+      }
+      created.push(row.sku);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Could not create product.";
+      errors.push(`Line ${row.line} (${row.sku}): ${message}`);
+    }
+  }
+  return { created, skipped, errors };
+}
+
 export async function archiveProduct(id: string, actorId: string): Promise<void> {
   await query(`UPDATE products SET archived_at = now(), is_active = FALSE WHERE id = $1`, [id]);
   await writeAuditLog({
