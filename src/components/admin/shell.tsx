@@ -108,16 +108,22 @@ function Nav({
         className={cn("flex items-center gap-3 px-4 py-5", collapsed && "justify-center px-2")}
         onClick={onNavigate}
       >
-        <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-[#7c5cfc] text-xs font-semibold text-white">
+        <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-white text-xs font-semibold text-accent">
           AK
         </span>
         {collapsed ? null : (
           <span className="min-w-0">
-            <span className="block truncate text-sm font-medium text-foreground">{brand.name}</span>
-            <span className="block text-[11px] text-muted">Admin Portal</span>
+            <span className="block truncate text-sm font-medium text-white">{brand.name}</span>
+            <span className="block text-[11px] text-white/70">Admin Portal</span>
           </span>
         )}
       </Link>
+      {collapsed ? null : (
+        <div className="mx-4 mb-4 rounded-sm bg-white px-3 py-2">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={brand.logoSrc} alt="" className="h-7 w-auto max-w-[9rem] object-contain brightness-0" />
+        </div>
+      )}
       <nav className="flex flex-1 flex-col gap-6 overflow-y-auto px-3 pb-4" aria-label="Admin">
         {groups.map((group) => {
           const items = group.items.filter((item) => hasPermission(user.roles, item.permission));
@@ -125,7 +131,7 @@ function Nav({
           return (
             <div key={group.label}>
               {collapsed ? null : (
-                <p className="px-3 pb-1.5 text-[10px] font-medium uppercase tracking-[0.16em] text-muted">
+                <p className="px-3 pb-1.5 text-[10px] font-medium uppercase tracking-[0.16em] text-white/60">
                   {group.label}
                 </p>
               )}
@@ -142,7 +148,7 @@ function Nav({
                       className={cn(
                         "flex items-center gap-2.5 rounded-lg px-3 py-2",
                         collapsed && "justify-center px-2",
-                        active ? "bg-white/10 text-foreground" : "text-muted hover:bg-white/5 hover:text-foreground",
+                        active ? "bg-white text-accent" : "text-white/85 hover:bg-white/15 hover:text-white",
                       )}
                     >
                       <Icon className="h-4 w-4 shrink-0" strokeWidth={1.5} />
@@ -188,38 +194,39 @@ export function AdminShell({ user, children }: { user: AdminUser; children: Reac
 
   return (
     <div className="min-h-dvh lg:flex">
-      <header className="sticky top-0 z-40 flex items-center gap-3 border-b border-border bg-surface px-4 py-3 lg:hidden">
+      <header className="sticky top-0 z-40 flex items-center gap-3 border-b border-border bg-white px-4 py-3 lg:hidden">
         <button
           type="button"
-          className="inline-flex size-10 items-center justify-center"
+          className="inline-flex size-10 items-center justify-center text-accent"
           aria-label={menuOpen ? "Close menu" : "Open menu"}
           aria-expanded={menuOpen}
           onClick={() => setMenuOpen((open) => !open)}
         >
           {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
         </button>
-        <span className="text-sm font-medium">{brand.name}</span>
-        <Link href="/" className="ml-auto text-sm text-muted">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={brand.logoSrc} alt={brand.name} className="h-8 w-auto max-w-[9rem] object-contain brightness-0" />
+        <Link href="/" className="ml-auto text-sm text-accent">
           Store
         </Link>
       </header>
 
       {menuOpen ? (
         <div className="fixed inset-0 z-50 lg:hidden">
-          <button type="button" className="absolute inset-0 bg-black/50" aria-label="Close menu" onClick={() => setMenuOpen(false)} />
-          <aside className="relative flex h-full w-[min(18rem,86vw)] flex-col border-r border-border bg-surface">
+          <button type="button" className="absolute inset-0 bg-foreground/40" aria-label="Close menu" onClick={() => setMenuOpen(false)} />
+          <aside className="relative flex h-full w-[min(18rem,86vw)] flex-col bg-accent text-white">
             <Nav user={user} collapsed={false} onNavigate={() => setMenuOpen(false)} />
-            <div className="border-t border-border px-4 py-4 text-sm">
+            <div className="border-t border-white/20 px-4 py-4 text-sm">
               <div className="flex items-center gap-3">
-                <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-white/10 text-[11px] font-medium">
+                <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-white/20 text-[11px] font-medium">
                   {initials(user)}
                 </span>
                 <span className="min-w-0">
                   <p className="truncate">{user.fullName || user.email}</p>
-                  <p className="truncate text-xs text-muted">{user.email}</p>
+                  <p className="truncate text-xs text-white/70">{user.email}</p>
                 </span>
               </div>
-              <button type="button" className="mt-3 text-xs text-muted" onClick={signOut}>
+              <button type="button" className="mt-3 text-xs text-white/80" onClick={signOut}>
                 Sign out
               </button>
             </div>
@@ -229,40 +236,40 @@ export function AdminShell({ user, children }: { user: AdminUser; children: Reac
 
       <aside
         className={cn(
-          "sticky top-0 hidden h-dvh shrink-0 flex-col border-r border-border bg-surface lg:flex",
+          "sticky top-0 hidden h-dvh shrink-0 flex-col bg-accent text-white lg:flex",
           collapsed ? "w-[4.25rem]" : "w-60",
         )}
       >
         <Nav user={user} collapsed={collapsed} />
-        <div className={cn("border-t border-border py-4 text-sm", collapsed ? "px-2" : "px-4")}>
+        <div className={cn("border-t border-white/20 py-4 text-sm", collapsed ? "px-2" : "px-4")}>
           <div className={cn("flex items-center gap-3", collapsed && "justify-center")}>
-            <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-white/10 text-[11px] font-medium">
+            <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-white/20 text-[11px] font-medium">
               {initials(user)}
             </span>
             {collapsed ? null : (
               <span className="min-w-0">
                 <p className="truncate">{user.fullName || user.email}</p>
-                <p className="truncate text-xs text-muted">{user.email}</p>
+                <p className="truncate text-xs text-white/70">{user.email}</p>
               </span>
             )}
           </div>
           {collapsed ? null : (
             <div className="mt-3 flex flex-col items-start gap-1.5 text-xs">
-              <Link href="/" className="text-muted hover:text-foreground">
+              <Link href="/" className="text-white/80 hover:text-white">
                 View store
               </Link>
-              <button type="button" className="text-muted hover:text-foreground" onClick={signOut}>
+              <button type="button" className="text-white/80 hover:text-white" onClick={signOut}>
                 Sign out
               </button>
             </div>
           )}
         </div>
       </aside>
-      <div className="min-w-0 flex-1">
-        <div className="sticky top-0 z-30 hidden h-12 items-center border-b border-border bg-background px-3 lg:flex">
+      <div className="min-w-0 flex-1 bg-white">
+        <div className="sticky top-0 z-30 hidden h-12 items-center border-b border-border bg-white px-3 lg:flex">
           <button
             type="button"
-            className="inline-flex size-8 items-center justify-center rounded-md text-muted hover:bg-white/5 hover:text-foreground"
+            className="inline-flex size-8 items-center justify-center rounded-md text-accent hover:bg-accent/10"
             aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
             onClick={toggleCollapsed}
           >

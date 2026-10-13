@@ -31,31 +31,36 @@ html.dark {
   color-scheme: dark;
 }
 
+html:has(.admin-desk),
+html:has(.admin-desk).dark,
 .admin-desk {
-  --background: #0b0b0d;
-  --foreground: #f4f4f5;
-  --surface: #141417;
-  --muted: #a1a1aa;
-  --border: #27272a;
+  --background: #ffffff;
+  --foreground: #1a1a1a;
+  --surface: #ffffff;
+  --muted: #6b6b6b;
+  --border: #f0d0d5;
   --accent: #c8102e;
   --accent-hover: #a30d25;
   --ring: #c8102e;
   --brass: #c8102e;
   --sage: #c8102e;
-  --color-background: #0b0b0d;
-  --color-foreground: #f4f4f5;
-  --color-surface: #141417;
-  --color-muted: #a1a1aa;
-  --color-border: #27272a;
+  --color-background: #ffffff;
+  --color-foreground: #1a1a1a;
+  --color-surface: #ffffff;
+  --color-muted: #6b6b6b;
+  --color-border: #f0d0d5;
   --color-accent: #c8102e;
   --color-accent-hover: #a30d25;
   --color-brass: #c8102e;
   --color-sage: #c8102e;
-  --shadow: 0 18px 44px rgba(0, 0, 0, 0.45);
-  color-scheme: dark;
+  --shadow: 0 12px 32px rgba(200, 16, 46, 0.08);
+  color-scheme: light;
+}
+
+.admin-desk {
   min-height: 100dvh;
-  background: #0b0b0d;
-  color: #f4f4f5;
+  background: #ffffff;
+  color: #1a1a1a;
 }
 
 .admin-desk h1,
