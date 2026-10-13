@@ -24,23 +24,31 @@ export function parseInventoryCsv(raw: string): CsvParseResult {
   if (lines.length < 2) {
     return { rows: [], errors: ["Add a header row and at least one product row."] };
   }
-  if (lines.length - 1 > MAX_ROWS) {
+
+  let headerAt = 0;
+  let headers = splitCsvLine(lines[0] ?? "").map(csvHeaderKey);
+  let skuIndex = headers.findIndex((h) => h === "sku" || h === "sku_code" || h === "product_sku");
+  for (let i = 1; i < Math.min(lines.length, 8) && skuIndex < 0; i += 1) {
+    headers = splitCsvLine(lines[i] ?? "").map(csvHeaderKey);
+    skuIndex = headers.findIndex((h) => h === "sku" || h === "sku_code" || h === "product_sku");
+    if (skuIndex >= 0) headerAt = i;
+  }
+  const dataLines = lines.length - headerAt - 1;
+  if (dataLines > MAX_ROWS) {
     return { rows: [], errors: [`Use at most ${MAX_ROWS} product rows.`] };
   }
 
-  const headers = splitCsvLine(lines[0] ?? "").map(csvHeaderKey);
-  const skuIndex = headers.findIndex((h) => h === "sku" || h === "sku_code" || h === "product_sku");
   const restockIndex = headers.findIndex((h) => h === "restock" || h === "qty" || h === "quantity" || h === "add");
   const onHandIndex = headers.findIndex((h) => h === "on_hand" || h === "onhand" || h === "stock" || h === "count");
   if (skuIndex < 0) {
-    return { rows: [], errors: ["The first row must include a sku column."] };
+    return { rows: [], errors: ["Include a sku column (the header can sit a few lines down on a printed PDF)."] };
   }
   if (restockIndex < 0 && onHandIndex < 0) {
     return { rows: [], errors: ["Include a restock column (pieces to add) or an on_hand column (new shelf count)."] };
   }
 
   const rows: CsvInventoryChange[] = [];
-  for (let i = 1; i < lines.length; i += 1) {
+  for (let i = headerAt + 1; i < lines.length; i += 1) {
     const lineNo = i + 1;
     const cells = splitCsvLine(lines[i] ?? "");
     const sku = (cells[skuIndex] ?? "").trim();

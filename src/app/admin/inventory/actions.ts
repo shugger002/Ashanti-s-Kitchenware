@@ -2,7 +2,7 @@
 
 import { requirePermission } from "@/server/auth/authorize";
 import { applyInventoryCsv } from "@/server/inventory/service";
-import { assertCsvSize } from "@/lib/csv";
+import { assertTableUploadSize, extractInventorySpreadsheetText } from "@/lib/table-upload";
 import { parseInventoryCsv } from "@/server/inventory/csv";
 import { revalidatePath } from "next/cache";
 
@@ -21,10 +21,10 @@ export async function importInventoryCsv(
   const user = await requirePermission("inventory.write");
   const file = formData.get("file");
   if (!(file instanceof File) || file.size === 0) {
-    return { ok: false, message: "Choose a CSV file first.", updated: [], skipped: [], errors: [] };
+    return { ok: false, message: "Choose a CSV or PDF file first.", updated: [], skipped: [], errors: [] };
   }
   try {
-    assertCsvSize(file.size);
+    assertTableUploadSize(file.size);
   } catch (error) {
     return {
       ok: false,
@@ -34,7 +34,18 @@ export async function importInventoryCsv(
       errors: [],
     };
   }
-  const text = await file.text();
+  let text = "";
+  try {
+    text = await extractInventorySpreadsheetText(file);
+  } catch (error) {
+    return {
+      ok: false,
+      message: error instanceof Error ? error.message : "Could not read that file.",
+      updated: [],
+      skipped: [],
+      errors: [],
+    };
+  }
   const parsed = parseInventoryCsv(text);
   if (parsed.rows.length === 0) {
     return {

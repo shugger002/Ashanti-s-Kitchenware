@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { parseInventoryCsv } from "./csv";
+import { tabularTextToCsv } from "../../lib/table-upload";
 import { parseProductCsv } from "../catalog/csv";
 import { matchProductFromFilename, matchSkuFromFilename } from "../catalog/image-names";
 
@@ -24,6 +25,21 @@ test("inventory CSV reads sku and restock", () => {
   assert.equal(parsed.errors.length, 0);
   assert.equal(parsed.rows[0]?.sku, "AK-KETTLE");
   assert.equal(parsed.rows[0]?.restock, 12);
+});
+
+test("inventory PDF-style columns parse as restock rows", () => {
+  const csv = tabularTextToCsv("sku  restock\nAK-KETTLE  12\nAK-POT  4\n");
+  const parsed = parseInventoryCsv(csv);
+  assert.equal(parsed.errors.length, 0);
+  assert.equal(parsed.rows[0]?.sku, "AK-KETTLE");
+  assert.equal(parsed.rows[0]?.restock, 12);
+  assert.equal(parsed.rows[1]?.sku, "AK-POT");
+});
+
+test("inventory CSV finds a sku header under a printed title", () => {
+  const parsed = parseInventoryCsv("Ashanti restock\nsku,restock\nAK-KETTLE,3\n");
+  assert.equal(parsed.rows[0]?.sku, "AK-KETTLE");
+  assert.equal(parsed.rows[0]?.restock, 3);
 });
 
 test("inventory CSV rejects a missing sku header", () => {

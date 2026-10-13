@@ -32,6 +32,7 @@ if (process.env.NODE_ENV === "production") {
 const nextConfig: NextConfig = {
   allowedDevOrigins: ["127.0.0.1"],
   poweredByHeader: false,
+  serverExternalPackages: ["pdf-parse"],
   experimental: {
     serverActions: {
       bodySizeLimit: "40mb",
