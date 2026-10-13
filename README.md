@@ -1,36 +1,28 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Ashanti's Kitchenware
 
-## Getting Started
+Production-oriented Next.js storefront and admin for `ashantisakitchenware.com`.
 
-First, run the development server:
+PostgreSQL is used directly through `pg`. There is no Prisma, Drizzle, or Supabase. Payments go through Hubtel and Moolre when those keys exist; otherwise orders stay pending until staff record a verified payment.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## Local setup
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+1. Copy `.env.example` to `.env` and set `DATABASE_URL` plus `SESSION_SECRET`.
+2. Create a PostgreSQL database.
+3. `npm install`
+4. `npm run db:migrate`
+5. `BOOTSTRAP_ADMIN_PASSWORD='choose-a-long-password' npm run db:bootstrap`
+6. `npm run dev`
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Open `/` for the store, `/login` for customer accounts (optional), and `/admin/login` for staff.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Demo logo (`/logo.jpg`) and product photographs (`/public/demo`) are included for layout. They are labelled as placeholders. Run `npm run db:migrate` to load the demo catalogue into Postgres; without a database the shop still shows those photos from a static fallback.
 
-## Learn More
+Contact details and policy wording were transcribed from ashantiskitchenware.com. Do not treat demo prices or photos as live stock.
 
-To learn more about Next.js, take a look at the following resources:
+## Scripts
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- `npm run typecheck`
+- `npm run test` — inventory availability checks
+- `npm run build`
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Hosting notes: [docs/HOSTINGER.md](docs/HOSTINGER.md)

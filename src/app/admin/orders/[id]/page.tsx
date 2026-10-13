@@ -1,0 +1,322 @@
+import { notFound } from "next/navigation";
+import { requirePermission } from "@/server/auth/authorize";
+import { addOrderNote, getOrderById, ORDER_TRANSITIONS, transitionOrder } from "@/server/orders/service";
+import { recordManualPayment } from "@/server/checkout/service";
+import { formatGhs } from "@/lib/money";
+import { ghanaInternationalMsisdn } from "@/lib/phone-gh";
+import { CUSTOMER_TRACK_STEPS, customerTrackIndex, ORDER_STATUS_LABEL } from "@/lib/order-status";
+import { revalidatePath } from "next/cache";
+import {
+  adminButton,
+  AdminPageHeader,
+  BackLink,
+  orderTone,
+  paymentLabel,
+  paymentTone,
+  StatusPill,
+} from "@/components/admin/ui";
+
+function text(value: unknown) {
+  return value == null ? "" : String(value);
+}
+
+function money(value: unknown) {
+  return formatGhs(Number(value ?? 0));
+}
+
+const STAFF_NEXT: Record<string, string> = {
+  paid: "Order Received — paid, start packaging",
+  packing: "Packaging order",
+  shipped: "Order Out for Delivery",
+  ready_for_collection: "Ready at the shop",
+  delivered: "Order Delivered",
+  collected: "Collected",
+  cancelled: "Cancel this order",
+  refunded: "Refunded",
+};
+
+export default async function AdminOrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const user = await requirePermission("orders.write");
+  const { id } = await params;
+  const data = await getOrderById(id);
+  if (!data) notFound();
+  const order = data.order;
+  const status = text(order.status);
+  const paymentStatus = text(order.payment_status);
+  const method = text(order.delivery_method);
+  const allowed = (ORDER_TRANSITIONS[status] ?? []).filter((value) => {
+    if (method === "collection" && (value === "shipped" || value === "delivered")) return false;
+    if (method === "delivery" && (value === "ready_for_collection" || value === "collected")) return false;
+    return true;
+  });
+  const address = [order.address_line1, order.address_line2, order.city, order.region, order.country]
+    .map(text)
+    .filter(Boolean)
+    .join(", ");
+  const shippingAmount = Number(order.shipping_amount ?? 0);
+  const customerStep = customerTrackIndex(status);
+  const waDigits = ghanaInternationalMsisdn(text(order.phone));
+  const quoteHref =
+    waDigits.length >= 11
+      ? `https://wa.me/${waDigits}?text=${encodeURIComponent(
+          `Ashanti's Kitchenware — ${text(order.public_ref)}\nHi ${text(order.full_name)}, we have your order. Please confirm your location so we can quote the delivery charge.`,
+        )}`
+      : null;
+
+  async function changeStatus(formData: FormData) {
+    "use server";
+    const actor = await requirePermission("orders.write");
+    await transitionOrder({
+      orderId: String(formData.get("orderId")),
+      toStatus: String(formData.get("toStatus")),
+      actorUserId: actor.id,
+      note: String(formData.get("note") ?? ""),
+      trackingNumber: String(formData.get("trackingNumber") || "") || undefined,
+    });
+    revalidatePath(`/admin/orders/${String(formData.get("orderId"))}`);
+  }
+
+  async function capture(formData: FormData) {
+    "use server";
+    const actor = await requirePermission("payments.capture");
+    await recordManualPayment({
+      orderId: String(formData.get("orderId")),
+      providerRef: String(formData.get("providerRef")),
+      actorUserId: actor.id,
+      note: String(formData.get("note") ?? "Manual capture"),
+    });
+    revalidatePath(`/admin/orders/${String(formData.get("orderId"))}`);
+  }
+
+  async function note(formData: FormData) {
+    "use server";
+    const actor = await requirePermission("orders.write");
+    await addOrderNote(String(formData.get("orderId")), actor.id, String(formData.get("note")));
+    revalidatePath(`/admin/orders/${String(formData.get("orderId"))}`);
+  }
+
+  return (
+    <div className="space-y-6">
+      <BackLink href="/admin/orders">All orders</BackLink>
+      <AdminPageHeader
+        title={text(order.public_ref)}
+        description={`${text(order.full_name)} · ${text(order.phone)}`}
+        action={
+          <span className="flex flex-wrap gap-2">
+            <StatusPill value={status} tone={orderTone(status)} />
+            <StatusPill value={paymentStatus} tone={paymentTone(paymentStatus)} label={paymentLabel(paymentStatus)} />
+          </span>
+        }
+      />
+      <p className="font-serif text-3xl tabular-nums">{money(order.total)}</p>
+
+      {customerStep < 0 ? (
+        <p className="text-sm text-muted">{ORDER_STATUS_LABEL[status] ?? status}</p>
+      ) : (
+        <ol className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-3">
+          {CUSTOMER_TRACK_STEPS.map((label, index) => (
+            <li
+              key={label}
+              className={`text-sm ${index === customerStep ? "font-medium text-accent" : index < customerStep ? "text-foreground" : "text-muted"}`}
+            >
+              <span className="sm:hidden">{index === customerStep ? "Now · " : index < customerStep ? "Done · " : ""}</span>
+              {label}
+              {index < CUSTOMER_TRACK_STEPS.length - 1 ? (
+                <span className="ml-3 hidden text-muted sm:inline" aria-hidden>
+                  →
+                </span>
+              ) : null}
+            </li>
+          ))}
+        </ol>
+      )}
+
+      <div className="grid gap-5 lg:grid-cols-[1.15fr_0.85fr]">
+        <div className="space-y-5">
+          <section className="rounded-2xl border border-border bg-background p-5">
+            <h2 className="font-serif text-xl">Pack list</h2>
+            <ul className="mt-4 divide-y divide-border text-sm">
+              {data.items.map((item) => (
+                <li key={item.id} className="flex justify-between gap-3 py-3">
+                  <span>
+                    {item.product_name}
+                    <span className="block text-xs text-muted">
+                      {item.sku} · × {item.quantity}
+                    </span>
+                  </span>
+                  <span className="tabular-nums">{formatGhs(Number(item.line_total ?? item.unit_price))}</span>
+                </li>
+              ))}
+            </ul>
+            <dl className="mt-4 space-y-1 border-t border-border pt-4 text-sm">
+              <div className="flex justify-between">
+                <dt className="text-muted">Subtotal</dt>
+                <dd className="tabular-nums">{money(order.subtotal)}</dd>
+              </div>
+              <div className="flex justify-between">
+                <dt className="text-muted">Delivery</dt>
+                <dd className={shippingAmount > 0 ? "tabular-nums" : "text-muted"}>
+                  {shippingAmount > 0
+                    ? money(order.shipping_amount)
+                    : method === "collection"
+                      ? "Collection"
+                      : "Quoted on WhatsApp"}
+                </dd>
+              </div>
+              <div className="flex justify-between font-medium">
+                <dt>Total</dt>
+                <dd className="tabular-nums">{money(order.total)}</dd>
+              </div>
+            </dl>
+          </section>
+
+          <section className="rounded-2xl border border-border bg-background p-5 text-sm">
+            <h2 className="font-serif text-xl">Customer</h2>
+            <p className="mt-3">{text(order.full_name)}</p>
+            <p className="text-muted">{text(order.phone)}</p>
+            {text(order.email) ? <p className="text-muted">{text(order.email)}</p> : null}
+            <p className="mt-4 text-xs uppercase tracking-[0.14em] text-muted">
+              {text(order.delivery_method) === "collection" ? "Collection" : "Delivery"}
+            </p>
+            {address ? <p className="mt-1 leading-relaxed">{address}</p> : <p className="mt-1 text-muted">No street address on this ticket.</p>}
+            {text(order.delivery_instructions) ? (
+              <p className="mt-3 text-muted">{text(order.delivery_instructions)}</p>
+            ) : null}
+            {method === "delivery" && quoteHref ? (
+              <a href={quoteHref} className="mt-4 inline-block text-sm text-accent" target="_blank" rel="noreferrer">
+                Quote delivery on WhatsApp
+              </a>
+            ) : null}
+          </section>
+        </div>
+
+        <div className="space-y-5">
+          {allowed.length > 0 ? (
+            <form action={changeStatus} className="space-y-3 rounded-2xl border border-border bg-background p-5">
+              <h2 className="font-serif text-xl">Move the ticket</h2>
+              <input type="hidden" name="orderId" value={id} />
+              <label className="block text-sm">
+                Next status
+                <select name="toStatus" className="input mt-1">
+                  {allowed.map((value) => (
+                    <option key={value} value={value}>
+                      {STAFF_NEXT[value] ?? ORDER_STATUS_LABEL[value] ?? value.replaceAll("_", " ")}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="block text-sm">
+                Internal courier note
+                <input name="trackingNumber" className="input mt-1" placeholder="Customers do not see this on the tracker" />
+              </label>
+              <button className={adminButton()} type="submit">
+                Update status
+              </button>
+            </form>
+          ) : (
+            <div className="rounded-2xl border border-border bg-background p-5">
+              <h2 className="font-serif text-xl">Fulfillment</h2>
+              <p className="mt-2 text-sm text-muted">This ticket has no further moves.</p>
+            </div>
+          )}
+
+          {paymentStatus !== "paid" ? (
+            <form action={capture} className="space-y-3 rounded-2xl border border-accent bg-background p-5">
+              <h2 className="font-serif text-xl">Record verified payment</h2>
+              <p className="text-xs leading-relaxed text-muted">
+                Use only with an auditable provider reference. This does not invent a payment.
+              </p>
+              <input type="hidden" name="orderId" value={id} />
+              <label className="block text-sm">
+                Payment reference
+                <input name="providerRef" required className="input mt-1" />
+              </label>
+              <label className="block text-sm">
+                Note
+                <input name="note" className="input mt-1" />
+              </label>
+              <button className={adminButton()} type="submit">
+                Mark paid
+              </button>
+            </form>
+          ) : (
+            <div className="rounded-2xl border border-border bg-background p-5 text-sm">
+              <h2 className="font-serif text-xl">Payment</h2>
+              <p className="mt-2 text-muted">Marked paid.</p>
+              {data.payments.length > 0 ? (
+                <ul className="mt-3 divide-y divide-border">
+                  {data.payments.map((payment) => {
+                    const row = payment as Record<string, unknown>;
+                    return (
+                      <li key={text(row.id)} className="flex justify-between gap-3 py-2">
+                        <span>
+                          {text(row.provider)}
+                          {text(row.provider_ref) ? ` · ${text(row.provider_ref)}` : ""}
+                          <span className="block text-xs text-muted">{text(row.status)}</span>
+                        </span>
+                        <span className="tabular-nums">{money(row.amount)}</span>
+                      </li>
+                    );
+                  })}
+                </ul>
+              ) : null}
+            </div>
+          )}
+
+          {data.shipments.length > 0 ? (
+            <section className="rounded-2xl border border-border bg-background p-5 text-sm">
+              <h2 className="font-serif text-xl">Shipments</h2>
+              <ul className="mt-3 space-y-2">
+                {data.shipments.map((shipment) => {
+                  const row = shipment as Record<string, unknown>;
+                  return (
+                    <li key={text(row.id)}>
+                      {text(row.carrier) || "Carrier unset"}
+                      {text(row.tracking_number) ? ` · ${text(row.tracking_number)}` : ""}
+                      <span className="block text-xs text-muted">{text(row.status)}</span>
+                    </li>
+                  );
+                })}
+              </ul>
+            </section>
+          ) : null}
+
+          <form action={note} className="space-y-3 rounded-2xl border border-border bg-background p-5">
+            <h2 className="font-serif text-xl">Desk notes</h2>
+            <input type="hidden" name="orderId" value={id} />
+            <label className="block text-sm">
+              Note
+              <textarea name="note" required placeholder={`From ${user.email}`} className="input mt-1" rows={3} />
+            </label>
+            <button className={adminButton()} type="submit">
+              Add note
+            </button>
+            {data.history.length > 0 ? (
+              <ol className="mt-2 divide-y divide-border text-sm">
+                {data.history.map((entry) => {
+                  const row = entry as Record<string, unknown>;
+                  const from = text(row.from_status);
+                  const to = text(row.to_status);
+                  const same = from === to;
+                  return (
+                    <li key={text(row.id)} className="py-3">
+                      <p className="text-xs text-muted">
+                        {row.created_at ? new Date(String(row.created_at)).toLocaleString("en-GH") : ""}
+                      </p>
+                      <p className="mt-1">
+                        {same
+                          ? "Note"
+                          : `${ORDER_STATUS_LABEL[from] ?? (from.replaceAll("_", " ") || "—")} → ${ORDER_STATUS_LABEL[to] ?? to.replaceAll("_", " ")}`}
+                      </p>
+                      {text(row.note) ? <p className="mt-1 text-muted">{text(row.note)}</p> : null}
+                    </li>
+                  );
+                })}
+              </ol>
+            ) : null}
+          </form>
+        </div>
+      </div>
+    </div>
+  );
+}
