@@ -1,4 +1,5 @@
 import { query } from "@/server/db/pool";
+import { LIKE_ESCAPE_SQL, likeContains } from "@/server/db/sql";
 import type { Category, ProductCard, ProductColorOption, ProductDetail, ProductImage, ProductVariant } from "@/server/catalog/types";
 import { filterDemoProducts, getDemoProduct } from "@/content/demo-catalog";
 import { colorsFromVariants, normalizeHex } from "@/lib/product-color";
@@ -114,8 +115,10 @@ export async function searchProducts(filters: ShopFilters): Promise<{
     where.push("p.is_active = TRUE");
   }
   if (filters.q) {
-    const p = add(`%${filters.q}%`);
-    where.push(`(p.name ILIKE ${p} OR p.sku ILIKE ${p} OR p.description ILIKE ${p})`);
+    const p = add(likeContains(filters.q));
+    where.push(
+      `(p.name ILIKE ${p} ESCAPE ${LIKE_ESCAPE_SQL} OR p.sku ILIKE ${p} ESCAPE ${LIKE_ESCAPE_SQL} OR p.description ILIKE ${p} ESCAPE ${LIKE_ESCAPE_SQL})`,
+    );
   }
   if (filters.category) {
     where.push(`c.slug = ${add(resolveCategorySlug(filters.category))}`);

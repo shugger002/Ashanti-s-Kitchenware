@@ -1,4 +1,5 @@
 import { query, withTransaction } from "@/server/db/pool";
+import { LIKE_ESCAPE_SQL, likeContains } from "@/server/db/sql";
 import { writeAuditLog } from "@/server/auth/audit";
 import { hitRateLimit } from "@/server/auth/rate-limit";
 
@@ -38,11 +39,17 @@ export async function listOrders(filters: {
     return `$${params.length}`;
   };
   if (filters.q) {
-    const p = add(`%${filters.q}%`);
-    where.push(`(public_ref ILIKE ${p} OR full_name ILIKE ${p} OR phone ILIKE ${p})`);
+    const p = add(likeContains(filters.q));
+    where.push(
+      `(public_ref ILIKE ${p} ESCAPE ${LIKE_ESCAPE_SQL} OR full_name ILIKE ${p} ESCAPE ${LIKE_ESCAPE_SQL} OR phone ILIKE ${p} ESCAPE ${LIKE_ESCAPE_SQL})`,
+    );
   }
-  if (filters.status) where.push(`status = ${add(filters.status)}`);
-  if (filters.paymentStatus) where.push(`payment_status = ${add(filters.paymentStatus)}`);
+  if (filters.status && filters.status in ORDER_TRANSITIONS) {
+    where.push(`status = ${add(filters.status)}`);
+  }
+  if (filters.paymentStatus && ["pending", "unpaid", "paid", "failed", "successful"].includes(filters.paymentStatus)) {
+    where.push(`payment_status = ${add(filters.paymentStatus)}`);
+  }
   const result = await query<{
     id: string;
     public_ref: string;

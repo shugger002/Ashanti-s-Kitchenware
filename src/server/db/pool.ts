@@ -1,4 +1,5 @@
 import { Pool, type PoolClient, type QueryResult, type QueryResultRow } from "pg";
+import { assertSafeQueryText } from "@/server/db/sql";
 
 declare global {
   var __ashantisaPool: Pool | undefined;
@@ -17,6 +18,8 @@ function createPool(): Pool {
     connectionString: url,
     max: 10,
     ssl,
+    statement_timeout: 8_000,
+    idle_in_transaction_session_timeout: 10_000,
   });
 }
 
@@ -31,6 +34,7 @@ export async function query<T extends QueryResultRow = QueryResultRow>(
   text: string,
   params: unknown[] = [],
 ): Promise<QueryResult<T>> {
+  assertSafeQueryText(text);
   return getPool().query<T>(text, params);
 }
 
@@ -38,6 +42,17 @@ export async function withTransaction<T>(
   fn: (client: PoolClient) => Promise<T>,
 ): Promise<T> {
   const client = await getPool().connect();
+  const nativeQuery = client.query;
+  client.query = ((config: unknown, values?: unknown, callback?: unknown) => {
+    const text =
+      typeof config === "string"
+        ? config
+        : config && typeof config === "object" && "text" in config
+          ? String((config as { text: string }).text)
+          : "";
+    if (text) assertSafeQueryText(text);
+    return nativeQuery.call(client, config as never, values as never, callback as never);
+  }) as PoolClient["query"];
   try {
     await client.query("BEGIN");
     const result = await fn(client);
@@ -47,6 +62,7 @@ export async function withTransaction<T>(
     await client.query("ROLLBACK");
     throw error;
   } finally {
+    client.query = nativeQuery;
     client.release();
   }
 }
