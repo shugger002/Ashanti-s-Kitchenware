@@ -1,5 +1,6 @@
-import type { PoolClient } from "pg";
+import type { Db } from "@/server/db/pool";
 import { query } from "@/server/db/pool";
+import { sql } from "@/server/db/sql";
 
 export async function writeAuditLog(
   input: {
@@ -9,20 +10,15 @@ export async function writeAuditLog(
     entityId?: string | null;
     metadata?: Record<string, unknown>;
   },
-  client?: PoolClient,
+  db?: Db,
 ): Promise<void> {
-  const sql = `INSERT INTO admin_audit_logs (actor_user_id, action, entity_type, entity_id, metadata)
-               VALUES ($1, $2, $3, $4, $5::jsonb)`;
-  const params = [
-    input.actorUserId,
-    input.action,
-    input.entityType,
-    input.entityId ?? null,
-    JSON.stringify(input.metadata ?? {}),
-  ];
-  if (client) {
-    await client.query(sql, params);
+  const q = sql`
+    INSERT INTO admin_audit_logs (actor_user_id, action, entity_type, entity_id, metadata)
+    VALUES (${input.actorUserId}, ${input.action}, ${input.entityType}, ${input.entityId ?? null}, ${JSON.stringify(input.metadata ?? {})}::jsonb)
+  `;
+  if (db) {
+    await db.query(q);
     return;
   }
-  await query(sql, params);
+  await query(q);
 }

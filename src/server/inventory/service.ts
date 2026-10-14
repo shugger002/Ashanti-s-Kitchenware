@@ -1,5 +1,5 @@
-import type { PoolClient } from "pg";
-import { query, withTransaction } from "@/server/db/pool";
+import { query, withTransaction, type Db } from "@/server/db/pool";
+import { sql } from "@/server/db/sql";
 import { writeAuditLog } from "@/server/auth/audit";
 
 export type InventoryRow = {
@@ -30,8 +30,8 @@ export async function listInventory(): Promise<InventoryRow[]> {
     on_hand: string;
     reserved: string;
     low_stock_threshold: number;
-  }>(
-    `SELECT i.id, i.product_id, p.name AS product_name, COALESCE(v.sku, p.sku) AS sku,
+  }>(sql`
+    SELECT i.id, i.product_id, p.name AS product_name, COALESCE(v.sku, p.sku) AS sku,
             i.variant_id, v.name AS variant_name, img.url AS image_url, img.alt AS image_alt,
             i.on_hand::text, i.reserved::text, i.low_stock_threshold
      FROM inventory i
@@ -44,8 +44,8 @@ export async function listInventory(): Promise<InventoryRow[]> {
        LIMIT 1
      ) img ON TRUE
      WHERE p.archived_at IS NULL
-     ORDER BY p.name, v.name NULLS FIRST`,
-  );
+     ORDER BY p.name, v.name NULLS FIRST
+  `);
   return result.rows.map((row) => ({
     id: row.id,
     productId: row.product_id,
@@ -70,10 +70,9 @@ export async function adjustStock(input: {
   actorUserId: string;
   source?: "adjustment" | "restock";
 }): Promise<void> {
-  await withTransaction(async (client) => {
-    const locked = await client.query<{ on_hand: number; reserved: number }>(
-      `SELECT on_hand, reserved FROM inventory WHERE id = $1 FOR UPDATE`,
-      [input.inventoryId],
+  await withTransaction(async (db) => {
+    const locked = await db.query<{ on_hand: number; reserved: number }>(
+      sql`SELECT on_hand, reserved FROM inventory WHERE id = ${input.inventoryId} FOR UPDATE`,
     );
     const row = locked.rows[0];
     if (!row) throw new Error("Inventory row not found");
@@ -81,23 +80,12 @@ export async function adjustStock(input: {
     if (next < row.reserved) {
       throw new Error("Adjustment would make on-hand lower than reserved stock");
     }
-    await client.query(
-      `UPDATE inventory SET on_hand = $2, updated_at = now() WHERE id = $1`,
-      [input.inventoryId, next],
-    );
-    await client.query(
-      `INSERT INTO inventory_movements
+    await db.query(sql`UPDATE inventory SET on_hand = ${next}, updated_at = now() WHERE id = ${input.inventoryId}`);
+    await db.query(sql`
+      INSERT INTO inventory_movements
          (inventory_id, delta_on_hand, reason, source, actor_user_id, notes)
-       VALUES ($1, $2, $3, $4, $5, $6)`,
-      [
-        input.inventoryId,
-        input.deltaOnHand,
-        input.reason,
-        input.source ?? "adjustment",
-        input.actorUserId,
-        input.notes,
-      ],
-    );
+       VALUES (${input.inventoryId}, ${input.deltaOnHand}, ${input.reason}, ${input.source ?? "adjustment"}, ${input.actorUserId}, ${input.notes})
+    `);
     await writeAuditLog(
       {
         actorUserId: input.actorUserId,
@@ -106,108 +94,87 @@ export async function adjustStock(input: {
         entityId: input.inventoryId,
         metadata: { deltaOnHand: input.deltaOnHand, reason: input.reason },
       },
-      client,
+      db,
     );
   });
 }
 
 export async function lockAndReserve(
-  client: PoolClient,
+  db: Db,
   input: { productId: string; variantId: string | null; quantity: number; orderId: string },
 ): Promise<{ inventoryId: string; unitAvailable: number }> {
   const locked = input.variantId
-    ? await client.query<{ id: string; on_hand: number; reserved: number }>(
-        `SELECT id, on_hand, reserved FROM inventory WHERE variant_id = $1 FOR UPDATE`,
-        [input.variantId],
+    ? await db.query<{ id: string; on_hand: number; reserved: number }>(
+        sql`SELECT id, on_hand, reserved FROM inventory WHERE variant_id = ${input.variantId} FOR UPDATE`,
       )
-    : await client.query<{ id: string; on_hand: number; reserved: number }>(
-        `SELECT id, on_hand, reserved FROM inventory
-         WHERE product_id = $1 AND variant_id IS NULL FOR UPDATE`,
-        [input.productId],
-      );
+    : await db.query<{ id: string; on_hand: number; reserved: number }>(sql`
+        SELECT id, on_hand, reserved FROM inventory
+         WHERE product_id = ${input.productId} AND variant_id IS NULL FOR UPDATE
+      `);
   const row = locked.rows[0];
   if (!row) throw new Error("No inventory record for this product");
   const available = row.on_hand - row.reserved;
   if (available < input.quantity) {
     throw new Error("Insufficient stock");
   }
-  await client.query(
-    `UPDATE inventory SET reserved = reserved + $2, updated_at = now() WHERE id = $1`,
-    [row.id, input.quantity],
-  );
-  await client.query(
-    `INSERT INTO inventory_movements
+  await db.query(sql`UPDATE inventory SET reserved = reserved + ${input.quantity}, updated_at = now() WHERE id = ${row.id}`);
+  await db.query(sql`
+    INSERT INTO inventory_movements
        (inventory_id, delta_reserved, reason, source, order_id)
-     VALUES ($1, $2, 'Checkout reservation', 'reservation', $3)`,
-    [row.id, input.quantity, input.orderId],
-  );
+     VALUES (${row.id}, ${input.quantity}, 'Checkout reservation', 'reservation', ${input.orderId})
+  `);
   return { inventoryId: row.id, unitAvailable: available };
 }
 
 export async function convertReservationToSale(
-  client: PoolClient,
+  db: Db,
   input: { orderId: string },
 ): Promise<void> {
-  const items = await client.query<{ product_id: string; variant_id: string | null; quantity: number }>(
-    `SELECT product_id, variant_id, quantity FROM order_items WHERE order_id = $1`,
-    [input.orderId],
+  const items = await db.query<{ product_id: string; variant_id: string | null; quantity: number }>(
+    sql`SELECT product_id, variant_id, quantity FROM order_items WHERE order_id = ${input.orderId}`,
   );
   for (const item of items.rows) {
     const inv = item.variant_id
-      ? await client.query<{ id: string }>(
-          `SELECT id FROM inventory WHERE variant_id = $1 FOR UPDATE`,
-          [item.variant_id],
-        )
-      : await client.query<{ id: string }>(
-          `SELECT id FROM inventory WHERE product_id = $1 AND variant_id IS NULL FOR UPDATE`,
-          [item.product_id],
+      ? await db.query<{ id: string }>(sql`SELECT id FROM inventory WHERE variant_id = ${item.variant_id} FOR UPDATE`)
+      : await db.query<{ id: string }>(
+          sql`SELECT id FROM inventory WHERE product_id = ${item.product_id} AND variant_id IS NULL FOR UPDATE`,
         );
     const id = inv.rows[0]?.id;
     if (!id) continue;
-    await client.query(
-      `UPDATE inventory
-       SET reserved = reserved - $2, on_hand = on_hand - $2, updated_at = now()
-       WHERE id = $1`,
-      [id, item.quantity],
-    );
-    await client.query(
-      `INSERT INTO inventory_movements
+    await db.query(sql`
+      UPDATE inventory
+       SET reserved = reserved - ${item.quantity}, on_hand = on_hand - ${item.quantity}, updated_at = now()
+       WHERE id = ${id}
+    `);
+    await db.query(sql`
+      INSERT INTO inventory_movements
          (inventory_id, delta_on_hand, delta_reserved, reason, source, order_id)
-       VALUES ($1, $2, $3, 'Paid order', 'sale', $4)`,
-      [id, -item.quantity, -item.quantity, input.orderId],
-    );
+       VALUES (${id}, ${-item.quantity}, ${-item.quantity}, 'Paid order', 'sale', ${input.orderId})
+    `);
   }
 }
 
 export async function releaseReservation(
-  client: PoolClient,
+  db: Db,
   input: { orderId: string },
 ): Promise<void> {
-  const items = await client.query<{ product_id: string; variant_id: string | null; quantity: number }>(
-    `SELECT product_id, variant_id, quantity FROM order_items WHERE order_id = $1`,
-    [input.orderId],
+  const items = await db.query<{ product_id: string; variant_id: string | null; quantity: number }>(
+    sql`SELECT product_id, variant_id, quantity FROM order_items WHERE order_id = ${input.orderId}`,
   );
   for (const item of items.rows) {
     const inv = item.variant_id
-      ? await client.query<{ id: string }>(`SELECT id FROM inventory WHERE variant_id = $1 FOR UPDATE`, [
-          item.variant_id,
-        ])
-      : await client.query<{ id: string }>(
-          `SELECT id FROM inventory WHERE product_id = $1 AND variant_id IS NULL FOR UPDATE`,
-          [item.product_id],
+      ? await db.query<{ id: string }>(sql`SELECT id FROM inventory WHERE variant_id = ${item.variant_id} FOR UPDATE`)
+      : await db.query<{ id: string }>(
+          sql`SELECT id FROM inventory WHERE product_id = ${item.product_id} AND variant_id IS NULL FOR UPDATE`,
         );
     const id = inv.rows[0]?.id;
     if (!id) continue;
-    await client.query(
-      `UPDATE inventory SET reserved = GREATEST(reserved - $2, 0), updated_at = now() WHERE id = $1`,
-      [id, item.quantity],
-    );
-    await client.query(
-      `INSERT INTO inventory_movements
+    await db.query(sql`UPDATE inventory SET reserved = GREATEST(reserved - ${item.quantity}, 0), updated_at = now() WHERE id = ${id}`);
+    await db.query(sql`
+      INSERT INTO inventory_movements
          (inventory_id, delta_reserved, reason, source, order_id)
-       VALUES ($1, $2, 'Reservation released', 'reservation_release', $3)`,
-      [id, -item.quantity, input.orderId],
-    );
+       VALUES (${id}, ${-item.quantity}, 'Reservation released', 'reservation_release', ${input.orderId})
+    `);
   }
 }
 
@@ -229,17 +196,16 @@ export async function applyInventoryCsv(input: {
     seen.set(row.sku.trim().toLowerCase(), row);
   }
 
-  await withTransaction(async (client) => {
+  await withTransaction(async (db) => {
     for (const row of seen.values()) {
-      const match = await client.query<{ id: string; on_hand: number; reserved: number; sku: string }>(
-        `SELECT i.id, i.on_hand, i.reserved, COALESCE(v.sku, p.sku) AS sku
+      const match = await db.query<{ id: string; on_hand: number; reserved: number; sku: string }>(sql`
+        SELECT i.id, i.on_hand, i.reserved, COALESCE(v.sku, p.sku) AS sku
          FROM inventory i
          JOIN products p ON p.id = i.product_id
          LEFT JOIN product_variants v ON v.id = i.variant_id
-         WHERE p.archived_at IS NULL AND lower(COALESCE(v.sku, p.sku)) = lower($1)
-         FOR UPDATE OF i`,
-        [row.sku],
-      );
+         WHERE p.archived_at IS NULL AND lower(COALESCE(v.sku, p.sku)) = lower(${row.sku})
+         FOR UPDATE OF i
+      `);
       const current = match.rows[0];
       if (!current) {
         skipped.push(row.sku);
@@ -264,16 +230,12 @@ export async function applyInventoryCsv(input: {
         continue;
       }
       const delta = next - current.on_hand;
-      await client.query(`UPDATE inventory SET on_hand = $2, updated_at = now() WHERE id = $1`, [
-        current.id,
-        next,
-      ]);
-      await client.query(
-        `INSERT INTO inventory_movements
+      await db.query(sql`UPDATE inventory SET on_hand = ${next}, updated_at = now() WHERE id = ${current.id}`);
+      await db.query(sql`
+        INSERT INTO inventory_movements
            (inventory_id, delta_on_hand, reason, source, actor_user_id, notes)
-         VALUES ($1, $2, $3, 'restock', $4, $5)`,
-        [current.id, delta, reason, input.actorUserId, `CSV line ${row.line}`],
-      );
+         VALUES (${current.id}, ${delta}, ${reason}, 'restock', ${input.actorUserId}, ${`CSV line ${row.line}`})
+      `);
       await writeAuditLog(
         {
           actorUserId: input.actorUserId,
@@ -282,7 +244,7 @@ export async function applyInventoryCsv(input: {
           entityId: current.id,
           metadata: { sku: current.sku, from: current.on_hand, to: next },
         },
-        client,
+        db,
       );
       updated.push({ sku: current.sku, from: current.on_hand, to: next });
     }
@@ -300,10 +262,9 @@ export async function listMovements(inventoryId: string) {
     source: string;
     notes: string | null;
     created_at: Date;
-  }>(
-    `SELECT id::text, delta_on_hand, delta_reserved, reason, source, notes, created_at
-     FROM inventory_movements WHERE inventory_id = $1 ORDER BY created_at DESC LIMIT 50`,
-    [inventoryId],
-  );
+  }>(sql`
+    SELECT id::text, delta_on_hand, delta_reserved, reason, source, notes, created_at
+     FROM inventory_movements WHERE inventory_id = ${inventoryId} ORDER BY created_at DESC LIMIT 50
+  `);
   return result.rows;
 }

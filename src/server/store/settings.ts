@@ -1,4 +1,5 @@
 import { query } from "@/server/db/pool";
+import { sql } from "@/server/db/sql";
 import { defaultContact } from "@/config/brand";
 
 export type ContactSettings = {
@@ -75,10 +76,7 @@ const fallback: StorefrontConfig = {
 
 async function readJson<T>(key: string, fallbackValue: T): Promise<T> {
   try {
-    const result = await query<{ value: T }>(
-      `SELECT value FROM store_settings WHERE key = $1`,
-      [key],
-    );
+    const result = await query<{ value: T }>(sql`SELECT value FROM store_settings WHERE key = ${key}`);
     return result.rows[0]?.value ?? fallbackValue;
   } catch {
     return fallbackValue;
@@ -107,12 +105,11 @@ export async function getStorefrontConfig(): Promise<StorefrontConfig> {
 }
 
 export async function updateSetting(key: string, value: unknown): Promise<void> {
-  await query(
-    `INSERT INTO store_settings (key, value, updated_at)
-     VALUES ($1, $2::jsonb, now())
-     ON CONFLICT (key) DO UPDATE SET value = excluded.value, updated_at = now()`,
-    [key, JSON.stringify(value)],
-  );
+  await query(sql`
+    INSERT INTO store_settings (key, value, updated_at)
+     VALUES (${key}, ${JSON.stringify(value)}::jsonb, now())
+     ON CONFLICT (key) DO UPDATE SET value = excluded.value, updated_at = now()
+  `);
 }
 
 export { listActiveShippingRates as listShippingRates } from "@/server/shipping/service";

@@ -1,4 +1,5 @@
 import { query } from "@/server/db/pool";
+import { sql } from "@/server/db/sql";
 
 export async function dashboardMetrics() {
   const totals = await query<{
@@ -10,8 +11,8 @@ export async function dashboardMetrics() {
     out_for_delivery: string;
     revenue: string;
     aov: string;
-  }>(
-    `SELECT
+  }>(sql`
+    SELECT
        count(*)::text AS total_orders,
        count(*) FILTER (WHERE payment_status = 'paid' AND status NOT IN ('cancelled','refunded'))::text AS paid_orders,
        count(*) FILTER (WHERE payment_status IN ('pending','unpaid') AND status = 'pending_payment')::text AS pending_orders,
@@ -23,8 +24,8 @@ export async function dashboardMetrics() {
      FROM orders`,
   );
 
-  const stock = await query<{ low: string; out: string }>(
-    `SELECT
+  const stock = await query<{ low: string; out: string }>(sql`
+    SELECT
        count(*) FILTER (WHERE on_hand - reserved > 0 AND on_hand - reserved <= low_stock_threshold)::text AS low,
        count(*) FILTER (WHERE on_hand - reserved <= 0)::text AS out
      FROM inventory`,
@@ -39,37 +40,37 @@ export async function dashboardMetrics() {
     payment_status: string;
     delivery_method: string;
     created_at: Date;
-  }>(
-    `SELECT id, public_ref, full_name, total::text, status, payment_status, delivery_method, created_at
+  }>(sql`
+    SELECT id, public_ref, full_name, total::text, status, payment_status, delivery_method, created_at
      FROM orders ORDER BY created_at DESC LIMIT 8`,
   );
 
-  const best = await query<{ product_name: string; units: number; revenue: string }>(
-    `SELECT oi.product_name, SUM(oi.quantity)::int AS units, SUM(oi.line_total)::text AS revenue
+  const best = await query<{ product_name: string; units: number; revenue: string }>(sql`
+    SELECT oi.product_name, SUM(oi.quantity)::int AS units, SUM(oi.line_total)::text AS revenue
      FROM order_items oi
      JOIN orders o ON o.id = oi.order_id
      WHERE o.payment_status = 'paid' AND o.status NOT IN ('cancelled','refunded')
      GROUP BY oi.product_name
      HAVING SUM(oi.quantity) > 0
      ORDER BY units DESC
-     LIMIT 5`,
-  );
+     LIMIT 5
+  `);
 
-  const catalogue = await query<{ demo: string; promo: string; total_products: string }>(
-    `SELECT
+  const catalogue = await query<{ demo: string; promo: string; total_products: string }>(sql`
+    SELECT
        count(*) FILTER (WHERE archived_at IS NULL)::text AS total_products,
        count(*) FILTER (WHERE sku ILIKE 'DEMO-%')::text AS demo,
        count(*) FILTER (WHERE sale_price IS NOT NULL AND sale_price < price)::text AS promo
-     FROM products`,
-  );
+     FROM products
+  `);
 
   const today = await query<{
     today_orders: string;
     today_revenue: string;
     fulfilled_today: string;
     new_customers_today: string;
-  }>(
-    `WITH gh AS (
+  }>(sql`
+    WITH gh AS (
        SELECT (CURRENT_TIMESTAMP AT TIME ZONE 'Africa/Accra')::date AS day
      )
      SELECT
@@ -83,8 +84,8 @@ export async function dashboardMetrics() {
          WHERE o.status IN ('delivered','collected')
            AND (o.updated_at AT TIME ZONE 'Africa/Accra')::date = gh.day) AS fulfilled_today,
        (SELECT count(*)::text FROM customers c, gh
-         WHERE (c.created_at AT TIME ZONE 'Africa/Accra')::date = gh.day) AS new_customers_today`,
-  );
+         WHERE (c.created_at AT TIME ZONE 'Africa/Accra')::date = gh.day) AS new_customers_today
+  `);
 
   return {
     ...totals.rows[0],
@@ -111,8 +112,8 @@ export async function listCustomers() {
     created_at: Date;
     order_count: number;
     paid_total: string;
-  }>(
-    `SELECT c.id, c.full_name, c.email, c.phone, c.created_at,
+  }>(sql`
+    SELECT c.id, c.full_name, c.email, c.phone, c.created_at,
             count(o.id)::int AS order_count,
             COALESCE(SUM(o.total) FILTER (WHERE o.payment_status = 'paid'), 0)::text AS paid_total
      FROM customers c
@@ -133,8 +134,8 @@ export async function listAuditLogs() {
     metadata: Record<string, unknown>;
     created_at: Date;
     actor_email: string | null;
-  }>(
-    `SELECT a.id, a.action, a.entity_type, a.entity_id, a.metadata, a.created_at,
+  }>(sql`
+    SELECT a.id, a.action, a.entity_type, a.entity_id, a.metadata, a.created_at,
             u.email AS actor_email
      FROM admin_audit_logs a
      LEFT JOIN users u ON u.id = a.actor_user_id
@@ -151,8 +152,8 @@ export async function listAdminUsers() {
     full_name: string;
     is_active: boolean;
     roles: string[] | null;
-  }>(
-    `SELECT u.id, u.email, u.full_name, u.is_active,
+  }>(sql`
+    SELECT u.id, u.email, u.full_name, u.is_active,
             array_remove(array_agg(ur.role_slug), NULL) AS roles
      FROM users u
      LEFT JOIN user_roles ur ON ur.user_id = u.id

@@ -1,5 +1,6 @@
 import { requirePermission } from "@/server/auth/authorize";
 import { query } from "@/server/db/pool";
+import { sql } from "@/server/db/sql";
 import { isProduction } from "@/server/env";
 import { isHubtelConfigured } from "@/server/payments/hubtel";
 import { isMoolreConfigured } from "@/server/payments/moolre";
@@ -7,7 +8,7 @@ import { AdminPageHeader } from "@/components/admin/ui";
 
 async function pingDatabase() {
   try {
-    await query("SELECT 1");
+    await query(sql`SELECT 1`);
     return true;
   } catch {
     return false;

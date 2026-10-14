@@ -2,6 +2,7 @@ import { randomBytes } from "node:crypto";
 import { z } from "zod";
 import { parseMoney } from "@/lib/money";
 import { query, withTransaction } from "@/server/db/pool";
+import { sql } from "@/server/db/sql";
 import { lockAndReserve, convertReservationToSale, releaseReservation } from "@/server/inventory/service";
 import { getPaymentProvider } from "@/server/payments";
 import { getAppUrl } from "@/server/env";
@@ -52,9 +53,7 @@ export async function placeOrder(input: CheckoutInput, sessionCustomerId?: strin
     id: string;
     public_ref: string;
     payment_status: string;
-  }>(`SELECT id, public_ref, payment_status FROM orders WHERE idempotency_key = $1`, [
-    parsed.idempotencyKey,
-  ]);
+  }>(sql`SELECT id, public_ref, payment_status FROM orders WHERE idempotency_key = ${parsed.idempotencyKey}`);
   if (existing.rows[0]) {
     return { orderId: existing.rows[0].id, publicRef: existing.rows[0].public_ref, alreadyExisted: true as const };
   }
@@ -72,32 +71,27 @@ export async function placeOrder(input: CheckoutInput, sessionCustomerId?: strin
     throw new Error("Online payment is not configured. Call or WhatsApp the shop to place an order.");
   }
 
-  const created = await withTransaction(async (client) => {
+  const created = await withTransaction(async (db) => {
     let customerId = sessionCustomerId;
     if (customerId) {
-      const owned = await client.query<{ id: string }>(
-        `SELECT id FROM customers WHERE id = $1 AND password_hash IS NOT NULL`,
-        [customerId],
+      const owned = await db.query<{ id: string }>(
+        sql`SELECT id FROM customers WHERE id = ${customerId} AND password_hash IS NOT NULL`,
       );
       if (!owned.rows[0]) throw new Error("Account not found");
-      await client.query(
-        `UPDATE customers SET full_name = $2, phone = $3, email = COALESCE($4, email) WHERE id = $1`,
-        [customerId, parsed.fullName, parsed.phone, parsed.email || null],
-      );
+      await db.query(sql`
+        UPDATE customers SET full_name = ${parsed.fullName}, phone = ${parsed.phone}, email = COALESCE(${parsed.email || null}, email) WHERE id = ${customerId}
+      `);
     } else {
-      const inserted = await client.query<{ id: string }>(
-        `INSERT INTO customers (email, full_name, phone)
-         VALUES ($1, $2, $3)
-         RETURNING id`,
-        [parsed.email || null, parsed.fullName, parsed.phone],
-      );
+      const inserted = await db.query<{ id: string }>(sql`
+        INSERT INTO customers (email, full_name, phone)
+         VALUES (${parsed.email || null}, ${parsed.fullName}, ${parsed.phone})
+         RETURNING id
+      `);
       customerId = inserted.rows[0].id;
     }
     if (!customerId) throw new Error("Could not attach customer");
 
-    const orderIdResult = await client.query<{ id: string }>(
-      `SELECT gen_random_uuid() AS id`,
-    );
+    const orderIdResult = await db.query<{ id: string }>(sql`SELECT gen_random_uuid() AS id`);
     const orderId = orderIdResult.rows[0].id;
     const ref = publicRef();
 
@@ -112,7 +106,7 @@ export async function placeOrder(input: CheckoutInput, sessionCustomerId?: strin
     }[] = [];
 
     for (const item of parsed.items) {
-      const product = await client.query<{
+      const product = await db.query<{
         id: string;
         name: string;
         sku: string;
@@ -121,11 +115,10 @@ export async function placeOrder(input: CheckoutInput, sessionCustomerId?: strin
         sale_price: string | null;
         is_active: boolean;
         archived_at: Date | null;
-      }>(
-        `SELECT id, name, sku, slug, price::text, sale_price::text, is_active, archived_at
-         FROM products WHERE id = $1`,
-        [item.productId],
-      );
+      }>(sql`
+        SELECT id, name, sku, slug, price::text, sale_price::text, is_active, archived_at
+         FROM products WHERE id = ${item.productId}
+      `);
       const p = product.rows[0];
       if (!p || !p.is_active || p.archived_at) {
         throw new Error("One or more products are no longer available");
@@ -137,22 +130,21 @@ export async function placeOrder(input: CheckoutInput, sessionCustomerId?: strin
       let name = p.name;
       let unit = parseMoney(p.sale_price ?? p.price);
       if (item.variantId) {
-        const variant = await client.query<{
+        const variant = await db.query<{
           sku: string;
           name: string;
           price_override: string | null;
           is_active: boolean;
-        }>(`SELECT sku, name, price_override::text, is_active FROM product_variants WHERE id = $1 AND product_id = $2`, [
-          item.variantId,
-          item.productId,
-        ]);
+        }>(
+          sql`SELECT sku, name, price_override::text, is_active FROM product_variants WHERE id = ${item.variantId} AND product_id = ${item.productId}`,
+        );
         const v = variant.rows[0];
         if (!v || !v.is_active) throw new Error("Selected option is unavailable");
         sku = v.sku;
         name = `${p.name} — ${v.name}`;
         if (v.price_override) unit = parseMoney(v.price_override);
       }
-      await lockAndReserve(client, {
+      await lockAndReserve(db, {
         productId: item.productId,
         variantId: item.variantId,
         quantity: item.quantity,
@@ -170,55 +162,26 @@ export async function placeOrder(input: CheckoutInput, sessionCustomerId?: strin
     }
 
     const total = parseMoney(subtotal + shippingAmount);
-    await client.query(
-      `INSERT INTO orders (
+    await db.query(sql`
+      INSERT INTO orders (
          id, public_ref, customer_id, email, full_name, phone, delivery_method,
          address_line1, address_line2, city, region, delivery_instructions,
          status, payment_status, subtotal, shipping_amount, total, idempotency_key
        ) VALUES (
-         $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,
-         'pending_payment','pending',$13,$14,$15,$16
-       )`,
-      [
-        orderId,
-        ref,
-        customerId,
-        parsed.email || null,
-        parsed.fullName,
-        parsed.phone,
-        parsed.deliveryMethod,
-        parsed.addressLine1 ?? null,
-        parsed.addressLine2 ?? null,
-        parsed.city ?? null,
-        parsed.region ?? null,
-        deliveryInstructions,
-        subtotal,
-        shippingAmount,
-        total,
-        parsed.idempotencyKey,
-      ],
-    );
-    await client.query(
-      `INSERT INTO order_status_history (order_id, from_status, to_status, note)
-       VALUES ($1, NULL, 'pending_payment', 'Order created')`,
-      [orderId],
-    );
+         ${orderId},${ref},${customerId},${parsed.email || null},${parsed.fullName},${parsed.phone},${parsed.deliveryMethod},${parsed.addressLine1 ?? null},${parsed.addressLine2 ?? null},${parsed.city ?? null},${parsed.region ?? null},${deliveryInstructions},
+         'pending_payment','pending',${subtotal},${shippingAmount},${total},${parsed.idempotencyKey}
+       )
+    `);
+    await db.query(sql`
+      INSERT INTO order_status_history (order_id, from_status, to_status, note)
+       VALUES (${orderId}, NULL, 'pending_payment', 'Order created')
+    `);
     for (const line of lines) {
-      await client.query(
-        `INSERT INTO order_items (
+      await db.query(sql`
+        INSERT INTO order_items (
            order_id, product_id, variant_id, product_name, sku, unit_price, quantity, line_total
-         ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`,
-        [
-          orderId,
-          line.productId,
-          line.variantId,
-          line.name,
-          line.sku,
-          line.unitPrice,
-          line.quantity,
-          parseMoney(line.unitPrice * line.quantity),
-        ],
-      );
+         ) VALUES (${orderId},${line.productId},${line.variantId},${line.name},${line.sku},${line.unitPrice},${line.quantity},${parseMoney(line.unitPrice * line.quantity)})
+      `);
     }
 
     return { orderId, ref, total, email: parsed.email || "orders@ashantisakitchenware.com" };
@@ -235,11 +198,10 @@ export async function placeOrder(input: CheckoutInput, sessionCustomerId?: strin
     momoChannel: parsed.momoChannel,
   });
 
-  await query(
-    `INSERT INTO payments (order_id, provider, provider_ref, amount, status)
-     VALUES ($1,$2,$3,$4,$5)`,
-    [created.orderId, intent.provider, intent.providerRef, created.total, intent.status],
-  );
+  await query(sql`
+    INSERT INTO payments (order_id, provider, provider_ref, amount, status)
+     VALUES (${created.orderId},${intent.provider},${intent.providerRef},${created.total},${intent.status})
+  `);
 
   return {
     orderId: created.orderId,
@@ -258,44 +220,36 @@ export async function markOrderPaid(input: {
   amountGhs: number;
   payload: Record<string, unknown>;
 }): Promise<void> {
-  await withTransaction(async (client) => {
-    const inserted = await client.query(
-      `INSERT INTO payment_events (provider, provider_event_id, event_type, payload)
-       VALUES ($1, $2, 'charge.success', $3::jsonb)
+  await withTransaction(async (db) => {
+    const inserted = await db.query(sql`
+      INSERT INTO payment_events (provider, provider_event_id, event_type, payload)
+       VALUES (${input.provider}, ${input.providerEventId}, 'charge.success', ${JSON.stringify(input.payload)}::jsonb)
        ON CONFLICT (provider, provider_event_id) DO NOTHING
-       RETURNING id`,
-      [input.provider, input.providerEventId, JSON.stringify(input.payload)],
-    );
+       RETURNING id
+    `);
     if (inserted.rowCount === 0) return;
 
-    const order = await client.query<{
+    const order = await db.query<{
       id: string;
       payment_status: string;
       total: string;
-    }>(`SELECT id, payment_status, total::text FROM orders WHERE public_ref = $1 FOR UPDATE`, [
-      input.publicRef,
-    ]);
+    }>(sql`SELECT id, payment_status, total::text FROM orders WHERE public_ref = ${input.publicRef} FOR UPDATE`);
     const row = order.rows[0];
     if (!row) throw new Error("Order not found");
     if (row.payment_status === "paid") return;
     if (parseMoney(row.total) !== parseMoney(input.amountGhs)) {
       throw new Error("Paid amount does not match order total");
     }
-    await client.query(
-      `UPDATE orders SET payment_status = 'paid', status = 'paid', updated_at = now() WHERE id = $1`,
-      [row.id],
-    );
-    await client.query(
-      `UPDATE payments SET status = 'successful', provider_ref = $2, updated_at = now()
-       WHERE order_id = $1`,
-      [row.id, input.providerRef],
-    );
-    await client.query(
-      `INSERT INTO order_status_history (order_id, from_status, to_status, note)
-       VALUES ($1, 'pending_payment', 'paid', 'Payment verified')`,
-      [row.id],
-    );
-    await convertReservationToSale(client, { orderId: row.id });
+    await db.query(sql`UPDATE orders SET payment_status = 'paid', status = 'paid', updated_at = now() WHERE id = ${row.id}`);
+    await db.query(sql`
+      UPDATE payments SET status = 'successful', provider_ref = ${input.providerRef}, updated_at = now()
+       WHERE order_id = ${row.id}
+    `);
+    await db.query(sql`
+      INSERT INTO order_status_history (order_id, from_status, to_status, note)
+       VALUES (${row.id}, 'pending_payment', 'paid', 'Payment verified')
+    `);
+    await convertReservationToSale(db, { orderId: row.id });
   });
 }
 
@@ -305,33 +259,26 @@ export async function recordManualPayment(input: {
   actorUserId: string;
   note: string;
 }): Promise<void> {
-  await withTransaction(async (client) => {
-    const order = await client.query<{
+  await withTransaction(async (db) => {
+    const order = await db.query<{
       id: string;
       payment_status: string;
       public_ref: string;
       total: string;
-    }>(`SELECT id, payment_status, public_ref, total::text FROM orders WHERE id = $1 FOR UPDATE`, [
-      input.orderId,
-    ]);
+    }>(sql`SELECT id, payment_status, public_ref, total::text FROM orders WHERE id = ${input.orderId} FOR UPDATE`);
     const row = order.rows[0];
     if (!row) throw new Error("Order not found");
     if (row.payment_status === "paid") return;
-    await client.query(
-      `UPDATE orders SET payment_status = 'paid', status = 'paid', updated_at = now() WHERE id = $1`,
-      [row.id],
-    );
-    await client.query(
-      `INSERT INTO payments (order_id, provider, provider_ref, amount, status)
-       VALUES ($1, 'manual', $2, $3, 'successful')`,
-      [row.id, input.providerRef, row.total],
-    );
-    await client.query(
-      `INSERT INTO order_status_history (order_id, from_status, to_status, actor_user_id, note)
-       VALUES ($1, 'pending_payment', 'paid', $2, $3)`,
-      [row.id, input.actorUserId, input.note],
-    );
-    await convertReservationToSale(client, { orderId: row.id });
+    await db.query(sql`UPDATE orders SET payment_status = 'paid', status = 'paid', updated_at = now() WHERE id = ${row.id}`);
+    await db.query(sql`
+      INSERT INTO payments (order_id, provider, provider_ref, amount, status)
+       VALUES (${row.id}, 'manual', ${input.providerRef}, ${row.total}, 'successful')
+    `);
+    await db.query(sql`
+      INSERT INTO order_status_history (order_id, from_status, to_status, actor_user_id, note)
+       VALUES (${row.id}, 'pending_payment', 'paid', ${input.actorUserId}, ${input.note})
+    `);
+    await convertReservationToSale(db, { orderId: row.id });
     await writeAuditLog(
       {
         actorUserId: input.actorUserId,
@@ -340,31 +287,28 @@ export async function recordManualPayment(input: {
         entityId: row.id,
         metadata: { providerRef: input.providerRef },
       },
-      client,
+      db,
     );
   });
 }
 
 export async function cancelUnpaidOrder(orderId: string, actorUserId: string | null): Promise<void> {
-  await withTransaction(async (client) => {
-    const order = await client.query<{ payment_status: string; status: string }>(
-      `SELECT payment_status, status FROM orders WHERE id = $1 FOR UPDATE`,
-      [orderId],
+  await withTransaction(async (db) => {
+    const order = await db.query<{ payment_status: string; status: string }>(
+      sql`SELECT payment_status, status FROM orders WHERE id = ${orderId} FOR UPDATE`,
     );
     const row = order.rows[0];
     if (!row) throw new Error("Order not found");
     if (row.payment_status === "paid") {
       throw new Error("Paid orders cannot be cancelled this way");
     }
-    await client.query(
-      `UPDATE orders SET status = 'cancelled', payment_status = 'failed', updated_at = now() WHERE id = $1`,
-      [orderId],
+    await db.query(
+      sql`UPDATE orders SET status = 'cancelled', payment_status = 'failed', updated_at = now() WHERE id = ${orderId}`,
     );
-    await client.query(
-      `INSERT INTO order_status_history (order_id, from_status, to_status, actor_user_id, note)
-       VALUES ($1, $2, 'cancelled', $3, 'Cancelled')`,
-      [orderId, row.status, actorUserId],
-    );
-    await releaseReservation(client, { orderId });
+    await db.query(sql`
+      INSERT INTO order_status_history (order_id, from_status, to_status, actor_user_id, note)
+       VALUES (${orderId}, ${row.status}, 'cancelled', ${actorUserId}, 'Cancelled')
+    `);
+    await releaseReservation(db, { orderId });
   });
 }

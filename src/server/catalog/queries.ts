@@ -1,5 +1,5 @@
 import { query } from "@/server/db/pool";
-import { LIKE_ESCAPE_SQL, likeContains } from "@/server/db/sql";
+import { likeContains, sql, sqlAnd } from "@/server/db/sql";
 import type { Category, ProductCard, ProductColorOption, ProductDetail, ProductImage, ProductVariant } from "@/server/catalog/types";
 import { filterDemoProducts, getDemoProduct } from "@/content/demo-catalog";
 import { colorsFromVariants, normalizeHex } from "@/lib/product-color";
@@ -27,12 +27,12 @@ export async function listCategories(activeOnly = true): Promise<Category[]> {
     sort_order: number;
     is_active: boolean;
     parent_id: string | null;
-  }>(
-    `SELECT id, slug, name, description, image_url, sort_order, is_active, parent_id
+  }>(sql`
+    SELECT id, slug, name, description, image_url, sort_order, is_active, parent_id
      FROM categories
-     ${activeOnly ? "WHERE is_active = TRUE" : ""}
-     ORDER BY sort_order, name`,
-  );
+     ${activeOnly ? sql`WHERE is_active = TRUE` : sql``}
+     ORDER BY sort_order, name
+  `);
   const mapped = result.rows.map((row) => ({
     id: row.id,
     slug: row.slug,
@@ -104,64 +104,56 @@ export async function searchProducts(filters: ShopFilters): Promise<{
   }
   const page = Math.max(1, filters.page ?? 1);
   const pageSize = Math.min(48, Math.max(1, filters.pageSize ?? 12));
-  const where: string[] = ["p.archived_at IS NULL"];
-  const params: unknown[] = [];
-  const add = (value: unknown) => {
-    params.push(value);
-    return `$${params.length}`;
-  };
+  const where = [sql`p.archived_at IS NULL`];
 
   if (!filters.includeInactive) {
-    where.push("p.is_active = TRUE");
+    where.push(sql`p.is_active = TRUE`);
   }
   if (filters.q) {
-    const p = add(likeContains(filters.q));
+    const pattern = likeContains(filters.q);
     where.push(
-      `(p.name ILIKE ${p} ESCAPE ${LIKE_ESCAPE_SQL} OR p.sku ILIKE ${p} ESCAPE ${LIKE_ESCAPE_SQL} OR p.description ILIKE ${p} ESCAPE ${LIKE_ESCAPE_SQL})`,
+      sql`(p.name ILIKE ${pattern} ESCAPE E'\\\\' OR p.sku ILIKE ${pattern} ESCAPE E'\\\\' OR p.description ILIKE ${pattern} ESCAPE E'\\\\')`,
     );
   }
   if (filters.category) {
-    where.push(`c.slug = ${add(resolveCategorySlug(filters.category))}`);
+    where.push(sql`c.slug = ${resolveCategorySlug(filters.category)}`);
   }
   if (filters.minPrice != null) {
-    where.push(`COALESCE(p.sale_price, p.price) >= ${add(filters.minPrice)}`);
+    where.push(sql`COALESCE(p.sale_price, p.price) >= ${filters.minPrice}`);
   }
   if (filters.maxPrice != null) {
-    where.push(`COALESCE(p.sale_price, p.price) <= ${add(filters.maxPrice)}`);
+    where.push(sql`COALESCE(p.sale_price, p.price) <= ${filters.maxPrice}`);
   }
-  if (filters.featured) where.push("p.is_featured = TRUE");
-  if (filters.isNew) where.push("p.is_new = TRUE");
-  if (filters.onSale) where.push("p.sale_price IS NOT NULL AND p.sale_price < p.price");
+  if (filters.featured) where.push(sql`p.is_featured = TRUE`);
+  if (filters.isNew) where.push(sql`p.is_new = TRUE`);
+  if (filters.onSale) where.push(sql`p.sale_price IS NOT NULL AND p.sale_price < p.price`);
   if (filters.inStock) {
-    where.push(`COALESCE((
+    where.push(sql`COALESCE((
       SELECT SUM(GREATEST(i.on_hand - i.reserved, 0)) FROM inventory i WHERE i.product_id = p.id
     ), 0) > 0`);
   }
 
   const order =
     filters.sort === "price_asc"
-      ? "COALESCE(p.sale_price, p.price) ASC"
+      ? sql`COALESCE(p.sale_price, p.price) ASC`
       : filters.sort === "price_desc"
-        ? "COALESCE(p.sale_price, p.price) DESC"
+        ? sql`COALESCE(p.sale_price, p.price) DESC`
         : filters.sort === "featured"
-          ? "p.is_featured DESC, p.created_at DESC"
+          ? sql`p.is_featured DESC, p.created_at DESC`
           : filters.onSale
-            ? "(p.price - p.sale_price) / NULLIF(p.price, 0) DESC, p.updated_at DESC"
-            : "p.created_at DESC";
+            ? sql`(p.price - p.sale_price) / NULLIF(p.price, 0) DESC, p.updated_at DESC`
+            : sql`p.created_at DESC`;
 
-  const whereSql = where.join(" AND ");
-  const count = await query<{ count: string }>(
-    `SELECT count(*)::text AS count
+  const whereSql = sqlAnd(where);
+  const count = await query<{ count: string }>(sql`
+    SELECT count(*)::text AS count
      FROM products p
      LEFT JOIN categories c ON c.id = p.category_id
-     WHERE ${whereSql}`,
-    params,
-  );
+     WHERE ${whereSql}
+  `);
   const total = Number(count.rows[0]?.count ?? 0);
   if (total === 0) return demoSearch(filters);
   const offset = (page - 1) * pageSize;
-  const limitP = add(pageSize);
-  const offsetP = add(offset);
 
   const result = await query<{
     id: string;
@@ -184,8 +176,8 @@ export async function searchProducts(filters: ShopFilters): Promise<{
     colors: { variantId: string; name: string; hex: string }[] | string;
     review_count: string;
     rating_average: string | null;
-  }>(
-    `SELECT p.id, p.slug, p.name, p.sku, p.price::text, p.sale_price::text, p.currency,
+  }>(sql`
+    SELECT p.id, p.slug, p.name, p.sku, p.price::text, p.sale_price::text, p.currency,
             p.is_new, p.is_featured, p.is_active, c.slug AS category_slug, c.name AS category_name,
             img.id AS image_id, img.url AS image_url, img.alt AS image_alt, img.storage_key,
             COALESCE((
@@ -216,9 +208,8 @@ export async function searchProducts(filters: ShopFilters): Promise<{
      ) img ON TRUE
      WHERE ${whereSql}
      ORDER BY ${order}
-     LIMIT ${limitP} OFFSET ${offsetP}`,
-    params,
-  );
+     LIMIT ${pageSize} OFFSET ${offset}
+  `);
 
   return {
     total,
@@ -278,8 +269,8 @@ export async function getProductBySlug(slug: string, opts?: { includeInactive?: 
     low_stock_threshold: number;
     review_count: string;
     rating_average: string | null;
-  }>(
-    `SELECT p.id, p.slug, p.name, p.sku, p.description, p.specifications,
+  }>(sql`
+    SELECT p.id, p.slug, p.name, p.sku, p.description, p.specifications,
             p.price::text AS price, p.sale_price::text AS sale_price, p.currency,
             p.is_new, p.is_featured, p.is_active, p.has_variants,
             p.seo_title, p.seo_description, p.category_id, p.low_stock_threshold,
@@ -292,10 +283,9 @@ export async function getProductBySlug(slug: string, opts?: { includeInactive?: 
              WHERE r.product_id = p.id AND r.is_published = TRUE) AS rating_average
      FROM products p
      LEFT JOIN categories c ON c.id = p.category_id
-     WHERE p.slug = $1 AND p.archived_at IS NULL
-       ${opts?.includeInactive ? "" : "AND p.is_active = TRUE"}`,
-    [slug],
-  );
+     WHERE p.slug = ${slug} AND p.archived_at IS NULL
+       ${opts?.includeInactive ? sql`` : sql`AND p.is_active = TRUE`}
+  `);
   const row = result.rows[0];
   if (!row) return getDemoProduct(slug);
 
@@ -305,11 +295,10 @@ export async function getProductBySlug(slug: string, opts?: { includeInactive?: 
     alt: string;
     is_primary: boolean;
     storage_key: string;
-  }>(
-    `SELECT id, url, alt, is_primary, storage_key FROM product_images
-     WHERE product_id = $1 ORDER BY is_primary DESC, sort_order ASC`,
-    [row.id],
-  );
+  }>(sql`
+    SELECT id, url, alt, is_primary, storage_key FROM product_images
+     WHERE product_id = ${row.id} ORDER BY is_primary DESC, sort_order ASC
+  `);
 
   const variants = await query<{
     id: string;
@@ -320,21 +309,19 @@ export async function getProductBySlug(slug: string, opts?: { includeInactive?: 
     is_active: boolean;
     on_hand: string | null;
     reserved: string | null;
-  }>(
-    `SELECT v.id, v.sku, v.name, v.attributes, v.price_override::text, v.is_active,
+  }>(sql`
+    SELECT v.id, v.sku, v.name, v.attributes, v.price_override::text, v.is_active,
             i.on_hand::text, i.reserved::text
      FROM product_variants v
      LEFT JOIN inventory i ON i.variant_id = v.id
-     WHERE v.product_id = $1
-     ORDER BY v.name`,
-    [row.id],
-  );
+     WHERE v.product_id = ${row.id}
+     ORDER BY v.name
+  `);
 
-  const inv = await query<{ on_hand: string; reserved: string }>(
-    `SELECT COALESCE(SUM(on_hand),0)::text AS on_hand, COALESCE(SUM(reserved),0)::text AS reserved
-     FROM inventory WHERE product_id = $1`,
-    [row.id],
-  );
+  const inv = await query<{ on_hand: string; reserved: string }>(sql`
+    SELECT COALESCE(SUM(on_hand),0)::text AS on_hand, COALESCE(SUM(reserved),0)::text AS reserved
+     FROM inventory WHERE product_id = ${row.id}
+  `);
 
   const imageList: ProductImage[] = images.rows.map((img) => ({
     id: img.id,
@@ -404,7 +391,7 @@ export async function relatedProducts(
 }
 
 export async function getProductById(id: string): Promise<ProductDetail | null> {
-  const slug = await query<{ slug: string }>(`SELECT slug FROM products WHERE id = $1`, [id]);
+  const slug = await query<{ slug: string }>(sql`SELECT slug FROM products WHERE id = ${id}`);
   if (!slug.rows[0]) return null;
   return getProductBySlug(slug.rows[0].slug, { includeInactive: true });
 }

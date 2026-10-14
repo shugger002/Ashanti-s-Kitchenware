@@ -1,4 +1,5 @@
 import { query } from "@/server/db/pool";
+import { sql } from "@/server/db/sql";
 
 const WINDOW_MINUTES = 15;
 const MAX_FAILURES = 8;
@@ -10,8 +11,7 @@ export async function recordLoginAttempt(input: {
   ip: string | null;
 }): Promise<void> {
   await query(
-    `INSERT INTO login_attempts (identifier, success, ip) VALUES ($1, $2, $3)`,
-    [input.identifier.toLowerCase(), input.success, input.ip],
+    sql`INSERT INTO login_attempts (identifier, success, ip) VALUES (${input.identifier.toLowerCase()}, ${input.success}, ${input.ip})`,
   );
 }
 
@@ -20,14 +20,13 @@ export async function tooManyAttempts(
   max: number,
   windowMinutes = WINDOW_MINUTES,
 ): Promise<boolean> {
-  const result = await query<{ count: string }>(
-    `SELECT count(*)::text AS count
+  const result = await query<{ count: string }>(sql`
+    SELECT count(*)::text AS count
      FROM login_attempts
-     WHERE identifier = $1
+     WHERE identifier = ${identifier.toLowerCase()}
        AND success = FALSE
-       AND attempted_at > now() - ($2 || ' minutes')::interval`,
-    [identifier.toLowerCase(), String(windowMinutes)],
-  );
+       AND attempted_at > now() - (${windowMinutes} * interval '1 minute')
+  `);
   return Number(result.rows[0]?.count ?? 0) >= max;
 }
 

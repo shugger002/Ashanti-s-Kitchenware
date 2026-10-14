@@ -1,4 +1,5 @@
 import { query } from "@/server/db/pool";
+import { sql } from "@/server/db/sql";
 import { writeAuditLog } from "@/server/auth/audit";
 
 export type Coupon = {
@@ -16,12 +17,12 @@ export type Coupon = {
 };
 
 export async function listCoupons() {
-  const result = await query<Coupon>(
-    `SELECT id, code, description, discount_type, discount_value::text, max_discount::text,
+  const result = await query<Coupon>(sql`
+    SELECT id, code, description, discount_type, discount_value::text, max_discount::text,
             min_spend::text, max_uses, uses, is_active, created_at
      FROM coupons
-     ORDER BY created_at DESC`,
-  );
+     ORDER BY created_at DESC
+  `);
   return result.rows;
 }
 
@@ -38,20 +39,11 @@ export async function createCoupon(
   actorId: string,
 ) {
   const code = input.code.trim().toUpperCase();
-  const result = await query<{ id: string }>(
-    `INSERT INTO coupons (code, description, discount_type, discount_value, max_discount, min_spend, max_uses)
-     VALUES ($1,$2,$3,$4,$5,$6,$7)
-     RETURNING id`,
-    [
-      code,
-      input.description.trim(),
-      input.discountType,
-      input.discountValue,
-      input.maxDiscount,
-      input.minSpend,
-      input.maxUses,
-    ],
-  );
+  const result = await query<{ id: string }>(sql`
+    INSERT INTO coupons (code, description, discount_type, discount_value, max_discount, min_spend, max_uses)
+     VALUES (${code},${input.description.trim()},${input.discountType},${input.discountValue},${input.maxDiscount},${input.minSpend},${input.maxUses})
+     RETURNING id
+  `);
   const id = result.rows[0]?.id;
   await writeAuditLog({
     actorUserId: actorId,
@@ -63,7 +55,7 @@ export async function createCoupon(
 }
 
 export async function setCouponActive(id: string, isActive: boolean, actorId: string) {
-  await query(`UPDATE coupons SET is_active = $2 WHERE id = $1`, [id, isActive]);
+  await query(sql`UPDATE coupons SET is_active = ${isActive} WHERE id = ${id}`);
   await writeAuditLog({
     actorUserId: actorId,
     action: isActive ? "coupon.activate" : "coupon.deactivate",

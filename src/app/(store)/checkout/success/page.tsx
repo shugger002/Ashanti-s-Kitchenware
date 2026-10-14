@@ -2,6 +2,7 @@ import Link from "next/link";
 import { CheckoutShell } from "@/components/store/checkout-shell";
 import { pageMeta } from "@/lib/seo";
 import { query } from "@/server/db/pool";
+import { sql } from "@/server/db/sql";
 
 export const metadata = pageMeta({
   title: "Order received",
@@ -18,8 +19,7 @@ export default async function SuccessPage({
   let paymentStatus = "pending";
   if (ref) {
     const result = await query<{ payment_status: string }>(
-      `SELECT payment_status FROM orders WHERE public_ref = $1`,
-      [ref],
+      sql`SELECT payment_status FROM orders WHERE public_ref = ${ref}`,
     );
     paymentStatus = result.rows[0]?.payment_status ?? "pending";
   }

@@ -1,4 +1,5 @@
 import { query } from "@/server/db/pool";
+import { sql } from "@/server/db/sql";
 import { writeAuditLog } from "@/server/auth/audit";
 
 export type ProductReview = {
@@ -18,14 +19,13 @@ export async function listPublishedReviews(productId: string): Promise<ProductRe
       body: string;
       rating: number;
       created_at: Date;
-    }>(
-      `SELECT id, display_name, body, rating, created_at
+    }>(sql`
+      SELECT id, display_name, body, rating, created_at
        FROM product_reviews
-       WHERE product_id = $1 AND is_published = TRUE
+       WHERE product_id = ${productId} AND is_published = TRUE
        ORDER BY created_at DESC
-       LIMIT 50`,
-      [productId],
-    );
+       LIMIT 50
+    `);
     return result.rows.map((row) => ({
       id: row.id,
       displayName: row.display_name,
@@ -46,14 +46,13 @@ export async function listProductReviewsForAdmin(productId: string): Promise<Pro
     rating: number;
     created_at: Date;
     is_published: boolean;
-  }>(
-    `SELECT id, display_name, body, rating, created_at, is_published
+  }>(sql`
+    SELECT id, display_name, body, rating, created_at, is_published
      FROM product_reviews
-     WHERE product_id = $1
+     WHERE product_id = ${productId}
      ORDER BY created_at DESC
-     LIMIT 100`,
-    [productId],
-  );
+     LIMIT 100
+  `);
   return result.rows.map((row) => ({
     id: row.id,
     displayName: row.display_name,
@@ -81,11 +80,10 @@ export async function submitReview(input: {
   if (body.length < 10) return { ok: false, error: "Write a short review of at least 10 characters." };
   if (rating < 1 || rating > 5) return { ok: false, error: "Choose a rating from 1 to 5." };
   try {
-    await query(
-      `INSERT INTO product_reviews (product_id, display_name, body, rating, is_published)
-       VALUES ($1, $2, $3, $4, FALSE)`,
-      [input.productId, name.slice(0, 80), body.slice(0, 2000), rating],
-    );
+    await query(sql`
+      INSERT INTO product_reviews (product_id, display_name, body, rating, is_published)
+       VALUES (${input.productId}, ${name.slice(0, 80)}, ${body.slice(0, 2000)}, ${rating}, FALSE)
+    `);
     return { ok: true };
   } catch {
     return { ok: false, error: "Reviews are available after this product is saved in the catalogue." };
@@ -97,7 +95,7 @@ export async function setReviewPublished(input: {
   published: boolean;
   actorUserId: string;
 }): Promise<void> {
-  await query(`UPDATE product_reviews SET is_published = $2 WHERE id = $1`, [input.reviewId, input.published]);
+  await query(sql`UPDATE product_reviews SET is_published = ${input.published} WHERE id = ${input.reviewId}`);
   await writeAuditLog({
     actorUserId: input.actorUserId,
     action: input.published ? "review.publish" : "review.unpublish",

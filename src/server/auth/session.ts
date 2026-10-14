@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import { query } from "@/server/db/pool";
+import { sql } from "@/server/db/sql";
 import {
   getSessionCookieName,
   getSessionTtlDays,
@@ -24,29 +25,27 @@ export async function createSession(input: {
   const token = generateOpaqueToken();
   const tokenHash = hashToken(token);
   const days = getSessionTtlDays();
-  await query(
-    `INSERT INTO sessions (user_id, token_hash, expires_at, ip, user_agent)
-     VALUES ($1, $2, now() + ($3 || ' days')::interval, $4, $5)`,
-    [input.userId, tokenHash, String(days), input.ip, input.userAgent],
-  );
+  await query(sql`
+    INSERT INTO sessions (user_id, token_hash, expires_at, ip, user_agent)
+     VALUES (${input.userId}, ${tokenHash}, now() + (${String(days)} || ' days')::interval, ${input.ip}, ${input.userAgent})
+  `);
   return token;
 }
 
 export async function destroySession(token: string): Promise<void> {
-  await query(`DELETE FROM sessions WHERE token_hash = $1`, [hashToken(token)]);
+  await query(sql`DELETE FROM sessions WHERE token_hash = ${hashToken(token)}`);
 }
 
 export async function getUserFromToken(token: string): Promise<AdminUser | null> {
-  const result = await query<SessionRow>(
-    `SELECT u.id AS user_id, u.email, u.full_name, u.is_active,
+  const result = await query<SessionRow>(sql`
+    SELECT u.id AS user_id, u.email, u.full_name, u.is_active,
             array_remove(array_agg(ur.role_slug), NULL) AS roles
      FROM sessions s
      JOIN users u ON u.id = s.user_id
      LEFT JOIN user_roles ur ON ur.user_id = u.id
-     WHERE s.token_hash = $1 AND s.expires_at > now()
-     GROUP BY u.id`,
-    [hashToken(token)],
-  );
+     WHERE s.token_hash = ${hashToken(token)} AND s.expires_at > now()
+     GROUP BY u.id
+  `);
   const row = result.rows[0];
   if (!row || !row.is_active) return null;
   return {

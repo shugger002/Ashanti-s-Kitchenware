@@ -1,4 +1,5 @@
 import { query } from "@/server/db/pool";
+import { sql } from "@/server/db/sql";
 import { hashPassword, verifyPassword } from "@/server/auth/password";
 import { isLoginBlocked, recordAuthFailure, recordLoginAttempt } from "@/server/auth/rate-limit";
 import { createSession } from "@/server/auth/session";
@@ -20,15 +21,14 @@ export async function authenticateAdmin(input: {
     id: string;
     password_hash: string;
     is_active: boolean;
-  }>(
-    `SELECT u.id, u.password_hash, u.is_active
+  }>(sql`
+    SELECT u.id, u.password_hash, u.is_active
      FROM users u
      JOIN user_roles ur ON ur.user_id = u.id
-     WHERE lower(u.email) = $1
+     WHERE lower(u.email) = ${email}
      GROUP BY u.id
-     HAVING count(ur.role_slug) > 0`,
-    [email],
-  );
+     HAVING count(ur.role_slug) > 0
+  `);
   const user = result.rows[0];
   if (!user || !user.is_active) {
     await recordAuthFailure(email, input.ip);
@@ -66,15 +66,14 @@ export async function createAdminUser(input: {
     throw new Error("Password must be at least 12 characters");
   }
   const passwordHash = await hashPassword(input.password);
-  const inserted = await query<{ id: string }>(
-    `INSERT INTO users (email, password_hash, full_name)
-     VALUES ($1, $2, $3)
-     RETURNING id`,
-    [input.email.trim().toLowerCase(), passwordHash, input.fullName.trim()],
-  );
+  const inserted = await query<{ id: string }>(sql`
+    INSERT INTO users (email, password_hash, full_name)
+     VALUES (${input.email.trim().toLowerCase()}, ${passwordHash}, ${input.fullName.trim()})
+     RETURNING id
+  `);
   const id = inserted.rows[0].id;
   for (const role of input.roles) {
-    await query(`INSERT INTO user_roles (user_id, role_slug) VALUES ($1, $2)`, [id, role]);
+    await query(sql`INSERT INTO user_roles (user_id, role_slug) VALUES (${id}, ${role})`);
   }
   return id;
 }

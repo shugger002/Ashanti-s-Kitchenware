@@ -1,5 +1,5 @@
-import { Pool, type PoolClient, type QueryResult, type QueryResultRow } from "pg";
-import { assertSafeQueryText } from "@/server/db/sql";
+import { Pool, type QueryResult, type QueryResultRow } from "pg";
+import { assertSafeQueryText, type SqlQuery } from "@/server/db/sql";
 
 declare global {
   var __ashantisaPool: Pool | undefined;
@@ -30,39 +30,36 @@ export function getPool(): Pool {
   return globalThis.__ashantisaPool;
 }
 
-export async function query<T extends QueryResultRow = QueryResultRow>(
-  text: string,
-  params: unknown[] = [],
+export type Db = {
+  query<T extends QueryResultRow = QueryResultRow>(q: SqlQuery): Promise<QueryResult<T>>;
+};
+
+async function runQuery<T extends QueryResultRow>(
+  exec: (text: string, values: unknown[]) => Promise<QueryResult<T>>,
+  q: SqlQuery,
 ): Promise<QueryResult<T>> {
-  assertSafeQueryText(text);
-  return getPool().query<T>(text, params);
+  assertSafeQueryText(q.text);
+  return exec(q.text, q.values);
 }
 
-export async function withTransaction<T>(
-  fn: (client: PoolClient) => Promise<T>,
-): Promise<T> {
+export async function query<T extends QueryResultRow = QueryResultRow>(q: SqlQuery): Promise<QueryResult<T>> {
+  return runQuery((text, values) => getPool().query<T>(text, values), q);
+}
+
+export async function withTransaction<T>(fn: (db: Db) => Promise<T>): Promise<T> {
   const client = await getPool().connect();
-  const nativeQuery = client.query;
-  client.query = ((config: unknown, values?: unknown, callback?: unknown) => {
-    const text =
-      typeof config === "string"
-        ? config
-        : config && typeof config === "object" && "text" in config
-          ? String((config as { text: string }).text)
-          : "";
-    if (text) assertSafeQueryText(text);
-    return nativeQuery.call(client, config as never, values as never, callback as never);
-  }) as PoolClient["query"];
+  const db: Db = {
+    query: (q) => runQuery((text, values) => client.query(text, values), q),
+  };
   try {
     await client.query("BEGIN");
-    const result = await fn(client);
+    const result = await fn(db);
     await client.query("COMMIT");
     return result;
   } catch (error) {
     await client.query("ROLLBACK");
     throw error;
   } finally {
-    client.query = nativeQuery;
     client.release();
   }
 }

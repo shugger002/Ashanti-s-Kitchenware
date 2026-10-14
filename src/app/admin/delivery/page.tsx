@@ -2,6 +2,7 @@ import Link from "next/link";
 import { requirePermission } from "@/server/auth/authorize";
 import { getStorefrontConfig, updateSetting } from "@/server/store/settings";
 import { query } from "@/server/db/pool";
+import { sql } from "@/server/db/sql";
 import { listAllShippingRates, setShippingRateActive } from "@/server/shipping/service";
 import { formatGhs } from "@/lib/money";
 import { revalidatePath } from "next/cache";
@@ -29,15 +30,12 @@ async function saveFulfillment(formData: FormData) {
 async function addRate(formData: FormData) {
   "use server";
   await requirePermission("settings.write");
-  const zone = await query<{ id: string }>(
-    `INSERT INTO shipping_zones (name, region_match, is_active) VALUES ($1, $2, TRUE) RETURNING id`,
-    [String(formData.get("zoneName")), String(formData.get("regionMatch") ?? "")],
-  );
-  await query(`INSERT INTO shipping_rates (zone_id, name, amount, is_active) VALUES ($1, $2, $3, TRUE)`, [
-    zone.rows[0].id,
-    String(formData.get("rateName")),
-    Number(formData.get("amount")),
-  ]);
+  const zone = await query<{ id: string }>(sql`
+    INSERT INTO shipping_zones (name, region_match, is_active) VALUES (${String(formData.get("zoneName"))}, ${String(formData.get("regionMatch") ?? "")}, TRUE) RETURNING id
+  `);
+  await query(sql`
+    INSERT INTO shipping_rates (zone_id, name, amount, is_active) VALUES (${zone.rows[0].id}, ${String(formData.get("rateName"))}, ${Number(formData.get("amount"))}, TRUE)
+  `);
   revalidatePath("/admin/delivery");
 }
 

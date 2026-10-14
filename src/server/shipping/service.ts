@@ -1,4 +1,5 @@
 import { query } from "@/server/db/pool";
+import { sql } from "@/server/db/sql";
 
 export type ShippingRate = {
   id: string;
@@ -25,13 +26,13 @@ export async function listAllShippingRates(): Promise<ShippingRateAdmin[]> {
     zone_name: string;
     region_match: string | null;
     zone_active: boolean;
-  }>(
-    `SELECT r.id, r.name, r.amount::text, r.is_active, z.id AS zone_id,
+  }>(sql`
+    SELECT r.id, r.name, r.amount::text, r.is_active, z.id AS zone_id,
             z.name AS zone_name, z.region_match, z.is_active AS zone_active
      FROM shipping_rates r
      JOIN shipping_zones z ON z.id = r.zone_id
-     ORDER BY z.name, r.amount`,
-  );
+     ORDER BY z.name, r.amount
+  `);
   return result.rows.map((row) => ({
     id: row.id,
     name: row.name,
@@ -48,7 +49,7 @@ export async function listAllShippingRates(): Promise<ShippingRateAdmin[]> {
 }
 
 export async function setShippingRateActive(rateId: string, isActive: boolean): Promise<void> {
-  await query(`UPDATE shipping_rates SET is_active = $2 WHERE id = $1`, [rateId, isActive]);
+  await query(sql`UPDATE shipping_rates SET is_active = ${isActive} WHERE id = ${rateId}`);
 }
 
 export async function listActiveShippingRates(): Promise<ShippingRate[]> {
@@ -59,13 +60,13 @@ export async function listActiveShippingRates(): Promise<ShippingRate[]> {
       amount: string;
       zone_name: string;
       is_active: boolean;
-    }>(
-      `SELECT r.id, r.name, r.amount::text, z.name AS zone_name, r.is_active
+    }>(sql`
+      SELECT r.id, r.name, r.amount::text, z.name AS zone_name, r.is_active
        FROM shipping_rates r
        JOIN shipping_zones z ON z.id = r.zone_id
        WHERE r.is_active = TRUE AND z.is_active = TRUE
-       ORDER BY r.amount ASC`,
-    );
+       ORDER BY r.amount ASC
+    `);
     return result.rows.map((row) => ({
       id: row.id,
       name: row.name,

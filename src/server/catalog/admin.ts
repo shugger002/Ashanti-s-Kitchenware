@@ -1,5 +1,5 @@
-import type { PoolClient } from "pg";
-import { query, withTransaction } from "@/server/db/pool";
+import { query, withTransaction, type Db } from "@/server/db/pool";
+import { sql } from "@/server/db/sql";
 import { slugify } from "@/lib/utils";
 import { writeAuditLog } from "@/server/auth/audit";
 import { parseMoney } from "@/lib/money";
@@ -29,82 +29,49 @@ export async function upsertProduct(input: ProductInput, actorId: string, existi
   const price = parseMoney(input.price);
   const salePrice = input.salePrice == null ? null : parseMoney(input.salePrice);
 
-  return withTransaction(async (client) => {
+  return withTransaction(async (db) => {
     let id = existingId;
     if (id) {
-      await client.query(
-        `UPDATE products SET
-           name=$2, sku=$3, slug=$4, description=$5, category_id=$6, price=$7, sale_price=$8,
-           specifications=$9::jsonb, is_active=$10, is_featured=$11, is_new=$12,
-           low_stock_threshold=$13, seo_title=$14, seo_description=$15, updated_at=now()
-         WHERE id=$1 AND archived_at IS NULL`,
-        [
-          id,
-          input.name,
-          input.sku.trim(),
-          slug,
-          input.description,
-          input.categoryId,
-          price,
-          salePrice,
-          JSON.stringify(input.specifications),
-          input.isActive,
-          input.isFeatured,
-          input.isNew,
-          input.lowStockThreshold,
-          input.seoTitle,
-          input.seoDescription,
-        ],
-      );
+      await db.query(sql`
+        UPDATE products SET
+           name=${input.name}, sku=${input.sku.trim()}, slug=${slug}, description=${input.description},
+           category_id=${input.categoryId}, price=${price}, sale_price=${salePrice},
+           specifications=${JSON.stringify(input.specifications)}::jsonb, is_active=${input.isActive},
+           is_featured=${input.isFeatured}, is_new=${input.isNew},
+           low_stock_threshold=${input.lowStockThreshold}, seo_title=${input.seoTitle},
+           seo_description=${input.seoDescription}, updated_at=now()
+         WHERE id=${id} AND archived_at IS NULL
+      `);
     } else {
-      const inserted = await client.query<{ id: string }>(
-        `INSERT INTO products (
+      const inserted = await db.query<{ id: string }>(sql`
+        INSERT INTO products (
            name, sku, slug, description, category_id, price, sale_price, specifications,
            is_active, is_featured, is_new, low_stock_threshold, seo_title, seo_description
-         ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8::jsonb,$9,$10,$11,$12,$13,$14)
-         RETURNING id`,
-        [
-          input.name,
-          input.sku.trim(),
-          slug,
-          input.description,
-          input.categoryId,
-          price,
-          salePrice,
-          JSON.stringify(input.specifications),
-          input.isActive,
-          input.isFeatured,
-          input.isNew,
-          input.lowStockThreshold,
-          input.seoTitle,
-          input.seoDescription,
-        ],
-      );
+         ) VALUES (${input.name},${input.sku.trim()},${slug},${input.description},${input.categoryId},${price},${salePrice},${JSON.stringify(input.specifications)}::jsonb,${input.isActive},${input.isFeatured},${input.isNew},${input.lowStockThreshold},${input.seoTitle},${input.seoDescription})
+         RETURNING id
+      `);
       id = inserted.rows[0].id;
       const hasColours = (input.colors?.filter((row) => row.name.trim()).length ?? 0) > 0;
       const stock = Math.max(0, input.initialStock ?? 0);
       if (!hasColours) {
-      await client.query(
-        `INSERT INTO inventory (product_id, variant_id, on_hand, reserved, low_stock_threshold)
-         VALUES ($1, NULL, $2, 0, $3)`,
-        [id, stock, input.lowStockThreshold],
-      );
-      if (stock > 0) {
-        const inv = await client.query<{ id: string }>(
-          `SELECT id FROM inventory WHERE product_id = $1 AND variant_id IS NULL`,
-          [id],
-        );
-        await client.query(
-          `INSERT INTO inventory_movements
-             (inventory_id, delta_on_hand, reason, source, actor_user_id, notes)
-           VALUES ($1, $2, 'Initial stock', 'restock', $3, 'Product created')`,
-          [inv.rows[0].id, stock, actorId],
-        );
-      }
+        await db.query(sql`
+          INSERT INTO inventory (product_id, variant_id, on_hand, reserved, low_stock_threshold)
+           VALUES (${id}, NULL, ${stock}, 0, ${input.lowStockThreshold})
+        `);
+        if (stock > 0) {
+          const inv = await db.query<{ id: string }>(
+            sql`SELECT id FROM inventory WHERE product_id = ${id} AND variant_id IS NULL`,
+          );
+          await db.query(sql`
+            INSERT INTO inventory_movements
+               (inventory_id, delta_on_hand, reason, source, actor_user_id, notes)
+             VALUES (${inv.rows[0].id}, ${stock}, 'Initial stock', 'restock', ${actorId}, 'Product created')
+          `);
+        }
       }
     }
     if (input.colors) {
-      await syncProductColours(client, id!, input.sku.trim(), input.colors, input.lowStockThreshold);
+      await syncProductColours(db, id!, input.sku.trim(), input.colors, input.lowStockThreshold);
     }
     await writeAuditLog(
       {
@@ -113,14 +80,14 @@ export async function upsertProduct(input: ProductInput, actorId: string, existi
         entityType: "product",
         entityId: id,
       },
-      client,
+      db,
     );
     return id!;
   });
 }
 
 async function syncProductColours(
-  client: PoolClient,
+  db: Db,
   productId: string,
   productSku: string,
   colors: { id?: string; name: string; hex: string; stock: number }[],
@@ -137,66 +104,55 @@ async function syncProductColours(
     let variantId = row.id?.trim() || "";
 
     if (variantId) {
-      const updated = await client.query(
-        `UPDATE product_variants
-         SET name = $2, attributes = $3::jsonb, is_active = TRUE
-         WHERE id = $1 AND product_id = $4
-         RETURNING id`,
-        [variantId, name, attributes, productId],
-      );
+      const updated = await db.query(sql`
+        UPDATE product_variants
+         SET name = ${name}, attributes = ${attributes}::jsonb, is_active = TRUE
+         WHERE id = ${variantId} AND product_id = ${productId}
+         RETURNING id
+      `);
       if (!updated.rows[0]) variantId = "";
     }
 
     if (!variantId) {
       const sku = `${productSku}-${slugify(name)}`.slice(0, 80);
-      const inserted = await client.query<{ id: string }>(
-        `INSERT INTO product_variants (product_id, sku, name, attributes, is_active)
-         VALUES ($1, $2, $3, $4::jsonb, TRUE)
+      const inserted = await db.query<{ id: string }>(sql`
+        INSERT INTO product_variants (product_id, sku, name, attributes, is_active)
+         VALUES (${productId}, ${sku}, ${name}, ${attributes}::jsonb, TRUE)
          ON CONFLICT (sku) DO UPDATE SET name = EXCLUDED.name, attributes = EXCLUDED.attributes, is_active = TRUE
-         RETURNING id`,
-        [productId, sku, name, attributes],
-      );
+         RETURNING id
+      `);
       variantId = inserted.rows[0].id;
     }
 
     keepIds.push(variantId);
-    const existing = await client.query<{ id: string }>(
-      `SELECT id FROM inventory WHERE variant_id = $1`,
-      [variantId],
-    );
+    const existing = await db.query<{ id: string }>(sql`SELECT id FROM inventory WHERE variant_id = ${variantId}`);
     if (existing.rows[0]) {
-      await client.query(
-        `UPDATE inventory SET on_hand = GREATEST($2, reserved), updated_at = now() WHERE variant_id = $1`,
-        [variantId, stock],
+      await db.query(
+        sql`UPDATE inventory SET on_hand = GREATEST(${stock}, reserved), updated_at = now() WHERE variant_id = ${variantId}`,
       );
     } else {
-      await client.query(
-        `INSERT INTO inventory (product_id, variant_id, on_hand, reserved, low_stock_threshold)
-         VALUES ($1, $2, $3, 0, $4)`,
-        [productId, variantId, stock, lowStockThreshold],
-      );
+      await db.query(sql`
+        INSERT INTO inventory (product_id, variant_id, on_hand, reserved, low_stock_threshold)
+         VALUES (${productId}, ${variantId}, ${stock}, 0, ${lowStockThreshold})
+      `);
     }
   }
 
   if (keepIds.length > 0) {
-    await client.query(
-      `DELETE FROM product_variants WHERE product_id = $1 AND NOT (id = ANY($2::uuid[]))`,
-      [productId, keepIds],
+    await db.query(
+      sql`DELETE FROM product_variants WHERE product_id = ${productId} AND NOT (id = ANY(${keepIds}::uuid[]))`,
     );
-    await client.query(`DELETE FROM inventory WHERE product_id = $1 AND variant_id IS NULL`, [productId]);
-    await client.query(`UPDATE products SET has_variants = TRUE, updated_at = now() WHERE id = $1`, [productId]);
+    await db.query(sql`DELETE FROM inventory WHERE product_id = ${productId} AND variant_id IS NULL`);
+    await db.query(sql`UPDATE products SET has_variants = TRUE, updated_at = now() WHERE id = ${productId}`);
   } else {
-    await client.query(`DELETE FROM product_variants WHERE product_id = $1`, [productId]);
-    await client.query(`UPDATE products SET has_variants = FALSE, updated_at = now() WHERE id = $1`, [productId]);
-    const parent = await client.query(`SELECT id FROM inventory WHERE product_id = $1 AND variant_id IS NULL`, [
-      productId,
-    ]);
+    await db.query(sql`DELETE FROM product_variants WHERE product_id = ${productId}`);
+    await db.query(sql`UPDATE products SET has_variants = FALSE, updated_at = now() WHERE id = ${productId}`);
+    const parent = await db.query(sql`SELECT id FROM inventory WHERE product_id = ${productId} AND variant_id IS NULL`);
     if (!parent.rows[0]) {
-      await client.query(
-        `INSERT INTO inventory (product_id, variant_id, on_hand, reserved, low_stock_threshold)
-         VALUES ($1, NULL, 0, 0, $2)`,
-        [productId, lowStockThreshold],
-      );
+      await db.query(sql`
+        INSERT INTO inventory (product_id, variant_id, on_hand, reserved, low_stock_threshold)
+         VALUES (${productId}, NULL, 0, 0, ${lowStockThreshold})
+      `);
     }
   }
 }
@@ -224,7 +180,7 @@ export async function importProductsFromCsv(input: {
   const skipped: string[] = [];
   const errors: string[] = [];
   const categories = await query<{ id: string; name: string; slug: string }>(
-    `SELECT id, name, slug FROM categories`,
+    sql`SELECT id, name, slug FROM categories`,
   );
   const categoryByKey = new Map<string, string>();
   for (const row of categories.rows) {
@@ -234,8 +190,7 @@ export async function importProductsFromCsv(input: {
 
   for (const row of input.rows) {
     const existing = await query<{ id: string }>(
-      `SELECT id FROM products WHERE lower(sku) = lower($1) AND archived_at IS NULL`,
-      [row.sku],
+      sql`SELECT id FROM products WHERE lower(sku) = lower(${row.sku}) AND archived_at IS NULL`,
     );
     if (existing.rows[0]) {
       skipped.push(row.sku);
@@ -251,7 +206,7 @@ export async function importProductsFromCsv(input: {
     }
     try {
       let slug = (row.slug || slugify(row.name)).slice(0, 80);
-      const slugTaken = await query(`SELECT 1 FROM products WHERE slug = $1`, [slug]);
+      const slugTaken = await query(sql`SELECT 1 FROM products WHERE slug = ${slug}`);
       if (slugTaken.rows[0]) slug = `${slug}-${slugify(row.sku)}`.slice(0, 80);
       const id = await upsertProduct(
         {
@@ -292,7 +247,7 @@ export async function importProductsFromCsv(input: {
 }
 
 export async function archiveProduct(id: string, actorId: string): Promise<void> {
-  await query(`UPDATE products SET archived_at = now(), is_active = FALSE WHERE id = $1`, [id]);
+  await query(sql`UPDATE products SET archived_at = now(), is_active = FALSE WHERE id = ${id}`);
   await writeAuditLog({
     actorUserId: actorId,
     action: "product.archive",
@@ -309,13 +264,12 @@ export async function addProductImage(input: {
   isPrimary: boolean;
 }): Promise<void> {
   if (input.isPrimary) {
-    await query(`UPDATE product_images SET is_primary = FALSE WHERE product_id = $1`, [input.productId]);
+    await query(sql`UPDATE product_images SET is_primary = FALSE WHERE product_id = ${input.productId}`);
   }
-  await query(
-    `INSERT INTO product_images (product_id, url, storage_key, alt, is_primary)
-     VALUES ($1,$2,$3,$4,$5)`,
-    [input.productId, input.url, input.storageKey, input.alt, input.isPrimary],
-  );
+  await query(sql`
+    INSERT INTO product_images (product_id, url, storage_key, alt, is_primary)
+     VALUES (${input.productId},${input.url},${input.storageKey},${input.alt},${input.isPrimary})
+  `);
 }
 
 export async function setProductSalePrice(
@@ -324,8 +278,7 @@ export async function setProductSalePrice(
   actorId: string,
 ): Promise<void> {
   await query(
-    `UPDATE products SET sale_price = $2, updated_at = now() WHERE id = $1 AND archived_at IS NULL`,
-    [productId, salePrice],
+    sql`UPDATE products SET sale_price = ${salePrice}, updated_at = now() WHERE id = ${productId} AND archived_at IS NULL`,
   );
   await writeAuditLog({
     actorUserId: actorId,
@@ -346,13 +299,11 @@ export async function upsertCategory(input: {
   const slug = input.slug?.trim() || slugify(input.name);
   if (input.id) {
     await query(
-      `UPDATE categories SET name=$2, slug=$3, description=$4, is_active=$5 WHERE id=$1`,
-      [input.id, input.name, slug, input.description, input.isActive],
+      sql`UPDATE categories SET name=${input.name}, slug=${slug}, description=${input.description}, is_active=${input.isActive} WHERE id=${input.id}`,
     );
     return;
   }
   await query(
-    `INSERT INTO categories (name, slug, description, is_active) VALUES ($1,$2,$3,$4)`,
-    [input.name, slug, input.description, input.isActive],
+    sql`INSERT INTO categories (name, slug, description, is_active) VALUES (${input.name},${slug},${input.description},${input.isActive})`,
   );
 }

@@ -1,4 +1,5 @@
 import { query } from "@/server/db/pool";
+import { sql } from "@/server/db/sql";
 import { hashPassword, verifyPassword } from "@/server/auth/password";
 import { hitRateLimit, isLoginBlocked, recordAuthFailure, recordLoginAttempt } from "@/server/auth/rate-limit";
 import { createCustomerSession } from "@/server/customers/session";
@@ -30,8 +31,7 @@ export async function registerCustomer(input: {
   }
 
   const taken = await query<{ id: string }>(
-    `SELECT id FROM customers WHERE password_hash IS NOT NULL AND lower(email) = $1`,
-    [email],
+    sql`SELECT id FROM customers WHERE password_hash IS NOT NULL AND lower(email) = ${email}`,
   );
   if ((taken.rowCount ?? 0) > 0) return { ok: false, error: "An account already exists for this email." };
 
@@ -39,8 +39,7 @@ export async function registerCustomer(input: {
   let customerId: string;
   try {
     const inserted = await query<{ id: string }>(
-      `INSERT INTO customers (email, full_name, phone, password_hash) VALUES ($1, $2, $3, $4) RETURNING id`,
-      [email, fullName, phone, passwordHash],
+      sql`INSERT INTO customers (email, full_name, phone, password_hash) VALUES (${email}, ${fullName}, ${phone}, ${passwordHash}) RETURNING id`,
     );
     customerId = inserted.rows[0].id;
   } catch (error) {
@@ -69,8 +68,7 @@ export async function authenticateCustomer(input: {
     return { ok: false, error: "Too many failed attempts. Try again in 15 minutes." };
   }
   const result = await query<{ id: string; password_hash: string | null }>(
-    `SELECT id, password_hash FROM customers WHERE lower(email) = $1 AND password_hash IS NOT NULL`,
-    [email],
+    sql`SELECT id, password_hash FROM customers WHERE lower(email) = ${email} AND password_hash IS NOT NULL`,
   );
   const row = result.rows[0];
   if (!row?.password_hash) {

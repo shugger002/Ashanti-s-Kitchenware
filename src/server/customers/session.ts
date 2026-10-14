@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import { query } from "@/server/db/pool";
+import { sql } from "@/server/db/sql";
 import { getSessionTtlDays, isProduction } from "@/server/env";
 import { generateOpaqueToken, hashToken } from "@/server/auth/tokens";
 
@@ -19,16 +20,15 @@ export async function createCustomerSession(input: {
 }): Promise<string> {
   const token = generateOpaqueToken();
   const days = getSessionTtlDays();
-  await query(
-    `INSERT INTO customer_sessions (customer_id, token_hash, expires_at, ip, user_agent)
-     VALUES ($1, $2, now() + ($3 || ' days')::interval, $4, $5)`,
-    [input.customerId, hashToken(token), String(days), input.ip, input.userAgent],
-  );
+  await query(sql`
+    INSERT INTO customer_sessions (customer_id, token_hash, expires_at, ip, user_agent)
+     VALUES (${input.customerId}, ${hashToken(token)}, now() + (${String(days)} || ' days')::interval, ${input.ip}, ${input.userAgent})
+  `);
   return token;
 }
 
 export async function destroyCustomerSession(token: string): Promise<void> {
-  await query(`DELETE FROM customer_sessions WHERE token_hash = $1`, [hashToken(token)]);
+  await query(sql`DELETE FROM customer_sessions WHERE token_hash = ${hashToken(token)}`);
 }
 
 export async function getCustomerFromToken(token: string): Promise<StoreCustomer | null> {
@@ -37,13 +37,12 @@ export async function getCustomerFromToken(token: string): Promise<StoreCustomer
     email: string | null;
     full_name: string;
     phone: string;
-  }>(
-    `SELECT c.id, c.email, c.full_name, c.phone
+  }>(sql`
+    SELECT c.id, c.email, c.full_name, c.phone
      FROM customer_sessions s
      JOIN customers c ON c.id = s.customer_id
-     WHERE s.token_hash = $1 AND s.expires_at > now() AND c.password_hash IS NOT NULL`,
-    [hashToken(token)],
-  );
+     WHERE s.token_hash = ${hashToken(token)} AND s.expires_at > now() AND c.password_hash IS NOT NULL
+  `);
   const row = result.rows[0];
   if (!row?.email) return null;
   return { id: row.id, email: row.email, fullName: row.full_name, phone: row.phone };

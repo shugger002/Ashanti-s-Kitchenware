@@ -1,6 +1,7 @@
 import { addProductImage } from "@/server/catalog/admin";
 import { matchProductFromFilename } from "@/server/catalog/image-names";
 import { query } from "@/server/db/pool";
+import { sql } from "@/server/db/sql";
 import { assertImageUpload, extensionForType, getStorage, randomObjectKey } from "@/server/storage";
 import { ALLOWED_IMAGE_TYPES } from "@/server/storage/port";
 
@@ -43,12 +44,12 @@ export async function attachPhotosBySku(files: File[]): Promise<{ attached: stri
   const errors: string[] = [];
   if (usable.length === 0) return { attached, unmatched, errors };
 
-  const products = await query<{ id: string; sku: string; name: string; image_count: string }>(
-    `SELECT p.id, p.sku, p.name,
+  const products = await query<{ id: string; sku: string; name: string; image_count: string }>(sql`
+    SELECT p.id, p.sku, p.name,
             (SELECT count(*)::text FROM product_images pi WHERE pi.product_id = p.id) AS image_count
      FROM products p
-     WHERE p.archived_at IS NULL`,
-  );
+     WHERE p.archived_at IS NULL
+  `);
   const bySku = new Map(products.rows.map((row) => [row.sku.toLowerCase(), row]));
   const grouped = new Map<string, File[]>();
 
