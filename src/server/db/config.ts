@@ -18,14 +18,26 @@ export function isSupabaseUrl(url: string) {
 export function databaseSsl(url: string): PoolConfig["ssl"] {
   const flag = process.env.DATABASE_SSL;
   if (flag === "false" || flag === "0") return undefined;
-  if (flag === "true" || flag === "1" || isSupabaseUrl(url) || process.env.VERCEL) {
+  if (isSupabaseUrl(url)) {
+    // Transaction/session pooler presents a chain that Node verify-full rejects.
+    return { rejectUnauthorized: false };
+  }
+  if (flag === "true" || flag === "1" || process.env.VERCEL) {
     return { rejectUnauthorized: true };
   }
   return undefined;
 }
 
+function connectionStringForPool(url: string) {
+  if (!isSupabaseUrl(url)) return url;
+  return url
+    .replace(/([?&])sslmode=[^&]*/g, "$1")
+    .replace(/\?&/, "?")
+    .replace(/[?&]$/, "");
+}
+
 export function createPgPool(kind: "runtime" | "migrate" = "runtime"): Pool {
-  const connectionString = requiredUrl(kind);
+  const connectionString = connectionStringForPool(requiredUrl(kind));
   const onVercel = Boolean(process.env.VERCEL);
   return new Pool({
     connectionString,
