@@ -49,7 +49,7 @@ export async function CatalogPage({
   ]);
   const pages = Math.max(1, Math.ceil(total / pageSize));
   const title = params.q
-    ? `“${params.q}”`.replace(/^/, "Results for ")
+    ? `Results for “${params.q}”`
     : params.sale === "1"
       ? "On promo"
       : params.featured === "1"
