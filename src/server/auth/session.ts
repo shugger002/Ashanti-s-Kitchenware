@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { cookies } from "next/headers";
 import { query } from "@/server/db/pool";
 import { sql } from "@/server/db/sql";
@@ -56,12 +57,12 @@ export async function getUserFromToken(token: string): Promise<AdminUser | null>
   };
 }
 
-export async function readSessionUser(): Promise<AdminUser | null> {
+export const readSessionUser = cache(async (): Promise<AdminUser | null> => {
   const jar = await cookies();
   const token = jar.get(getSessionCookieName())?.value;
   if (!token) return null;
   return getUserFromToken(token);
-}
+});
 
 export async function setSessionCookie(token: string): Promise<void> {
   const jar = await cookies();

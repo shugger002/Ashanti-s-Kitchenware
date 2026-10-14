@@ -145,17 +145,15 @@ export async function searchProducts(filters: ShopFilters): Promise<{
             : sql`p.created_at DESC`;
 
   const whereSql = sqlAnd(where);
-  const count = await query<{ count: string }>(sql`
+  const offset = (page - 1) * pageSize;
+  const [count, result] = await Promise.all([
+    query<{ count: string }>(sql`
     SELECT count(*)::text AS count
      FROM products p
      LEFT JOIN categories c ON c.id = p.category_id
      WHERE ${whereSql}
-  `);
-  const total = Number(count.rows[0]?.count ?? 0);
-  if (total === 0) return demoSearch(filters);
-  const offset = (page - 1) * pageSize;
-
-  const result = await query<{
+  `),
+    query<{
     id: string;
     slug: string;
     name: string;
@@ -209,7 +207,10 @@ export async function searchProducts(filters: ShopFilters): Promise<{
      WHERE ${whereSql}
      ORDER BY ${order}
      LIMIT ${pageSize} OFFSET ${offset}
-  `);
+  `),
+  ]);
+  const total = Number(count.rows[0]?.count ?? 0);
+  if (total === 0) return demoSearch(filters);
 
   return {
     total,

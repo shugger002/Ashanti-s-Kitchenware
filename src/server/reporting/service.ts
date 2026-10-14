@@ -2,90 +2,87 @@ import { query } from "@/server/db/pool";
 import { sql } from "@/server/db/sql";
 
 export async function dashboardMetrics() {
-  const totals = await query<{
-    total_orders: string;
-    paid_orders: string;
-    pending_orders: string;
-    packing_orders: string;
-    ready_to_pack: string;
-    out_for_delivery: string;
-    revenue: string;
-    aov: string;
-  }>(sql`
-    SELECT
-       count(*)::text AS total_orders,
-       count(*) FILTER (WHERE payment_status = 'paid' AND status NOT IN ('cancelled','refunded'))::text AS paid_orders,
-       count(*) FILTER (WHERE payment_status IN ('pending','unpaid') AND status = 'pending_payment')::text AS pending_orders,
-       count(*) FILTER (WHERE payment_status = 'paid' AND status = 'paid')::text AS ready_to_pack,
-       count(*) FILTER (WHERE status = 'packing')::text AS packing_orders,
-       count(*) FILTER (WHERE status IN ('shipped','ready_for_collection'))::text AS out_for_delivery,
-       COALESCE(SUM(total) FILTER (WHERE payment_status = 'paid' AND status NOT IN ('cancelled','refunded')), 0)::text AS revenue,
-       COALESCE(AVG(total) FILTER (WHERE payment_status = 'paid' AND status NOT IN ('cancelled','refunded')), 0)::text AS aov
-     FROM orders`,
-  );
-
-  const stock = await query<{ low: string; out: string }>(sql`
-    SELECT
-       count(*) FILTER (WHERE on_hand - reserved > 0 AND on_hand - reserved <= low_stock_threshold)::text AS low,
-       count(*) FILTER (WHERE on_hand - reserved <= 0)::text AS out
-     FROM inventory`,
-  );
-
-  const recent = await query<{
-    id: string;
-    public_ref: string;
-    full_name: string;
-    total: string;
-    status: string;
-    payment_status: string;
-    delivery_method: string;
-    created_at: Date;
-  }>(sql`
-    SELECT id, public_ref, full_name, total::text, status, payment_status, delivery_method, created_at
-     FROM orders ORDER BY created_at DESC LIMIT 8`,
-  );
-
-  const best = await query<{ product_name: string; units: number; revenue: string }>(sql`
-    SELECT oi.product_name, SUM(oi.quantity)::int AS units, SUM(oi.line_total)::text AS revenue
-     FROM order_items oi
-     JOIN orders o ON o.id = oi.order_id
-     WHERE o.payment_status = 'paid' AND o.status NOT IN ('cancelled','refunded')
-     GROUP BY oi.product_name
-     HAVING SUM(oi.quantity) > 0
-     ORDER BY units DESC
-     LIMIT 5
-  `);
-
-  const catalogue = await query<{ demo: string; promo: string; total_products: string }>(sql`
-    SELECT
-       count(*) FILTER (WHERE archived_at IS NULL)::text AS total_products,
-       count(*) FILTER (WHERE sku ILIKE 'DEMO-%')::text AS demo,
-       count(*) FILTER (WHERE sale_price IS NOT NULL AND sale_price < price)::text AS promo
-     FROM products
-  `);
-
-  const today = await query<{
-    today_orders: string;
-    today_revenue: string;
-    fulfilled_today: string;
-    new_customers_today: string;
-  }>(sql`
-    WITH gh AS (
-       SELECT (CURRENT_TIMESTAMP AT TIME ZONE 'Africa/Accra')::date AS day
-     )
-     SELECT
-       (SELECT count(*)::text FROM orders o, gh
-         WHERE (o.created_at AT TIME ZONE 'Africa/Accra')::date = gh.day) AS today_orders,
-       (SELECT COALESCE(SUM(o.total), 0)::text FROM orders o, gh
-         WHERE (o.created_at AT TIME ZONE 'Africa/Accra')::date = gh.day
-           AND o.payment_status = 'paid'
-           AND o.status NOT IN ('cancelled','refunded')) AS today_revenue,
-       (SELECT count(*)::text FROM orders o, gh
-         WHERE o.status IN ('delivered','collected')
-           AND (o.updated_at AT TIME ZONE 'Africa/Accra')::date = gh.day) AS fulfilled_today,
-       (SELECT count(*)::text FROM customers c, gh
-         WHERE (c.created_at AT TIME ZONE 'Africa/Accra')::date = gh.day) AS new_customers_today
-  `);
+  const [totals, stock, recent, best, catalogue, today] = await Promise.all([
+    query<{
+      total_orders: string;
+      paid_orders: string;
+      pending_orders: string;
+      packing_orders: string;
+      ready_to_pack: string;
+      out_for_delivery: string;
+      revenue: string;
+      aov: string;
+    }>(sql`
+      SELECT
+         count(*)::text AS total_orders,
+         count(*) FILTER (WHERE payment_status = 'paid' AND status NOT IN ('cancelled','refunded'))::text AS paid_orders,
+         count(*) FILTER (WHERE payment_status IN ('pending','unpaid') AND status = 'pending_payment')::text AS pending_orders,
+         count(*) FILTER (WHERE payment_status = 'paid' AND status = 'paid')::text AS ready_to_pack,
+         count(*) FILTER (WHERE status = 'packing')::text AS packing_orders,
+         count(*) FILTER (WHERE status IN ('shipped','ready_for_collection'))::text AS out_for_delivery,
+         COALESCE(SUM(total) FILTER (WHERE payment_status = 'paid' AND status NOT IN ('cancelled','refunded')), 0)::text AS revenue,
+         COALESCE(AVG(total) FILTER (WHERE payment_status = 'paid' AND status NOT IN ('cancelled','refunded')), 0)::text AS aov
+       FROM orders
+    `),
+    query<{ low: string; out: string }>(sql`
+      SELECT
+         count(*) FILTER (WHERE on_hand - reserved > 0 AND on_hand - reserved <= low_stock_threshold)::text AS low,
+         count(*) FILTER (WHERE on_hand - reserved <= 0)::text AS out
+       FROM inventory
+    `),
+    query<{
+      id: string;
+      public_ref: string;
+      full_name: string;
+      total: string;
+      status: string;
+      payment_status: string;
+      delivery_method: string;
+      created_at: Date;
+    }>(sql`
+      SELECT id, public_ref, full_name, total::text, status, payment_status, delivery_method, created_at
+       FROM orders ORDER BY created_at DESC LIMIT 8
+    `),
+    query<{ product_name: string; units: number; revenue: string }>(sql`
+      SELECT oi.product_name, SUM(oi.quantity)::int AS units, SUM(oi.line_total)::text AS revenue
+       FROM order_items oi
+       JOIN orders o ON o.id = oi.order_id
+       WHERE o.payment_status = 'paid' AND o.status NOT IN ('cancelled','refunded')
+       GROUP BY oi.product_name
+       HAVING SUM(oi.quantity) > 0
+       ORDER BY units DESC
+       LIMIT 5
+    `),
+    query<{ demo: string; promo: string; total_products: string }>(sql`
+      SELECT
+         count(*) FILTER (WHERE archived_at IS NULL)::text AS total_products,
+         count(*) FILTER (WHERE sku ILIKE 'DEMO-%')::text AS demo,
+         count(*) FILTER (WHERE sale_price IS NOT NULL AND sale_price < price)::text AS promo
+       FROM products
+    `),
+    query<{
+      today_orders: string;
+      today_revenue: string;
+      fulfilled_today: string;
+      new_customers_today: string;
+    }>(sql`
+      WITH gh AS (
+         SELECT (CURRENT_TIMESTAMP AT TIME ZONE 'Africa/Accra')::date AS day
+       )
+       SELECT
+         (SELECT count(*)::text FROM orders o, gh
+           WHERE (o.created_at AT TIME ZONE 'Africa/Accra')::date = gh.day) AS today_orders,
+         (SELECT COALESCE(SUM(o.total), 0)::text FROM orders o, gh
+           WHERE (o.created_at AT TIME ZONE 'Africa/Accra')::date = gh.day
+             AND o.payment_status = 'paid'
+             AND o.status NOT IN ('cancelled','refunded')) AS today_revenue,
+         (SELECT count(*)::text FROM orders o, gh
+           WHERE o.status IN ('delivered','collected')
+             AND (o.updated_at AT TIME ZONE 'Africa/Accra')::date = gh.day) AS fulfilled_today,
+         (SELECT count(*)::text FROM customers c, gh
+           WHERE (c.created_at AT TIME ZONE 'Africa/Accra')::date = gh.day) AS new_customers_today
+    `),
+  ]);
 
   return {
     ...totals.rows[0],

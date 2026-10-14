@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { requirePermission } from "@/server/auth/authorize";
-import { readSessionUser } from "@/server/auth/session";
 import { dashboardMetrics } from "@/server/reporting/service";
 import { formatGhs } from "@/lib/money";
 import {
@@ -12,8 +11,10 @@ import {
 } from "@/components/admin/ui";
 
 export default async function AdminHomePage() {
-  await requirePermission("orders.read");
-  const [metrics, user] = await Promise.all([dashboardMetrics(), readSessionUser()]);
+  const [metrics, user] = await Promise.all([
+    dashboardMetrics(),
+    requirePermission("orders.read"),
+  ]);
   const greeting = (user?.fullName ?? "Admin").trim() || "Admin";
 
   const kpis = [

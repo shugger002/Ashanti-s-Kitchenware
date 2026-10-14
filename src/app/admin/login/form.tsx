@@ -8,13 +8,17 @@ import { Button } from "@/components/ui/button";
 export function AdminLoginForm() {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
+  const [pending, setPending] = useState(false);
   return (
     <form
       className="mt-8 space-y-4"
       onSubmit={async (event) => {
         event.preventDefault();
+        setPending(true);
+        setError(null);
         const result = await adminLogin(new FormData(event.currentTarget));
         if (!result.ok) {
+          setPending(false);
           setError(result.error);
           return;
         }
@@ -30,7 +34,9 @@ export function AdminLoginForm() {
         <input name="password" type="password" required className="input mt-1" />
       </label>
       {error ? <p className="text-sm text-accent">{error}</p> : null}
-      <Button type="submit">Log In</Button>
+      <Button type="submit" disabled={pending}>
+        {pending ? "Signing in…" : "Log In"}
+      </Button>
       <p className="text-sm">
         <a href="/admin/forgot-password">Forgot password</a>
       </p>

@@ -20,6 +20,8 @@ import {
   X,
 } from "lucide-react";
 import { logoutAdmin } from "@/app/admin/logout/action";
+import { useAdminPagePending } from "@/components/admin/pending-outlet";
+import { AdminPageSkeleton } from "@/components/ui/skeleton";
 import { brand } from "@/config/brand";
 import type { AdminUser, Permission } from "@/server/auth/types";
 import { hasPermission } from "@/server/auth/types";
@@ -170,6 +172,7 @@ export function AdminShell({ user, children }: { user: AdminUser; children: Reac
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
+  const { pending, captureProps } = useAdminPagePending(children);
 
   useEffect(() => {
     setCollapsed(window.localStorage.getItem("ak_admin_nav_collapsed") === "1");
@@ -193,7 +196,7 @@ export function AdminShell({ user, children }: { user: AdminUser; children: Reac
   }
 
   return (
-    <div className="min-h-dvh lg:flex">
+    <div className="min-h-dvh lg:flex" {...captureProps}>
       <header className="sticky top-0 z-40 flex items-center gap-3 border-b border-border bg-white px-4 py-3 lg:hidden">
         <button
           type="button"
@@ -276,7 +279,10 @@ export function AdminShell({ user, children }: { user: AdminUser; children: Reac
             <PanelLeft className="h-4 w-4" />
           </button>
         </div>
-        <div className="mx-auto max-w-6xl px-5 py-7 sm:px-8 sm:py-9">{children}</div>
+        <div className="mx-auto max-w-6xl px-5 py-7 sm:px-8 sm:py-9" aria-busy={pending}>
+          {pending ? <AdminPageSkeleton /> : null}
+          <div className={pending ? "hidden" : undefined}>{children}</div>
+        </div>
       </div>
     </div>
   );
