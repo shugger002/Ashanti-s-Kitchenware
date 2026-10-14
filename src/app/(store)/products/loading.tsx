@@ -1,5 +1,5 @@
-import { CartPageSkeleton } from "@/components/ui/skeleton";
+import { CatalogPageSkeleton } from "@/components/ui/skeleton";
 
 export default function ProductsLoading() {
-  return <CartPageSkeleton />;
+  return <CatalogPageSkeleton />;
 }
