@@ -88,16 +88,45 @@ html {
   scroll-behavior: smooth;
 }
 
+@keyframes ak-logo-marquee {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+.ak-logo-marquee-wrap:hover .ak-logo-marquee,
+.ak-logo-marquee-wrap:focus-within .ak-logo-marquee {
+  animation-play-state: paused;
+}
+
+.ak-logo-marquee {
+  display: flex;
+  width: max-content;
+  flex-wrap: nowrap;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  animation: ak-logo-marquee 22s linear infinite;
+  will-change: transform;
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
   }
-  *,
+  *:not(.ak-logo-marquee),
   *::before,
   *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+  .ak-logo-marquee {
+    animation-duration: 36s !important;
+    animation-iteration-count: infinite !important;
   }
 }
 

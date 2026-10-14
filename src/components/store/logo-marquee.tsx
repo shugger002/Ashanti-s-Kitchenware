@@ -91,34 +91,18 @@ export function LogoMarquee() {
   const loop = [...marks, ...marks];
   return (
     <section className="overflow-hidden bg-accent py-10 text-white md:py-12" aria-label="Example brand logos">
-      <style>{`
-        @keyframes ak-logo-marquee {
-          from { transform: translateX(0); }
-          to { transform: translateX(-50%); }
-        }
-        [data-logo-marquee] {
-          animation: ak-logo-marquee 38s linear infinite;
-        }
-        [data-logo-marquee-wrap]:hover [data-logo-marquee] {
-          animation-play-state: paused;
-        }
-        @media (prefers-reduced-motion: reduce) {
-          [data-logo-marquee] { animation: none; }
-        }
-      `}</style>
       <p className="text-center font-serif text-2xl md:text-3xl">Example brands</p>
       <p className="mx-auto mt-2 max-w-xl px-5 text-center text-xs leading-relaxed text-white/75">
         Layout samples for the ticker. Not press mentions, and not a list of brands the Accra shop sells. Swap these for
         official marks of names you actually stock.
       </p>
       <div
-        data-logo-marquee-wrap
-        className="mt-8 overflow-hidden"
+        className="ak-logo-marquee-wrap mt-8 overflow-hidden"
         style={{
           maskImage: "linear-gradient(to right, transparent, #000 8%, #000 92%, transparent)",
         }}
       >
-        <ul data-logo-marquee className="flex w-max">
+        <ul className="ak-logo-marquee">
           {loop.map((mark, index) => (
             <li
               key={`${mark.id}-${index}`}
