@@ -137,7 +137,7 @@ function Nav({
                   {group.label}
                 </p>
               )}
-              <div className="flex flex-col gap-0.5 text-sm">
+              <div className={cn("flex flex-col gap-0.5 text-sm", collapsed && "items-center")}>
                 {items.map((link) => {
                   const Icon = link.icon;
                   const active = isActive(pathname, link);
@@ -149,11 +149,11 @@ function Nav({
                       onClick={onNavigate}
                       className={cn(
                         "flex items-center gap-2.5 rounded-lg px-3 py-2",
-                        collapsed && "justify-center px-2",
+                        collapsed && "size-10 justify-center px-0",
                         active ? "bg-white text-accent" : "text-white/85 hover:bg-white/15 hover:text-white",
                       )}
                     >
-                      <Icon className="h-4 w-4 shrink-0" strokeWidth={1.5} />
+                      <Icon className={cn("shrink-0", collapsed ? "h-5 w-5" : "h-4 w-4")} strokeWidth={1.5} />
                       {collapsed ? <span className="sr-only">{link.label}</span> : link.label}
                     </Link>
                   );
@@ -196,26 +196,27 @@ export function AdminShell({ user, children }: { user: AdminUser; children: Reac
   }
 
   return (
-    <div className="min-h-dvh lg:flex" {...captureProps}>
-      <header className="sticky top-0 z-40 flex items-center gap-3 border-b border-border bg-white px-4 py-3 lg:hidden">
+    <div className="flex min-h-dvh" {...captureProps}>
+      <aside className="sticky top-0 z-30 flex h-dvh w-[3.75rem] shrink-0 flex-col bg-accent text-white lg:hidden">
         <button
           type="button"
-          className="inline-flex size-10 items-center justify-center text-accent"
+          className="mx-auto mt-2 inline-flex size-10 items-center justify-center rounded-lg text-white hover:bg-white/15"
           aria-label={menuOpen ? "Close menu" : "Open menu"}
           aria-expanded={menuOpen}
           onClick={() => setMenuOpen((open) => !open)}
         >
           {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
         </button>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={brand.logoSrc} alt={brand.name} className="h-8 w-auto max-w-[9rem] object-contain brightness-0" />
-        <Link href="/" className="ml-auto text-sm text-accent">
-          Store
-        </Link>
-      </header>
+        <Nav user={user} collapsed onNavigate={() => setMenuOpen(false)} />
+        <div className="border-t border-white/20 px-2 py-4">
+          <span className="mx-auto flex size-8 items-center justify-center rounded-full bg-white/20 text-[11px] font-medium">
+            {initials(user)}
+          </span>
+        </div>
+      </aside>
 
       {menuOpen ? (
-        <div className="fixed inset-0 z-50 lg:hidden">
+        <div className="fixed inset-y-0 left-[3.75rem] right-0 z-50 lg:hidden">
           <button type="button" className="absolute inset-0 bg-foreground/40" aria-label="Close menu" onClick={() => setMenuOpen(false)} />
           <aside className="relative flex h-full w-[min(18rem,86vw)] flex-col bg-accent text-white">
             <Nav user={user} collapsed={false} onNavigate={() => setMenuOpen(false)} />
@@ -269,6 +270,13 @@ export function AdminShell({ user, children }: { user: AdminUser; children: Reac
         </div>
       </aside>
       <div className="min-w-0 flex-1 bg-white">
+        <header className="sticky top-0 z-40 flex items-center gap-3 border-b border-border bg-white px-4 py-3 lg:hidden">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={brand.logoSrc} alt={brand.name} className="h-8 w-auto max-w-[9rem] object-contain brightness-0" />
+          <Link href="/" className="ml-auto text-sm text-accent">
+            Store
+          </Link>
+        </header>
         <div className="sticky top-0 z-30 hidden h-12 items-center border-b border-border bg-white px-3 lg:flex">
           <button
             type="button"
