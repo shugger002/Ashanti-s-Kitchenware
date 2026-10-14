@@ -12,17 +12,20 @@ export function AdminPageHeader({
   description,
   action,
   align = "start",
+  className,
 }: {
   title: string;
   description?: string;
   action?: React.ReactNode;
   align?: "start" | "center";
+  className?: string;
 }) {
   return (
     <div
       className={cn(
         "flex flex-wrap gap-4",
         align === "center" ? "flex-col items-center text-center" : "items-start justify-between",
+        className,
       )}
     >
       <div>

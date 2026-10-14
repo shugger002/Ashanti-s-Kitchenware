@@ -44,12 +44,13 @@ export default async function AdminHomePage() {
         align="center"
         title={`Welcome, ${greeting}!`}
         description="Manage your application settings and content here."
+        className="drop-shadow-sm"
       />
 
       <ul className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {kpis.map((item) => (
           <li key={item.label}>
-            <Link href={item.href} className="block rounded-xl border border-border bg-white p-5 text-foreground">
+            <Link href={item.href} className="block rounded-xl border border-border bg-white/90 p-5 text-foreground shadow-sm backdrop-blur-sm">
               <p className="text-sm text-muted">{item.label}</p>
               <p className="mt-3 text-3xl font-medium tabular-nums">{item.value}</p>
             </Link>
@@ -57,7 +58,7 @@ export default async function AdminHomePage() {
         ))}
       </ul>
 
-      <section className="mt-8 rounded-xl border border-border bg-white p-5">
+      <section className="mt-8 rounded-xl border border-border bg-white/90 p-5 shadow-sm backdrop-blur-sm">
         <h2 className="text-lg font-medium">Recent Orders</h2>
         {metrics.recent.length === 0 ? (
           <div className="mt-4">
@@ -97,7 +98,7 @@ export default async function AdminHomePage() {
           <li key={item.label}>
             <Link
               href={item.href}
-              className="block rounded-xl border border-border bg-white px-4 py-3 text-sm font-medium hover:bg-accent/5"
+              className="block rounded-xl border border-border bg-white/90 px-4 py-3 text-sm font-medium shadow-sm backdrop-blur-sm hover:bg-white"
             >
               {item.label}
             </Link>

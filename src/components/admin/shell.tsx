@@ -283,7 +283,18 @@ export function AdminShell({ user, children }: { user: AdminUser; children: Reac
           )}
         </div>
       </aside>
-      <div className="min-w-0 flex-1 bg-white">
+      <div className={cn("relative min-w-0 flex-1", pathname === "/admin" ? "bg-transparent" : "bg-white")}>
+        {pathname === "/admin" ? (
+          <>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/admin/kitchen-wall.jpg"
+              alt=""
+              className="pointer-events-none absolute inset-0 h-full w-full object-cover object-center"
+            />
+            <div className="pointer-events-none absolute inset-0 bg-white/45" />
+          </>
+        ) : null}
         <header className="sticky top-0 z-40 flex items-center gap-3 border-b border-border bg-white px-4 py-3 lg:hidden">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={brand.logoSrc} alt={brand.name} className="h-8 w-auto max-w-[9rem] object-contain brightness-0" />
@@ -301,7 +312,7 @@ export function AdminShell({ user, children }: { user: AdminUser; children: Reac
             <PanelLeft className="h-4 w-4" />
           </button>
         </div>
-        <div className="mx-auto max-w-6xl px-5 py-7 sm:px-8 sm:py-9" aria-busy={pending}>
+        <div className="relative z-10 mx-auto max-w-6xl px-5 py-7 sm:px-8 sm:py-9" aria-busy={pending}>
           {pending ? <AdminPageSkeleton /> : null}
           <div className={pending ? "hidden" : undefined}>{children}</div>
         </div>
