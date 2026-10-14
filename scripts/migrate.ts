@@ -1,14 +1,9 @@
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
-import { Pool } from "pg";
+import { createPgPool } from "@/server/db/config";
 
 async function main() {
-  const url = process.env.DATABASE_URL;
-  if (!url) throw new Error("DATABASE_URL is not set");
-  const pool = new Pool({
-    connectionString: url,
-    ssl: process.env.DATABASE_SSL === "true" ? { rejectUnauthorized: process.env.NODE_ENV === "production" } : undefined,
-  });
+  const pool = createPgPool("migrate");
   await pool.query(`
     CREATE TABLE IF NOT EXISTS schema_migrations (
       id TEXT PRIMARY KEY,

@@ -1,4 +1,6 @@
-# Hostinger VPS runbook
+# Hostinger VPS runbook (fallback)
+
+Preferred production stack is Vercel + Supabase: [VERCEL-SUPABASE.md](./VERCEL-SUPABASE.md). Keep this file only if you run a VPS instead.
 
 Legal name: **Ashanti's Kitchenware**. Public hostname: `ashantisakitchenware.com`.
 

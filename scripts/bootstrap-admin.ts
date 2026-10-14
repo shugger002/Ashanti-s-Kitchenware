@@ -1,19 +1,17 @@
-import { Pool } from "pg";
 import argon2 from "argon2";
+import { createPgPool } from "@/server/db/config";
 
 async function main() {
-  const url = process.env.DATABASE_URL;
   const email = process.env.BOOTSTRAP_ADMIN_EMAIL;
   const password = process.env.BOOTSTRAP_ADMIN_PASSWORD;
   const name = process.env.BOOTSTRAP_ADMIN_NAME ?? "Store Owner";
-  if (!url) throw new Error("DATABASE_URL is not set");
   if (!email || !password) {
     throw new Error("BOOTSTRAP_ADMIN_EMAIL and BOOTSTRAP_ADMIN_PASSWORD are required");
   }
   if (password.length < 12) {
     throw new Error("Bootstrap password must be at least 12 characters");
   }
-  const pool = new Pool({ connectionString: url });
+  const pool = createPgPool("migrate");
   const existing = await pool.query(`SELECT id FROM users WHERE lower(email) = $1`, [
     email.toLowerCase(),
   ]);

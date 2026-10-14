@@ -2,7 +2,7 @@
 
 Production-oriented Next.js storefront and admin for `ashantisakitchenware.com`.
 
-PostgreSQL is used directly through `pg`. There is no Prisma, Drizzle, or Supabase. Payments go through Hubtel and Moolre when those keys exist; otherwise orders stay pending until staff record a verified payment.
+PostgreSQL is used directly through `pg` (no Prisma or Drizzle). Production hosting is **Vercel**; production Postgres and product photos are **Supabase**. Payments go through Hubtel and Moolre when those keys exist; otherwise orders stay pending until staff record a verified payment.
 
 ## Local setup
 
@@ -25,4 +25,4 @@ Contact details and policy wording were transcribed from ashantiskitchenware.com
 - `npm run test` — inventory availability checks
 - `npm run build`
 
-Hosting notes: [docs/HOSTINGER.md](docs/HOSTINGER.md)
+Hosting: [docs/VERCEL-SUPABASE.md](docs/VERCEL-SUPABASE.md). Older VPS notes: [docs/HOSTINGER.md](docs/HOSTINGER.md).

@@ -19,7 +19,14 @@ export default async function ServiceHealthPage() {
   await requirePermission("settings.write");
   const databaseOk = await pingDatabase();
   const smtpReady = Boolean(process.env.SMTP_HOST && process.env.SMTP_FROM);
-  const objectStorage = process.env.S3_BUCKET && process.env.S3_ACCESS_KEY_ID ? "S3" : isProduction() ? "Missing (required in production)" : "Local uploads (development)";
+  const objectStorage =
+    process.env.S3_BUCKET && process.env.S3_ACCESS_KEY_ID
+      ? process.env.S3_ENDPOINT?.includes("supabase")
+        ? "Supabase Storage"
+        : "S3"
+      : isProduction()
+        ? "Missing (required in production)"
+        : "Local uploads (development)";
 
   const rows = [
     { label: "Database", value: databaseOk ? "Reachable" : "Unreachable", ok: databaseOk },
@@ -34,7 +41,7 @@ export default async function ServiceHealthPage() {
     <div>
       <AdminPageHeader
         title="Service health"
-        description="Whether this VPS can talk to the database, send mail, store photos, and see payment keys. Keys are not shown. Payment APIs are not called from here."
+        description="Whether this host can talk to the database, send mail, store photos, and see payment keys. Keys are not shown. Payment APIs are not called from here."
       />
       <ul className="mt-8 divide-y divide-border overflow-hidden rounded-2xl border border-border bg-background">
         {rows.map((row) => (

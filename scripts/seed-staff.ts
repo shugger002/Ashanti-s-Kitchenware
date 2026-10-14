@@ -1,6 +1,6 @@
 import { randomBytes } from "node:crypto";
-import { Pool } from "pg";
 import argon2 from "argon2";
+import { createPgPool } from "@/server/db/config";
 
 type StaffSeed = {
   email: string;
@@ -13,9 +13,6 @@ function password(): string {
 }
 
 async function main() {
-  const url = process.env.DATABASE_URL;
-  if (!url) throw new Error("DATABASE_URL is not set");
-
   const ownerEmail = (process.env.BOOTSTRAP_ADMIN_EMAIL ?? "admin@ashantisakitchenware.com").trim().toLowerCase();
   const staff: StaffSeed[] = [
     { email: ownerEmail, fullName: process.env.BOOTSTRAP_ADMIN_NAME ?? "Store Owner", role: "super_admin" },
@@ -24,10 +21,7 @@ async function main() {
     { email: "stock@ashantisakitchenware.com", fullName: "Inventory manager", role: "inventory_manager" },
   ];
 
-  const pool = new Pool({
-    connectionString: url,
-    ssl: process.env.DATABASE_SSL === "true" ? { rejectUnauthorized: process.env.NODE_ENV === "production" } : undefined,
-  });
+  const pool = createPgPool("migrate");
 
   const created: { email: string; role: string; password: string }[] = [];
   try {

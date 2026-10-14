@@ -1,31 +1,14 @@
-import { Pool, type QueryResult, type QueryResultRow } from "pg";
+import { type Pool, type QueryResult, type QueryResultRow } from "pg";
+import { createPgPool } from "@/server/db/config";
 import { assertSafeQueryText, type SqlQuery } from "@/server/db/sql";
 
 declare global {
   var __ashantisaPool: Pool | undefined;
 }
 
-function createPool(): Pool {
-  const url = process.env.DATABASE_URL;
-  if (!url) {
-    throw new Error("DATABASE_URL is not set");
-  }
-  const ssl =
-    process.env.DATABASE_SSL === "true" || process.env.DATABASE_SSL === "1"
-      ? { rejectUnauthorized: process.env.NODE_ENV === "production" }
-      : undefined;
-  return new Pool({
-    connectionString: url,
-    max: 10,
-    ssl,
-    statement_timeout: 8_000,
-    idle_in_transaction_session_timeout: 10_000,
-  });
-}
-
 export function getPool(): Pool {
   if (!globalThis.__ashantisaPool) {
-    globalThis.__ashantisaPool = createPool();
+    globalThis.__ashantisaPool = createPgPool("runtime");
   }
   return globalThis.__ashantisaPool;
 }
