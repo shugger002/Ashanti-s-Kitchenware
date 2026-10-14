@@ -97,10 +97,12 @@ function Nav({
   user,
   collapsed,
   onNavigate,
+  showLogoCard = true,
 }: {
   user: AdminUser;
   collapsed: boolean;
   onNavigate?: () => void;
+  showLogoCard?: boolean;
 }) {
   const pathname = usePathname();
   return (
@@ -120,12 +122,12 @@ function Nav({
           </span>
         )}
       </Link>
-      {collapsed ? null : (
+      {!collapsed && showLogoCard ? (
         <div className="mx-4 mb-4 rounded-sm bg-white px-3 py-2">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={brand.logoSrc} alt="" className="h-7 w-auto max-w-[9rem] object-contain brightness-0" />
         </div>
-      )}
+      ) : null}
       <nav className="flex flex-1 flex-col gap-6 overflow-y-auto px-3 pb-4" aria-label="Admin">
         {groups.map((group) => {
           const items = group.items.filter((item) => hasPermission(user.roles, item.permission));
@@ -197,46 +199,58 @@ export function AdminShell({ user, children }: { user: AdminUser; children: Reac
 
   return (
     <div className="flex min-h-dvh" {...captureProps}>
-      <aside className="sticky top-0 z-30 flex h-dvh w-[3.75rem] shrink-0 flex-col bg-accent text-white lg:hidden">
+      {menuOpen ? (
         <button
           type="button"
-          className="mx-auto mt-2 inline-flex size-10 items-center justify-center rounded-lg text-white hover:bg-white/15"
+          className="fixed inset-0 z-20 bg-foreground/40 lg:hidden"
+          aria-label="Close menu"
+          onClick={() => setMenuOpen(false)}
+        />
+      ) : null}
+
+      <aside
+        className={cn(
+          "sticky top-0 z-30 flex h-dvh shrink-0 flex-col bg-accent text-white lg:hidden",
+          menuOpen ? "w-60" : "w-[3.75rem]",
+        )}
+      >
+        <button
+          type="button"
+          className={cn(
+            "mt-2 inline-flex size-10 items-center justify-center rounded-lg text-white hover:bg-white/15",
+            menuOpen ? "ml-3" : "mx-auto",
+          )}
           aria-label={menuOpen ? "Close menu" : "Open menu"}
           aria-expanded={menuOpen}
           onClick={() => setMenuOpen((open) => !open)}
         >
           {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
         </button>
-        <Nav user={user} collapsed onNavigate={() => setMenuOpen(false)} />
-        <div className="border-t border-white/20 px-2 py-4">
-          <span className="mx-auto flex size-8 items-center justify-center rounded-full bg-white/20 text-[11px] font-medium">
-            {initials(user)}
-          </span>
+        <Nav
+          user={user}
+          collapsed={!menuOpen}
+          showLogoCard={false}
+          onNavigate={() => setMenuOpen(false)}
+        />
+        <div className={cn("border-t border-white/20 py-4 text-sm", menuOpen ? "px-4" : "px-2")}>
+          <div className={cn("flex items-center gap-3", !menuOpen && "justify-center")}>
+            <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-white/20 text-[11px] font-medium">
+              {initials(user)}
+            </span>
+            {menuOpen ? (
+              <span className="min-w-0">
+                <p className="truncate">{user.fullName || user.email}</p>
+                <p className="truncate text-xs text-white/70">{user.email}</p>
+              </span>
+            ) : null}
+          </div>
+          {menuOpen ? (
+            <button type="button" className="mt-3 text-xs text-white/80" onClick={signOut}>
+              Sign out
+            </button>
+          ) : null}
         </div>
       </aside>
-
-      {menuOpen ? (
-        <div className="fixed inset-y-0 left-[3.75rem] right-0 z-50 lg:hidden">
-          <button type="button" className="absolute inset-0 bg-foreground/40" aria-label="Close menu" onClick={() => setMenuOpen(false)} />
-          <aside className="relative flex h-full w-[min(18rem,86vw)] flex-col bg-accent text-white">
-            <Nav user={user} collapsed={false} onNavigate={() => setMenuOpen(false)} />
-            <div className="border-t border-white/20 px-4 py-4 text-sm">
-              <div className="flex items-center gap-3">
-                <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-white/20 text-[11px] font-medium">
-                  {initials(user)}
-                </span>
-                <span className="min-w-0">
-                  <p className="truncate">{user.fullName || user.email}</p>
-                  <p className="truncate text-xs text-white/70">{user.email}</p>
-                </span>
-              </div>
-              <button type="button" className="mt-3 text-xs text-white/80" onClick={signOut}>
-                Sign out
-              </button>
-            </div>
-          </aside>
-        </div>
-      ) : null}
 
       <aside
         className={cn(
