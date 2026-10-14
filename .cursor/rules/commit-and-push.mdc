@@ -1,0 +1,13 @@
+---
+description: Commit and push every completed site update
+alwaysApply: true
+---
+
+# Commit and push after updates
+
+When a site change is finished (storefront, admin, config, or deploy files):
+
+1. Commit it (follow the git safety protocol: no `--force`, no skipped hooks, no `.env` or secrets).
+2. Push to `origin` on the current branch (`git push -u origin HEAD` if needed).
+
+Do this without waiting to be asked again. Do not create empty commits. If a hook rejects the commit, fix it and make a new commit, then push.
