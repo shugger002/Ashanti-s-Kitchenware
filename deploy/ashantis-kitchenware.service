@@ -1,0 +1,18 @@
+[Unit]
+Description=Ashantis Kitchenware Next.js store
+After=network.target postgresql.service
+
+[Service]
+Type=simple
+User=ashantisa
+Group=ashantisa
+WorkingDirectory=/var/www/ashantis-kitchenware
+EnvironmentFile=/var/www/ashantis-kitchenware/.env
+ExecStart=/usr/bin/npm start
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
