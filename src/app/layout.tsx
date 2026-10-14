@@ -3,6 +3,7 @@ import Script from "next/script";
 import { Figtree, Newsreader } from "next/font/google";
 import { brand } from "@/config/brand";
 import { CartProvider } from "@/components/store/cart-provider";
+import { getAppUrl } from "@/server/env";
 import "./globals.css";
 
 const figtree = Figtree({
@@ -22,7 +23,7 @@ export const metadata: Metadata = {
   },
   description:
     "Kitchenware retailer in Accra selling cookware, appliances, and household essentials online.",
-  metadataBase: new URL(process.env.APP_URL ?? "http://localhost:3000"),
+  metadataBase: new URL(getAppUrl()),
   icons: { icon: "/logo.png", apple: "/logo.png" },
 };
 
