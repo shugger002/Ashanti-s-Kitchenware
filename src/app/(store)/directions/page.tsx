@@ -38,9 +38,9 @@ export default async function DirectionsPage() {
   };
 
   return (
-    <div className="mx-auto max-w-3xl px-5 py-16 lg:px-8">
+    <div className="mx-auto max-w-3xl px-4 py-8 pb-24 lg:px-8 lg:py-16">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdText(jsonLd) }} />
-      <h1 className="text-4xl">Get directions</h1>
+      <h1 className="text-3xl md:text-4xl">Get directions</h1>
       <section className="mt-8 space-y-6" aria-labelledby="shop-location">
         <h2 id="shop-location" className="sr-only">
           Shop location

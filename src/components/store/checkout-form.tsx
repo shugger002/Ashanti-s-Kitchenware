@@ -409,7 +409,7 @@ export function CheckoutForm({
         </Button>
       </div>
 
-      <div className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-background px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] lg:hidden">
+      <div className="fixed inset-x-0 bottom-0 z-50 border-t border-border bg-background px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] lg:hidden">
         <Button
           type="submit"
           className="h-12 w-full text-base"

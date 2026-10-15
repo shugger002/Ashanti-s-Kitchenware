@@ -18,8 +18,8 @@ export default function CartPage() {
   const subtotal = items.reduce((sum, line) => sum + line.unitPrice * line.quantity, 0);
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-8 pb-36 lg:px-8 lg:py-12 lg:pb-12">
-      <h1 className="text-4xl">Cart</h1>
+    <div className="mx-auto max-w-4xl px-4 py-6 pb-36 lg:px-8 lg:py-12 lg:pb-12">
+      <h1 className="text-3xl md:text-4xl">Cart</h1>
       {items.length === 0 ? (
         <p className="mt-10 text-muted">
           Your cart is empty.{" "}
@@ -94,7 +94,7 @@ export default function CartPage() {
               Clear cart
             </Button>
           </div>
-          <div className="fixed inset-x-0 bottom-[var(--store-dock)] z-30 border-t border-border bg-background px-4 py-3 lg:hidden">
+          <div className="fixed inset-x-0 bottom-[var(--store-dock)] z-50 border-t border-border bg-background px-4 py-3 pr-16 lg:hidden">
             <Link href="/checkout" className={buttonClass("primary", "h-12 w-full text-base")}>
               Checkout · {formatGhs(subtotal)}
             </Link>

@@ -10,11 +10,11 @@ export const metadata = pageMeta({
 
 export default function JournalPage() {
   return (
-    <div className="mx-auto max-w-6xl px-5 py-16 lg:px-8">
+    <div className="mx-auto max-w-6xl px-4 py-8 pb-24 lg:px-8 lg:py-16">
       <p className="text-sm text-muted">
         <Link href="/">Home</Link> / Guides
       </p>
-      <h1 className="mt-4 text-4xl">Guides</h1>
+      <h1 className="mt-4 text-3xl md:text-4xl">Guides</h1>
       <p className="mt-3 max-w-2xl text-muted">
         How to choose a kitchen appliance, what to check on the listing, and how to look after the unit.
       </p>

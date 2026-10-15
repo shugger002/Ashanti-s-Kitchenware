@@ -93,11 +93,13 @@ export function AddToCart({ product, sticky = false }: { product: ProductDetail;
           {demo ? " · Demo photograph: confirm against stock before paying" : ""}
         </p>
       )}
-      <div className="flex flex-wrap items-center gap-3">
+      <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto sm:gap-3">
         {sticky ? (
-          <QuantityStepper size="sm" value={qty} onChange={setQty} min={1} max={Math.max(available, 1)} />
+          <div className="hidden sm:block">
+            <QuantityStepper size="sm" value={qty} onChange={setQty} min={1} max={Math.max(available, 1)} />
+          </div>
         ) : null}
-        <Button type="submit" disabled={available <= 0}>
+        <Button type="submit" disabled={available <= 0} className={sticky ? "h-12 min-h-12 flex-1 sm:flex-none" : "h-12 min-h-12 w-full sm:w-auto"}>
           Add to cart
         </Button>
         {sticky ? null : (

@@ -14,8 +14,8 @@ export default async function ContactPage() {
   const digits = contact.whatsappE164.replace(/[^\d]/g, "");
   const mapsUrl = contact.mapsUrl || shopMap.url;
   return (
-    <div className="mx-auto max-w-3xl px-5 py-16 lg:px-8">
-      <h1 className="text-4xl">Contact</h1>
+    <div className="mx-auto max-w-3xl px-4 py-8 pb-24 lg:px-8 lg:py-16">
+      <h1 className="text-3xl md:text-4xl">Contact</h1>
       <div className="mt-8 space-y-3 leading-relaxed">
         <p>
           <a href={`tel:${contact.phoneE164}`}>{contact.phoneDisplay}</a>

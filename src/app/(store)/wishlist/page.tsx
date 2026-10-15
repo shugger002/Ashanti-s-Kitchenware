@@ -21,8 +21,8 @@ export default function WishlistPage() {
   }, []);
 
   return (
-    <div className="mx-auto max-w-4xl px-5 py-12 pb-24 lg:px-8 lg:pb-12">
-      <h1 className="text-4xl">Wishlist</h1>
+    <div className="mx-auto max-w-4xl px-4 py-6 pb-24 lg:px-8 lg:py-12 lg:pb-12">
+      <h1 className="text-3xl md:text-4xl">Wishlist</h1>
       <p className="mt-2 text-sm text-muted">Saved on this device. Sign in is not required.</p>
       {items.length === 0 ? (
         <p className="mt-10 text-muted">
@@ -34,40 +34,44 @@ export default function WishlistPage() {
       ) : (
         <ul className="mt-10 divide-y divide-border">
           {items.map((item) => (
-            <li key={item.productId} className="flex flex-wrap items-center gap-4 py-5">
-              {item.imageUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={item.imageUrl} alt="" className="h-20 w-20 rounded-2xl object-cover" />
-              ) : null}
-              <div className="flex-1">
-                <Link href={`/products/${item.slug}`} className="font-medium">
-                  {item.name}
-                </Link>
-                <p className="price">{formatGhs(item.unitPrice)}</p>
+            <li key={item.productId} className="flex flex-col gap-3 py-5 sm:flex-row sm:flex-wrap sm:items-center sm:gap-4">
+              <div className="flex min-w-0 flex-1 items-center gap-4">
+                {item.imageUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={item.imageUrl} alt="" className="h-20 w-20 shrink-0 rounded-2xl object-cover" />
+                ) : null}
+                <div className="min-w-0 flex-1">
+                  <Link href={`/products/${item.slug}`} className="font-medium">
+                    {item.name}
+                  </Link>
+                  <p className="price">{formatGhs(item.unitPrice)}</p>
+                </div>
               </div>
-              <button
-                type="button"
-                className={buttonClass("primary")}
-                onClick={() =>
-                  add(
-                    {
-                      productId: item.productId,
-                      variantId: null,
-                      slug: item.slug,
-                      name: item.name,
-                      sku: item.productId,
-                      unitPrice: item.unitPrice,
-                      imageUrl: item.imageUrl,
-                    },
-                    1,
-                  )
-                }
-              >
-                Add to cart
-              </button>
-              <button type="button" className="text-sm text-muted" onClick={() => removeWishlist(item.productId)}>
-                Remove
-              </button>
+              <div className="flex w-full gap-2 sm:w-auto">
+                <button
+                  type="button"
+                  className={buttonClass("primary", "h-11 min-h-11 flex-1 sm:flex-none")}
+                  onClick={() =>
+                    add(
+                      {
+                        productId: item.productId,
+                        variantId: null,
+                        slug: item.slug,
+                        name: item.name,
+                        sku: item.productId,
+                        unitPrice: item.unitPrice,
+                        imageUrl: item.imageUrl,
+                      },
+                      1,
+                    )
+                  }
+                >
+                  Add to cart
+                </button>
+                <button type="button" className="min-h-11 px-3 text-sm text-muted" onClick={() => removeWishlist(item.productId)}>
+                  Remove
+                </button>
+              </div>
             </li>
           ))}
         </ul>

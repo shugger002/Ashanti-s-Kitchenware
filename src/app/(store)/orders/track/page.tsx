@@ -29,8 +29,8 @@ export default async function TrackPage({
   const whatsappHref = digits ? `https://wa.me/${digits}` : null;
 
   return (
-    <div className="mx-auto max-w-xl px-5 py-12 lg:px-8">
-      <h1 className="text-4xl">Track order</h1>
+    <div className="mx-auto max-w-xl px-4 py-8 pb-24 lg:px-8 lg:py-12">
+      <h1 className="text-3xl md:text-4xl">Track order</h1>
       <p className="mt-3 text-sm leading-relaxed text-muted">
         Phone number from checkout, or your order number (AK-…).
       </p>
@@ -47,7 +47,7 @@ export default async function TrackPage({
             className="input mt-1"
           />
         </label>
-        <button className={buttonClass("primary")} type="submit">
+        <button className={buttonClass("primary", "h-12 w-full sm:w-auto")} type="submit">
           See my order
         </button>
       </form>

@@ -40,8 +40,8 @@ const faqs = [
 
 export default function FaqPage() {
   return (
-    <div className="mx-auto max-w-3xl px-5 py-16 lg:px-8">
-      <h1 className="text-4xl">Questions</h1>
+    <div className="mx-auto max-w-3xl px-4 py-8 pb-24 lg:px-8 lg:py-16">
+      <h1 className="text-3xl md:text-4xl">Questions</h1>
       <ul className="mt-10 space-y-4">
         {faqs.map((item) => (
           <li

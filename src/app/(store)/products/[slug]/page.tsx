@@ -96,7 +96,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
         {" / "}
         <span>{product.name}</span>
       </nav>
-      <div className="mt-8 grid gap-10 lg:grid-cols-[1.1fr_0.9fr]">
+      <div className="mt-6 grid gap-8 lg:mt-8 lg:grid-cols-[1.1fr_0.9fr] lg:gap-10">
         <ProductGallery images={product.images} name={product.name} />
         <div>
           {product.categoryName ? <p className="text-xs uppercase tracking-wide text-muted">{product.categoryName}</p> : null}
@@ -176,14 +176,14 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
         </div>
       </div>
 
-      <div className="fixed inset-x-0 bottom-[var(--store-dock)] z-50 border-t border-border bg-surface/95 p-3 shadow-[var(--shadow)] backdrop-blur lg:sticky lg:inset-x-auto lg:bottom-4 lg:z-30 lg:mt-8 lg:rounded-sm lg:border">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="min-w-0">
-            <p className="truncate font-medium">{product.name}</p>
+      <div className="fixed inset-x-0 bottom-[var(--store-dock)] z-50 border-t border-border bg-surface/95 p-3 pr-16 shadow-[var(--shadow)] backdrop-blur lg:sticky lg:inset-x-auto lg:bottom-4 lg:z-30 lg:mt-8 lg:rounded-sm lg:border lg:pr-3">
+        <div className="flex items-center gap-3">
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-medium sm:text-base">{product.name}</p>
             {product.salePrice ? (
               <SalePriceBubble className="text-base">{formatGhs(price)}</SalePriceBubble>
             ) : (
-              <p className="price text-lg">{formatGhs(price)}</p>
+              <p className="price text-base sm:text-lg">{formatGhs(price)}</p>
             )}
           </div>
           <AddToCart product={product} sticky />

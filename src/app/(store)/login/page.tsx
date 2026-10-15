@@ -14,8 +14,8 @@ function LoginForm() {
   const nextPath = next?.startsWith("/") && !next.startsWith("//") ? next : "/account";
 
   return (
-    <div className="mx-auto max-w-md px-5 py-16">
-      <h1 className="text-4xl">Sign in</h1>
+    <div className="mx-auto max-w-md px-4 py-8 lg:px-5 lg:py-16">
+      <h1 className="text-3xl md:text-4xl">Sign in</h1>
       <p className="mt-3 text-sm text-muted">
         Optional. You can still check out as a guest. Staff use the{" "}
         <Link href="/admin/login" className="underline">
@@ -45,7 +45,7 @@ function LoginForm() {
           <input name="password" type="password" required autoComplete="current-password" className="input mt-1" />
         </label>
         {error ? <p className="text-sm text-red-800">{error}</p> : null}
-        <Button type="submit">Sign in</Button>
+        <Button type="submit" className="h-12 w-full">Sign in</Button>
       </form>
       <p className="mt-6 text-sm">
         New here? <Link href="/register">Create an account</Link>

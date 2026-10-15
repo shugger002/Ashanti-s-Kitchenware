@@ -26,7 +26,7 @@ export function ContactForm() {
         Message
         <textarea name="message" required rows={5} className="input mt-1" />
       </label>
-      <Button type="submit" disabled={pending}>
+      <Button type="submit" disabled={pending} className="h-12 w-full sm:w-auto">
         {pending ? "Sending…" : "Send message"}
       </Button>
       {state?.error ? <p className="text-sm text-red-800">{state.error}</p> : null}

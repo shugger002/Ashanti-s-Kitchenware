@@ -84,7 +84,7 @@ export function StoreHeader({
       <div className="mx-auto flex h-14 max-w-6xl items-center gap-3 px-4 lg:h-16 lg:gap-8 lg:px-8">
         <button
           type="button"
-          className="-ml-1 inline-flex size-10 shrink-0 items-center justify-center"
+          className="-ml-1 inline-flex size-11 shrink-0 items-center justify-center"
           aria-label={menuOpen ? "Close menu" : "Open menu"}
           aria-expanded={menuOpen}
           aria-controls="store-menu"
@@ -149,7 +149,7 @@ export function StoreHeader({
           <Link href={signedIn ? "/account" : "/login"} aria-label={signedIn ? "Your account" : "Sign in"} className="hidden lg:inline-flex">
             <User className="h-5 w-5" strokeWidth={1.5} />
           </Link>
-          <button type="button" className="relative" aria-label={`Cart, ${count} items`} onClick={openDrawer}>
+          <button type="button" className="relative inline-flex size-11 items-center justify-center" aria-label={`Cart, ${count} items`} onClick={openDrawer}>
             <ShoppingBag className="h-5 w-5" strokeWidth={1.5} />
             {count > 0 ? (
               <span className="absolute -right-2 -top-2 min-w-4 rounded-full bg-accent px-1 text-center text-[10px] leading-4 text-white">

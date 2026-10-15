@@ -32,17 +32,17 @@ export default async function JournalArticlePage({ params }: { params: Promise<{
   };
 
   return (
-    <article className="mx-auto max-w-3xl px-5 py-16 lg:px-8">
+    <article className="mx-auto max-w-3xl px-4 py-8 pb-24 lg:px-8 lg:py-16">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdText(jsonLd) }} />
       <nav className="text-sm text-muted">
         <Link href="/journal">Guides</Link> / {article.title}
       </nav>
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={article.image} alt={article.imageAlt} className="mt-6 h-80 w-full rounded-3xl object-cover" />
+      <img src={article.image} alt={article.imageAlt} className="mt-6 h-48 w-full object-cover sm:h-80 lg:rounded-3xl" />
       <p className="mt-6 text-xs uppercase tracking-wide text-muted">
         {article.category} · {article.minutes} min · {article.date} · Ashanti's Kitchenware
       </p>
-      <h1 className="mt-3 text-4xl">{article.title}</h1>
+      <h1 className="mt-3 text-3xl md:text-4xl">{article.title}</h1>
       <p className="mt-4 text-lg leading-relaxed text-muted">{article.excerpt}</p>
       {article.body.map((section) => (
         <section key={section.heading} className="mt-10">

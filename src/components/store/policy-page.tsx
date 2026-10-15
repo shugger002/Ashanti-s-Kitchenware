@@ -10,8 +10,8 @@ export function PolicyPage({
   sections: { heading: string; body: string }[];
 }) {
   return (
-    <article className="mx-auto max-w-3xl px-5 py-16 lg:px-8">
-      <h1 className="text-4xl">{title}</h1>
+    <article className="mx-auto max-w-3xl px-4 py-8 pb-24 lg:px-8 lg:py-16">
+      <h1 className="text-3xl md:text-4xl">{title}</h1>
       <p className="mt-2 text-sm text-muted">Last updated: {updated}</p>
       <p className="mt-4 text-xs text-muted">{policySourceNote}</p>
       <div className="mt-10 space-y-8">

@@ -18,8 +18,8 @@ export default async function AccountPage() {
   const orders = await listOrdersForCustomer(customer.id);
 
   return (
-    <div className="mx-auto max-w-3xl px-5 py-16 lg:px-8">
-      <h1 className="text-4xl">Your account</h1>
+    <div className="mx-auto max-w-3xl px-4 py-8 pb-24 lg:px-8 lg:py-16">
+      <h1 className="text-3xl md:text-4xl">Your account</h1>
       <p className="mt-3 text-muted">
         {customer.fullName}
         <br />

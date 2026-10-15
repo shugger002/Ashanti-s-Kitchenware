@@ -21,7 +21,7 @@ export default async function AboutPage() {
           <h1 className="text-4xl text-white md:text-5xl">Kitchen appliances from the Accra shop.</h1>
         </div>
       </section>
-      <div className="mx-auto max-w-3xl px-5 py-16 lg:px-8">
+      <div className="mx-auto max-w-3xl px-4 py-10 pb-24 lg:px-8 lg:py-16">
         <p className="max-w-prose text-lg leading-relaxed text-muted">
           Ashanti's Kitchenware is a kitchen-appliance retailer in Accra taking orders online. We are not a luxury
           house and we are not a discount warehouse. The work is simpler: sell appliances that are on the shelf,

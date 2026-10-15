@@ -18,7 +18,7 @@ export function CheckoutShell({ children }: { children: React.ReactNode }) {
         </div>
       </header>
       {children}
-      <footer className="border-t border-border pb-[max(5.75rem,calc(env(safe-area-inset-bottom)+4.5rem))] lg:pb-0">
+      <footer className="border-t border-border pb-[calc(5.5rem+env(safe-area-inset-bottom))] lg:pb-0">
         <nav className="mx-auto flex max-w-6xl flex-wrap gap-x-4 gap-y-1 px-4 py-3 text-xs text-muted lg:px-8 lg:py-5">
           <Link href="/refunds" className="min-h-11 py-2 hover:text-foreground lg:min-h-0 lg:py-0">
             Refund policy

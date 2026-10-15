@@ -30,7 +30,7 @@ export default async function CategoryPage({
       <nav className="text-sm text-muted">
         <Link href="/products">Store</Link> / <span>{cat.name}</span>
       </nav>
-      <h1 className="mt-5 text-4xl">{cat.name}</h1>
+      <h1 className="mt-3 text-3xl md:mt-5 md:text-4xl">{cat.name}</h1>
       {cat.description ? <p className="mt-3 max-w-2xl text-muted">{cat.description}</p> : null}
       <p className="mt-4 text-sm text-muted">{total} products</p>
       {items.length === 0 ? (
