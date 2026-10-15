@@ -287,7 +287,7 @@ export function AdminShell({ user, children }: { user: AdminUser; children: Reac
           alt=""
           className="pointer-events-none absolute inset-0 h-full w-full object-cover object-center"
         />
-        <div className="pointer-events-none absolute inset-0 bg-white/45" />
+        <div className="pointer-events-none absolute inset-0 bg-white/60" />
         <header className="sticky top-0 z-40 flex items-center gap-3 border-b border-border bg-white px-4 py-3 lg:hidden">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={brand.logoSrc} alt={brand.name} className="h-8 w-auto max-w-[9rem] object-contain brightness-0" />

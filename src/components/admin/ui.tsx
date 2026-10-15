@@ -23,15 +23,20 @@ export function AdminPageHeader({
   return (
     <div
       className={cn(
-        "flex flex-wrap gap-4",
+        "flex flex-wrap gap-4 rounded-xl border border-white/90 bg-white/95 px-5 py-4 shadow-sm backdrop-blur-md",
         align === "center" ? "flex-col items-center text-center" : "items-start justify-between",
         className,
       )}
     >
       <div>
-        <h1 className="text-[1.75rem] leading-tight drop-shadow-sm">{title}</h1>
+        <h1 className="text-[1.75rem] leading-tight text-foreground">{title}</h1>
         {description ? (
-          <p className={cn("mt-1.5 text-sm leading-relaxed text-muted", align === "center" ? "max-w-lg" : "max-w-xl")}>
+          <p
+            className={cn(
+              "mt-1.5 text-sm leading-relaxed text-neutral-800",
+              align === "center" ? "max-w-lg" : "max-w-xl",
+            )}
+          >
             {description}
           </p>
         ) : null}
@@ -141,7 +146,10 @@ export function Toolbar({ children }: { children: React.ReactNode }) {
 
 export function BackLink({ href, children }: { href: string; children: React.ReactNode }) {
   return (
-    <Link href={href} className="mb-4 inline-block text-sm text-muted hover:text-foreground">
+    <Link
+      href={href}
+      className="mb-4 inline-block rounded-md bg-white/95 px-2 py-1 text-sm text-neutral-800 hover:text-foreground"
+    >
       {children}
     </Link>
   );
