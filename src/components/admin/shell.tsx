@@ -105,7 +105,7 @@ function Nav({
   const pathname = usePathname();
   return (
     <>
-      <Link
+      <a
         href="/admin"
         className={cn("flex items-center gap-3 px-4 py-5", collapsed && "justify-center px-2")}
         onClick={onNavigate}
@@ -119,7 +119,7 @@ function Nav({
             <span className="block text-[11px] text-white/70">Admin Portal</span>
           </span>
         )}
-      </Link>
+      </a>
       {!collapsed && showLogoCard ? (
         <div className="mx-4 mb-4 rounded-sm bg-white px-3 py-2">
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -142,10 +142,9 @@ function Nav({
                   const Icon = link.icon;
                   const active = isActive(pathname, link);
                   return (
-                    <Link
+                    <a
                       key={link.href}
                       href={link.href}
-                      prefetch={false}
                       title={link.label}
                       onClick={onNavigate}
                       className={cn(
@@ -156,7 +155,7 @@ function Nav({
                     >
                       <Icon className={cn("shrink-0", collapsed ? "h-5 w-5" : "h-4 w-4")} strokeWidth={1.5} />
                       {collapsed ? <span className="sr-only">{link.label}</span> : link.label}
-                    </Link>
+                    </a>
                   );
                 })}
               </div>
