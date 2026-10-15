@@ -136,7 +136,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
           <p className="mt-4 text-sm text-muted">Stock is checked again when you place the order. A thank-you page is not proof of payment.</p>
 
           <details className="mt-8 border-t border-border pt-4" open>
-            <summary className="cursor-pointer font-medium">Product details</summary>
+            <summary className="flex min-h-11 cursor-pointer items-center font-medium">Product details</summary>
             <dl className="mt-4 grid grid-cols-2 gap-3 text-sm">
               <div>
                 <dt className="text-muted">SKU</dt>
@@ -151,19 +151,19 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
             </dl>
           </details>
           <details className="border-t border-border py-4">
-            <summary className="cursor-pointer font-medium">Care and compatibility</summary>
+            <summary className="flex min-h-11 cursor-pointer items-center font-medium">Care and compatibility</summary>
             <p className="mt-3 text-sm leading-relaxed text-muted">
               Follow the care notes in the specifications. Confirm plug type, wattage, and hob compatibility against the
               unit on the shelf before treating a demo listing as final.
             </p>
           </details>
           <details className="border-t border-border py-4">
-            <summary className="cursor-pointer font-medium">Shipping and returns</summary>
+            <summary className="flex min-h-11 cursor-pointer items-center font-medium">Shipping and returns</summary>
             <p className="mt-3 text-sm leading-relaxed text-muted">{faqs[0].a}</p>
             <p className="mt-2 text-sm leading-relaxed text-muted">{faqs[1].a}</p>
           </details>
           <details className="border-t border-border py-4">
-            <summary className="cursor-pointer font-medium">Questions</summary>
+            <summary className="flex min-h-11 cursor-pointer items-center font-medium">Questions</summary>
             <ul className="mt-3 space-y-3 text-sm">
               {faqs.map((item) => (
                 <li key={item.q}>

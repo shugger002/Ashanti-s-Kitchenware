@@ -29,7 +29,7 @@ export function ProductGrid({ products }: { products: ProductCard[] }) {
           <List className="h-4 w-4" strokeWidth={1.5} />
         </button>
       </div>
-      <div className={layout === "grid" ? "grid grid-cols-2 gap-x-3 gap-y-8 sm:gap-x-6 sm:gap-y-12 lg:grid-cols-4" : "flex flex-col gap-8"}>
+      <div className={layout === "grid" ? "grid grid-cols-2 gap-x-3 gap-y-6 sm:gap-x-6 sm:gap-y-12 lg:grid-cols-4" : "flex flex-col gap-5 sm:gap-8"}>
         {products.map((product) => (
           <ProductCardView key={product.id} product={product} layout={layout} />
         ))}

@@ -35,19 +35,19 @@ export default async function AccountPage() {
           redirect("/");
         }}
       >
-        <button type="submit" className="text-sm text-accent">
+        <button type="submit" className="inline-flex min-h-11 items-center text-sm text-accent">
           Sign out
         </button>
       </form>
 
-      <p className="mt-6 flex flex-wrap gap-4 text-sm">
-        <Link href="/wishlist" className="text-accent">
+      <p className="mt-6 flex flex-col gap-1 text-sm sm:flex-row sm:flex-wrap sm:gap-4">
+        <Link href="/wishlist" className="inline-flex min-h-11 items-center text-accent">
           Wishlist
         </Link>
-        <Link href="/orders/track" className="text-accent">
+        <Link href="/orders/track" className="inline-flex min-h-11 items-center text-accent">
           Track an order
         </Link>
-        <Link href="/shop" className="text-accent">
+        <Link href="/shop" className="inline-flex min-h-11 items-center text-accent">
           Recently viewed lives on product pages
         </Link>
       </p>

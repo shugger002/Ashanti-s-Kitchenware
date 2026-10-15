@@ -61,30 +61,30 @@ export function StoreFooter({
   return (
     <footer className="mt-auto bg-surface pb-[calc(var(--store-dock)+env(safe-area-inset-bottom))] lg:pb-0">
       <section className="border-t border-border">
-        <div className="mx-auto max-w-6xl px-5 py-12 lg:px-8 lg:py-16">
+        <div className="mx-auto max-w-6xl px-4 py-8 lg:px-8 lg:py-16">
           <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-accent">Visit the Accra shop</p>
-          <p className="mt-3 max-w-3xl font-serif text-3xl text-pretty md:text-4xl">
+          <p className="mt-3 max-w-3xl font-serif text-2xl text-pretty md:text-4xl">
             {contact.addressLine1 || locality}
           </p>
           {contact.addressLine1 ? <p className="mt-2 text-sm text-muted">{locality}</p> : null}
           <p className="mt-4 max-w-md text-pretty text-sm leading-relaxed text-muted">{shopHours}</p>
-          <div className="mt-6 flex flex-wrap gap-3">
-            <Link href="/directions" className={buttonClass("primary")}>
+          <div className="mt-6 flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:gap-3">
+            <Link href="/directions" className={buttonClass("primary", "h-12 w-full sm:w-auto")}>
               Get directions
             </Link>
-            <a href={`https://wa.me/${digits}`} className={buttonClass("secondary")}>
+            <a href={`https://wa.me/${digits}`} className={buttonClass("secondary", "h-12 w-full sm:w-auto")}>
               WhatsApp
             </a>
-            <a href={`tel:${contact.phoneE164}`} className={buttonClass("secondary")}>
+            <a href={`tel:${contact.phoneE164}`} className={buttonClass("secondary", "h-12 w-full sm:w-auto")}>
               Call
             </a>
           </div>
         </div>
       </section>
 
-      <div className="mx-auto grid max-w-6xl gap-10 px-5 py-14 sm:grid-cols-2 lg:grid-cols-4 lg:gap-12 lg:px-8">
+      <div className="mx-auto grid max-w-6xl gap-8 px-4 py-8 sm:grid-cols-2 lg:grid-cols-4 lg:gap-12 lg:px-8 lg:py-14">
         <div>
-          <StoreLogo className="h-12 w-auto max-w-[14rem]" />
+          <StoreLogo className="h-10 w-auto max-w-[12rem] lg:h-12 lg:max-w-[14rem]" />
           <p className="mt-4 max-w-xs text-pretty text-sm leading-relaxed text-muted">
             Kitchen appliances from the Accra shop, priced in Ghana Cedis.
           </p>
@@ -104,22 +104,22 @@ export function StoreFooter({
           </p>
         </div>
 
-        <nav aria-label="Shop" className="text-sm leading-7">
+        <nav aria-label="Shop" className="text-sm">
           <FooterHeading>Shop</FooterHeading>
-          <ul className="mt-4 space-y-1">
+          <ul className="mt-2">
             <li>
-              <Link href="/products" className="hover:text-accent">
+              <Link href="/products" className="flex min-h-11 items-center hover:text-accent">
                 All products
               </Link>
             </li>
             <li>
-              <Link href="/promo" className="hover:text-accent">
+              <Link href="/promo" className="flex min-h-11 items-center hover:text-accent">
                 Promo and discounted
               </Link>
             </li>
             {shopLinks.map((item) => (
               <li key={item.href}>
-                <Link href={item.href} className="hover:text-accent">
+                <Link href={item.href} className="flex min-h-11 items-center hover:text-accent">
                   {item.label}
                 </Link>
               </li>
@@ -127,12 +127,12 @@ export function StoreFooter({
           </ul>
         </nav>
 
-        <nav aria-label="Help" className="text-sm leading-7">
+        <nav aria-label="Help" className="text-sm">
           <FooterHeading>Help</FooterHeading>
-          <ul className="mt-4 space-y-1">
+          <ul className="mt-2">
             {helpLinks.map((item) => (
               <li key={item.href}>
-                <Link href={item.href} className="hover:text-accent">
+                <Link href={item.href} className="flex min-h-11 items-center hover:text-accent">
                   {item.label}
                 </Link>
               </li>
@@ -152,18 +152,18 @@ export function StoreFooter({
       </div>
 
       <div className="bg-foreground text-white/70">
-        <div className="mx-auto flex max-w-6xl flex-col gap-4 px-5 py-5 text-xs lg:flex-row lg:items-center lg:justify-between lg:px-8">
+        <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-4 text-xs lg:flex-row lg:items-center lg:justify-between lg:px-8 lg:py-5">
           <p>
             © {new Date().getFullYear()} {contact.legalName || brand.name} · Accra, Ghana
           </p>
           <nav className="flex flex-wrap items-center gap-x-4 gap-y-2" aria-label="Policies">
-            <Link href="/privacy" className="hover:text-white">
+            <Link href="/privacy" className="inline-flex min-h-11 items-center hover:text-white">
               Privacy
             </Link>
-            <Link href="/terms" className="hover:text-white">
+            <Link href="/terms" className="inline-flex min-h-11 items-center hover:text-white">
               Terms
             </Link>
-            <Link href="/cookies" className="hover:text-white">
+            <Link href="/cookies" className="inline-flex min-h-11 items-center hover:text-white">
               Cookies
             </Link>
             <CookieSettingsButton className="text-xs text-white/70 hover:text-white" />
@@ -174,7 +174,7 @@ export function StoreFooter({
             ))}
           </nav>
         </div>
-        <p className="mx-auto max-w-6xl px-5 pb-5 text-[11px] leading-relaxed text-white/45 lg:px-8">{DEMO_PHOTO_NOTICE}</p>
+        <p className="mx-auto max-w-6xl px-4 pb-4 text-[11px] leading-relaxed text-white/45 lg:px-8 lg:pb-5">{DEMO_PHOTO_NOTICE}</p>
       </div>
     </footer>
   );

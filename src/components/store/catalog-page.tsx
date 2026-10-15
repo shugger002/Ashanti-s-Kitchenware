@@ -59,7 +59,7 @@ export async function CatalogPage({
           : "Store";
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-8 lg:px-8 lg:py-12">
+    <div className="mx-auto max-w-6xl px-4 py-6 pb-24 lg:px-8 lg:py-12 lg:pb-12">
       <nav className="text-sm text-muted">
         <Link href="/">Home</Link> / <span>Store</span>
       </nav>
@@ -105,16 +105,16 @@ export async function CatalogPage({
             <option value="price_desc">Price: high to low</option>
           </select>
           <div className="flex items-center gap-3">
-            <button className={buttonClass("primary", "w-full sm:w-auto")} type="submit">
+            <button className={buttonClass("primary", "h-12 w-full sm:w-auto")} type="submit">
               Apply
             </button>
-            <Link href={basePath} className="text-sm text-muted">
+            <Link href={basePath} className="inline-flex min-h-12 items-center text-sm text-muted">
               Reset
             </Link>
           </div>
         </div>
         <details className="rounded-2xl border border-border bg-surface p-4 text-sm" open={extraOpen || undefined}>
-          <summary className="cursor-pointer font-medium">Price and availability</summary>
+          <summary className="flex min-h-11 cursor-pointer items-center font-medium">Price and availability</summary>
           <div className="mt-3 flex flex-wrap items-center gap-2">
             <input name="min" defaultValue={params.min} placeholder="Min GHS" className="input max-w-32" />
             <input name="max" defaultValue={params.max} placeholder="Max GHS" className="input max-w-32" />
@@ -146,12 +146,12 @@ export async function CatalogPage({
       )}
 
       {pages > 1 ? (
-        <nav className="mt-12 flex gap-2" aria-label="Pagination">
+        <nav className="mt-12 flex flex-wrap gap-2" aria-label="Pagination">
           {Array.from({ length: pages }, (_, i) => i + 1).map((n) => (
             <Link
               key={n}
               href={`${basePath}?${new URLSearchParams({ ...Object.fromEntries(Object.entries(params).filter(([, v]) => v)), page: String(n) }).toString()}`}
-              className={`rounded-xl px-3 py-1.5 text-sm ${n === page ? "bg-accent text-white" : "bg-surface"}`}
+              className={`inline-flex min-h-11 min-w-11 items-center justify-center rounded-xl px-3 text-sm ${n === page ? "bg-accent text-white" : "bg-surface"}`}
             >
               {n}
             </Link>

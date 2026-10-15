@@ -76,7 +76,7 @@ export function PromoPopup({ products }: { products: ProductCard[] }) {
       >
         <button
           type="button"
-          className="absolute right-1.5 top-1.5 z-10 inline-flex size-8 items-center justify-center rounded-full bg-background/90"
+          className="absolute right-1.5 top-1.5 z-10 inline-flex size-11 items-center justify-center rounded-full bg-background/90"
           aria-label="Close promo"
           onClick={dismiss}
         >

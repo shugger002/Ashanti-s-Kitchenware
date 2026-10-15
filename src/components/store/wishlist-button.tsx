@@ -24,7 +24,7 @@ export function WishlistButton({ item, className }: { item: WishlistItem; classN
   return (
     <button
       type="button"
-      className={cn("inline-flex items-center justify-center rounded-full p-2 text-muted hover:text-accent", className)}
+      className={cn("inline-flex size-10 items-center justify-center rounded-full p-2 text-muted hover:text-accent", className)}
       aria-pressed={on}
       aria-label={on ? `Remove ${item.name} from wishlist` : `Save ${item.name} to wishlist`}
       onClick={() => {

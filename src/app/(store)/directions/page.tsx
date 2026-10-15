@@ -58,16 +58,16 @@ export default async function DirectionsPage() {
           ) : null}
           {[contact.city, contact.region, contact.country].filter(Boolean).join(", ")}
         </p>
-        <div className="flex flex-wrap gap-3">
+        <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:gap-3">
           <a
             href={shopMap.directionsUrl}
             rel="noreferrer"
             target="_blank"
-            className={buttonClass("primary")}
+            className={buttonClass("primary", "h-12 w-full sm:w-auto")}
           >
             Get directions in Google Maps
           </a>
-          <a href={mapsUrl} rel="noreferrer" target="_blank" className={buttonClass("secondary")}>
+          <a href={mapsUrl} rel="noreferrer" target="_blank" className={buttonClass("secondary", "h-12 w-full sm:w-auto")}>
             Open in Google Maps
           </a>
         </div>

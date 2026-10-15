@@ -21,8 +21,8 @@ export function ProductReviews({
   const [done, setDone] = useState(false);
 
   return (
-    <section className="mt-16 border-t border-border pt-10">
-      <h2 className="text-2xl">Customer reviews</h2>
+    <section className="mt-10 border-t border-border pt-8 md:mt-16 md:pt-10">
+      <h2 className="text-xl md:text-2xl">Customer reviews</h2>
       <p className="mt-2 text-sm text-muted">
         Published reviews are customer submissions the shop has accepted. They are not independently verified purchases.
       </p>
@@ -93,7 +93,7 @@ export function ProductReviews({
         {done ? (
           <p className="text-sm text-muted">Thank you. The shop will read it before it appears on this page.</p>
         ) : null}
-        <button type="submit" className="inline-flex items-center justify-center rounded-xl bg-accent px-4 py-2.5 text-sm font-medium text-white dark:text-background">
+        <button type="submit" className="inline-flex h-12 w-full items-center justify-center rounded-sm bg-accent px-4 text-sm font-medium text-white sm:w-auto dark:text-background">
           Submit review
         </button>
       </form>

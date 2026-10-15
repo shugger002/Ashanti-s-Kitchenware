@@ -17,8 +17,8 @@ export default async function AboutPage() {
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src="/demo/hero.jpg" alt="" className="absolute inset-0 h-full w-full object-cover opacity-55" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-black/10" />
-        <div className="relative mx-auto flex min-h-[42dvh] max-w-3xl flex-col justify-end px-5 pb-12 lg:px-8">
-          <h1 className="text-4xl text-white md:text-5xl">Kitchen appliances from the Accra shop.</h1>
+        <div className="relative mx-auto flex min-h-[42dvh] max-w-3xl flex-col justify-end px-4 pb-8 lg:px-8 lg:pb-12">
+          <h1 className="text-3xl text-white md:text-5xl">Kitchen appliances from the Accra shop.</h1>
         </div>
       </section>
       <div className="mx-auto max-w-3xl px-4 py-10 pb-24 lg:px-8 lg:py-16">

@@ -16,7 +16,7 @@ export default async function PromoPage() {
   const { items } = await searchProducts({ onSale: true, pageSize: 48 });
   return (
     <div>
-      <nav className="mx-auto max-w-6xl px-5 pt-8 text-sm text-muted lg:px-8">
+      <nav className="mx-auto max-w-6xl px-4 pt-6 text-sm text-muted lg:px-8 lg:pt-8">
         <Link href="/">Home</Link> / <span>Promo and discounted</span>
       </nav>
       <PromoDiscountedSection products={items} variant="page" />

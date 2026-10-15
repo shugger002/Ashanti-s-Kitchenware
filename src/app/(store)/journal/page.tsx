@@ -18,12 +18,12 @@ export default function JournalPage() {
       <p className="mt-3 max-w-2xl text-muted">
         How to choose a kitchen appliance, what to check on the listing, and how to look after the unit.
       </p>
-      <ul className="mt-12 grid gap-10 md:grid-cols-3">
+      <ul className="mt-8 grid gap-8 md:mt-12 md:grid-cols-3 md:gap-10">
         {journalArticles.map((article) => (
           <li key={article.slug}>
             <Link href={`/journal/${article.slug}`}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={article.image} alt={article.imageAlt} className="h-52 w-full rounded-3xl object-cover" />
+              <img src={article.image} alt={article.imageAlt} className="h-44 w-full object-cover md:h-52 md:rounded-3xl" />
               <p className="mt-3 text-xs uppercase tracking-wide text-muted">
                 {article.category} · {article.minutes} min read · {article.date}
               </p>

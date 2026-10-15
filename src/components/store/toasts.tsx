@@ -8,7 +8,7 @@ export function Toasts() {
   if (items.length === 0) return null;
   return (
     <ul
-      className="pointer-events-none fixed inset-x-0 bottom-24 z-[60] mx-auto flex max-w-sm flex-col gap-2 px-4 lg:bottom-8"
+      className="pointer-events-none fixed inset-x-0 bottom-[calc(var(--store-dock)+4.25rem)] z-[60] mx-auto flex max-w-sm flex-col gap-2 px-4 lg:bottom-8"
       aria-live="polite"
     >
       {items.map((toast) => (

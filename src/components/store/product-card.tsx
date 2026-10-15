@@ -65,7 +65,7 @@ export function ProductCardView({
       <div
         className={cn(
           "relative overflow-hidden bg-surface",
-          layout === "list" ? "h-36 w-36 shrink-0" : featured ? "aspect-[4/5]" : "aspect-square",
+          layout === "list" ? "h-24 w-24 shrink-0 sm:h-36 sm:w-36" : featured ? "aspect-[4/5]" : "aspect-square",
         )}
       >
         <Link href={`/products/${product.slug}`} className="absolute inset-0 block">

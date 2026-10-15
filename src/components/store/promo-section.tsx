@@ -35,14 +35,14 @@ export function PromoDiscountedSection({
   if (products.length === 0) {
     if (!isPage) return null;
     return (
-      <section className="mx-auto max-w-6xl px-5 py-16 lg:px-8">
+      <section className="mx-auto max-w-6xl px-4 py-8 pb-24 lg:px-8 lg:py-16">
         <p className="text-xs uppercase tracking-[0.22em] text-accent">Promo · Accra</p>
-        <h1 className="mt-3 text-4xl md:text-5xl">Nothing on promo right now</h1>
+        <h1 className="mt-3 text-3xl md:text-5xl">Nothing on promo right now</h1>
         <p className="mt-4 max-w-xl text-sm leading-relaxed text-muted">
           Pieces appear here when staff set a sale price below the regular Ghana Cedi amount. There is no store-wide
           percentage off unless a listing has that sale price.
         </p>
-        <Link href="/products" className={`${buttonClass("primary")} mt-8`}>
+        <Link href="/products" className={`${buttonClass("primary", "mt-8 h-12 w-full sm:w-auto")}`}>
           Browse the store
         </Link>
       </section>

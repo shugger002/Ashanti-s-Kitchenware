@@ -47,7 +47,7 @@ export default function FaqPage() {
           <li
             key={item.q}
             id={item.q === "How do I pay?" ? "payments" : undefined}
-            className="rounded-3xl border border-border bg-surface p-5"
+            className="rounded-2xl border border-border bg-surface p-4 md:rounded-3xl md:p-5"
           >
             <h2 className="font-serif text-xl">{item.q}</h2>
             <p className="mt-2 text-sm leading-relaxed text-muted">{item.a}</p>
@@ -55,8 +55,8 @@ export default function FaqPage() {
         ))}
       </ul>
       <p className="mt-8 text-sm">
-        Still stuck? <Link href="/contact" className="text-accent">Contact the shop</Link> or read the{" "}
-        <Link href="/refunds" className="text-accent">
+        Still stuck? <Link href="/contact" className="inline-flex min-h-11 items-center text-accent">Contact the shop</Link> or read the{" "}
+        <Link href="/refunds" className="inline-flex min-h-11 items-center text-accent">
           refund policy
         </Link>
         .
