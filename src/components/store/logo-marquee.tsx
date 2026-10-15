@@ -1,36 +1,67 @@
 const marks = [
-  { id: "hearth", label: "Hearth" },
-  { id: "lidco", label: "Lid & Co" },
-  { id: "forge", label: "Forge" },
-  { id: "grain", label: "Grain" },
-  { id: "kettle", label: "Kettle" },
-  { id: "table", label: "Table" },
-  { id: "stove", label: "Stove" },
-  { id: "rack", label: "Rack" },
+  { id: "hoffmans", label: "Hoffmans" },
+  { id: "silver-crest", label: "Silver Crest" },
+  { id: "sokany", label: "Sokany" },
+  { id: "igloo", label: "Igloo" },
+  { id: "coleman", label: "Coleman" },
+  { id: "boma", label: "BOMA" },
+  { id: "ninja", label: "Ninja" },
 ] as const;
 
 function Wordmark({ id, label }: { id: string; label: string }) {
-  const className = "h-10 w-auto max-w-[9.5rem] text-white md:h-11";
+  const className = "h-10 w-auto max-w-[12rem] text-white md:h-11";
   switch (id) {
-    case "hearth":
+    case "hoffmans":
       return (
-        <svg viewBox="0 0 160 36" className={className} aria-hidden>
-          <text x="0" y="28" fill="currentColor" fontFamily="Georgia, serif" fontSize="28" letterSpacing="4">
-            HEARTH
+        <svg viewBox="0 0 200 36" className={className} aria-hidden>
+          <text
+            x="0"
+            y="28"
+            fill="currentColor"
+            fontFamily="system-ui, sans-serif"
+            fontSize="24"
+            fontWeight="700"
+            letterSpacing="-0.5"
+          >
+            HOFFMANS
           </text>
         </svg>
       );
-    case "lidco":
+    case "silver-crest":
+      return (
+        <svg viewBox="0 0 210 36" className={className} aria-hidden>
+          <text x="0" y="28" fill="currentColor" fontFamily="Georgia, serif" fontSize="22" fontStyle="italic">
+            Silver Crest
+          </text>
+        </svg>
+      );
+    case "sokany":
       return (
         <svg viewBox="0 0 150 36" className={className} aria-hidden>
-          <text x="0" y="26" fill="currentColor" fontFamily="system-ui, sans-serif" fontSize="20" fontWeight="300">
-            LID &amp; CO
+          <text x="0" y="26" fill="currentColor" fontFamily="system-ui, sans-serif" fontSize="22" letterSpacing="4">
+            SOKANY
           </text>
         </svg>
       );
-    case "forge":
+    case "igloo":
       return (
-        <svg viewBox="0 0 140 36" className={className} aria-hidden>
+        <svg viewBox="0 0 120 36" className={className} aria-hidden>
+          <text x="0" y="28" fill="currentColor" fontFamily="Georgia, serif" fontSize="28">
+            Igloo
+          </text>
+        </svg>
+      );
+    case "coleman":
+      return (
+        <svg viewBox="0 0 170 36" className={className} aria-hidden>
+          <text x="0" y="27" fill="currentColor" fontFamily="system-ui, sans-serif" fontSize="22" fontWeight="600">
+            COLEMAN
+          </text>
+        </svg>
+      );
+    case "boma":
+      return (
+        <svg viewBox="0 0 110 36" className={className} aria-hidden>
           <text
             x="0"
             y="28"
@@ -38,49 +69,17 @@ function Wordmark({ id, label }: { id: string; label: string }) {
             fontFamily="system-ui, sans-serif"
             fontSize="26"
             fontWeight="700"
-            letterSpacing="-1"
+            letterSpacing="2"
           >
-            FORGE
-          </text>
-        </svg>
-      );
-    case "grain":
-      return (
-        <svg viewBox="0 0 130 36" className={className} aria-hidden>
-          <text x="0" y="28" fill="currentColor" fontFamily="Georgia, serif" fontSize="26" fontStyle="italic">
-            Grain
-          </text>
-        </svg>
-      );
-    case "kettle":
-      return (
-        <svg viewBox="0 0 150 36" className={className} aria-hidden>
-          <text x="0" y="26" fill="currentColor" fontFamily="system-ui, sans-serif" fontSize="18" letterSpacing="6">
-            KETTLE
-          </text>
-        </svg>
-      );
-    case "table":
-      return (
-        <svg viewBox="0 0 120 36" className={className} aria-hidden>
-          <text x="0" y="28" fill="currentColor" fontFamily="Georgia, serif" fontSize="30">
-            table
-          </text>
-        </svg>
-      );
-    case "stove":
-      return (
-        <svg viewBox="0 0 140 36" className={className} aria-hidden>
-          <text x="0" y="27" fill="currentColor" fontFamily="system-ui, sans-serif" fontSize="22" fontWeight="600">
-            STOVE
+            BOMA
           </text>
         </svg>
       );
     default:
       return (
-        <svg viewBox="0 0 110 36" className={className} aria-hidden>
-          <text x="0" y="26" fill="currentColor" fontFamily="system-ui, sans-serif" fontSize="22" letterSpacing="3">
-            {label.toUpperCase()}
+        <svg viewBox="0 0 120 36" className={className} aria-hidden>
+          <text x="0" y="28" fill="currentColor" fontFamily="Georgia, serif" fontSize="26">
+            {label}
           </text>
         </svg>
       );
@@ -90,11 +89,10 @@ function Wordmark({ id, label }: { id: string; label: string }) {
 export function LogoMarquee() {
   const loop = [...marks, ...marks];
   return (
-    <section className="overflow-hidden bg-accent py-10 text-white md:py-12" aria-label="Example brand logos">
-      <p className="text-center font-serif text-2xl md:text-3xl">Example brands</p>
+    <section className="overflow-hidden bg-accent py-10 text-white md:py-12" aria-label="Brands in stock">
+      <p className="text-center font-serif text-2xl md:text-3xl">Brands in stock</p>
       <p className="mx-auto mt-2 max-w-xl px-5 text-center text-xs leading-relaxed text-white/75">
-        Layout samples for the ticker. Not press mentions, and not a list of brands the Accra shop sells. Swap these for
-        official marks of names you actually stock.
+        Names of lines carried at the Accra Mall shop. These are typeset labels, not official logos or press mentions.
       </p>
       <div
         className="ak-logo-marquee-wrap mt-8 overflow-hidden"
@@ -106,7 +104,7 @@ export function LogoMarquee() {
           {loop.map((mark, index) => (
             <li
               key={`${mark.id}-${index}`}
-              className="flex h-14 w-[11rem] shrink-0 items-center justify-center px-8 md:w-[13rem]"
+              className="flex h-14 w-[12.5rem] shrink-0 items-center justify-center px-6 md:w-[14.5rem]"
               aria-hidden={index >= marks.length}
             >
               {index < marks.length ? <span className="sr-only">{mark.label}</span> : null}
