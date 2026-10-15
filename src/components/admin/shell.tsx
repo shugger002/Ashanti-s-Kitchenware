@@ -280,18 +280,14 @@ export function AdminShell({ user, children }: { user: AdminUser; children: Reac
           )}
         </div>
       </aside>
-      <div className={cn("relative min-w-0 flex-1", pathname === "/admin" ? "bg-transparent" : "bg-white")}>
-        {pathname === "/admin" ? (
-          <>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/admin/kitchen-wall.jpg"
-              alt=""
-              className="pointer-events-none absolute inset-0 h-full w-full object-cover object-center"
-            />
-            <div className="pointer-events-none absolute inset-0 bg-white/45" />
-          </>
-        ) : null}
+      <div className="relative min-h-dvh min-w-0 flex-1 bg-transparent">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/admin/kitchen-wall.jpg"
+          alt=""
+          className="pointer-events-none absolute inset-0 h-full w-full object-cover object-center"
+        />
+        <div className="pointer-events-none absolute inset-0 bg-white/45" />
         <header className="sticky top-0 z-40 flex items-center gap-3 border-b border-border bg-white px-4 py-3 lg:hidden">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={brand.logoSrc} alt={brand.name} className="h-8 w-auto max-w-[9rem] object-contain brightness-0" />
