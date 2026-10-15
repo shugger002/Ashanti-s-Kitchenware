@@ -6,7 +6,7 @@
 export const brand = {
   name: "Ashanti's Kitchenware",
   domain: "ashantisakitchenware.com",
-  logoSrc: "/logo.png",
+  logoSrc: "/logo.png?v=official",
   placeholderNotice:
     "Demo product photography is still in use. Replace with photographed stock before launch.",
 } as const;

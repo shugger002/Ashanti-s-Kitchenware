@@ -24,7 +24,7 @@ export const metadata: Metadata = {
   description:
     "Kitchenware retailer in Accra selling cookware, appliances, and household essentials online.",
   metadataBase: new URL(getAppUrl()),
-  icons: { icon: "/logo.png", apple: "/logo.png" },
+  icons: { icon: "/logo.png?v=official", apple: "/logo.png?v=official" },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
