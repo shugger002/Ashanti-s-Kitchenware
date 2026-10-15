@@ -108,7 +108,11 @@ function Nav({
       <a
         href="/admin"
         className={cn("flex items-center gap-3 px-4 py-5", collapsed && "justify-center px-2")}
-        onClick={onNavigate}
+        onClick={(event) => {
+          event.preventDefault();
+          onNavigate?.();
+          window.location.assign("/admin");
+        }}
       >
         <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-white text-xs font-semibold text-accent">
           AK
@@ -146,7 +150,11 @@ function Nav({
                       key={link.href}
                       href={link.href}
                       title={link.label}
-                      onClick={onNavigate}
+                      onClick={(event) => {
+                        event.preventDefault();
+                        onNavigate?.();
+                        window.location.assign(link.href);
+                      }}
                       className={cn(
                         "flex items-center gap-2.5 rounded-lg px-3 py-2",
                         collapsed && "size-10 justify-center px-0",

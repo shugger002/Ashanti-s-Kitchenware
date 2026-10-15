@@ -1,12 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { adminLogin } from "@/app/admin/login/actions";
 import { Button } from "@/components/ui/button";
 
 export function AdminLoginForm() {
-  const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
   return (
@@ -22,7 +20,7 @@ export function AdminLoginForm() {
           setError(result.error);
           return;
         }
-        router.push("/admin");
+        window.location.assign("/admin");
       }}
     >
       <label className="block text-sm">
