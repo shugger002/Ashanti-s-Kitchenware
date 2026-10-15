@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 export const metadata = pageMeta({
   title: "Promo and discounted",
   description:
-    "Kitchenware currently on promo or discounted at Ashanti's Kitchenware in Accra. Prices in Ghana Cedis.",
+    "Kitchen appliances currently on promo or discounted at Ashanti's Kitchenware in Accra. Prices in Ghana Cedis.",
   path: "/promo",
 });
 

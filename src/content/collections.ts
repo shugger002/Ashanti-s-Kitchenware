@@ -1,19 +1,19 @@
 export const lifestyleBlocks = [
   {
-    title: "Weeknight cooking",
-    text: "One pot, a lid, and a pan that heats evenly. Built for soup, rice, and the meal you make after work.",
+    title: "Kitchen appliances",
+    text: "Blenders, cookers, kettles, and fryers from the Accra Mall shop. Priced in Ghana Cedis.",
+    href: "/shop/kitchen-appliances",
+    image: "/demo/blender.jpg",
+  },
+  {
+    title: "Pots and pans",
+    text: "Sets and single pots listed from stock. Check size and piece count on the product page.",
     href: "/shop/cookware",
     image: "/demo/pot-set.jpg",
   },
   {
-    title: "Weekend cooking",
-    text: "Heavier pots and slower heat for stews and oven finishes when you have the afternoon.",
-    href: "/products/demo-cast-iron-dutch-oven",
-    image: "/demo/dutch-oven.jpg",
-  },
-  {
-    title: "Hosting at home",
-    text: "Plates and serving pieces that look considered without asking for a formal table.",
+    title: "Home pieces",
+    text: "Tableware and storage sold alongside the appliance range.",
     href: "/shop/tableware",
     image: "/demo/tableware.jpg",
   },
@@ -21,22 +21,22 @@ export const lifestyleBlocks = [
 
 export const editorialCollections = [
   {
-    title: "The everyday cooking set",
-    text: "A pot set, a Dutch oven, and a kettle — add each piece separately from the current catalogue.",
+    title: "Pots and kettles",
+    text: "A pot set, a heavy pot, and a kettle — add each piece separately from the current catalogue.",
     href: "/shop/cookware",
     image: "/demo/pot-set.jpg",
     slugs: ["demo-stainless-pot-set", "demo-cast-iron-dutch-oven", "demo-electric-kettle"],
   },
   {
     title: "The appliance shelf",
-    text: "Blender, air fryer, and rice cooker for kitchens that need more than the hob.",
+    text: "Blender, air fryer, and rice cooker. Add each piece on its own product page.",
     href: "/shop/kitchen-appliances",
     image: "/demo/blender.jpg",
     slugs: ["demo-home-blender", "demo-air-fryer", "demo-rice-cooker"],
   },
   {
-    title: "The hosting collection",
-    text: "Tableware and a storage rack so serving and putting away stay in the same room.",
+    title: "Table and storage",
+    text: "Tableware and a storage rack. Add each piece separately.",
     href: "/shop/tableware",
     image: "/demo/tableware.jpg",
     slugs: ["demo-tableware-set", "demo-kitchen-storage-rack"],
@@ -45,19 +45,19 @@ export const editorialCollections = [
 
 export const brandValues = [
   {
-    title: "Chosen for daily cooking",
-    text: "We list pieces meant for Ghanaian kitchens, not display-only sets we do not stock.",
+    title: "Photographed stock",
+    text: "We list pieces meant for Ghanaian homes, not display-only sets we do not stock.",
   },
   {
-    title: "Sold for daily use",
-    text: "We are a retailer. Handles, lids, and bases should feel ordinary in the hand after a month of meals.",
+    title: "Sold as a retailer",
+    text: "Handles, lids, and housings should match the unit on the shelf. Demo listings stay labelled.",
   },
   {
     title: "Easy to clean",
-    text: "Choose finishes you will actually wash. Care notes sit on each product page.",
+    text: "Choose finishes you will actually wash. Specs sit on each product page.",
   },
   {
-    title: "Thoughtful materials",
+    title: "Named materials",
     text: "Stainless, enamel, ceramic, and steel — named on the listing, not hidden in marketing.",
   },
   {

@@ -54,9 +54,9 @@ export type StorefrontConfig = {
 const fallback: StorefrontConfig = {
   contact: { ...defaultContact },
   hero: {
-    title: "What are you cooking tonight?",
+    title: "Kitchen appliances in Accra",
     subtitle:
-      "Start with a range. Every photograph is of stock from the shop — pots, appliances, and tableware priced in Ghana Cedis.",
+      "Blenders, cookers, kettles, fryers, and related kitchen appliances from the Accra Mall shop, priced in Ghana Cedis.",
     ctaLabel: "Shop",
     ctaHref: "/shop",
     placeholder: true,
@@ -101,7 +101,9 @@ export async function getStorefrontConfig(): Promise<StorefrontConfig> {
     contact.legalName === "Ashantis Kitchenware" || contact.tradingName === "Ashantis Kitchenware"
       ? { ...contact, legalName: fallback.contact.legalName, tradingName: fallback.contact.tradingName }
       : contact;
-  return { contact: liveContact, hero, announcement: liveAnnouncement, social, fulfillment };
+  const cookingCopy = /\bcooking\b|\bcook\b|recipe|kitchen tip|kitchen note/i;
+  const liveHero = cookingCopy.test(`${hero.title} ${hero.subtitle}`) ? fallback.hero : hero;
+  return { contact: liveContact, hero: liveHero, announcement: liveAnnouncement, social, fulfillment };
 }
 
 export async function updateSetting(key: string, value: unknown): Promise<void> {

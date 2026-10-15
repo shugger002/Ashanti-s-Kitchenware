@@ -7,7 +7,7 @@ import { X } from "lucide-react";
 import { buttonClass } from "@/components/ui/button";
 
 const RECENT_KEY = "ak_search_recent_v1";
-const POPULAR = ["cookware", "kettle", "blender", "air fryer", "tableware"];
+const POPULAR = ["blender", "kettle", "rice cooker", "air fryer", "cooker"];
 
 export type SearchHint = { slug: string; name: string; href: string; kind: "product" | "category" };
 

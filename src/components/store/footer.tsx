@@ -26,7 +26,7 @@ export function StoreFooter({
         <div>
           <StoreLogo className="h-12 w-auto max-w-[14rem]" />
           <p className="mt-4 max-w-sm text-sm leading-relaxed text-muted">
-            Kitchenware retailer in Accra. We sell cookware, appliances, and household essentials in Ghana Cedis.
+            Kitchen appliances from the Accra Mall shop, priced in Ghana Cedis.
           </p>
           <p className="mt-3 text-xs leading-relaxed text-muted">{DEMO_PHOTO_NOTICE}</p>
         </div>
@@ -77,8 +77,8 @@ export function StoreFooter({
           </ul>
         </div>
         <div className="text-sm">
-          <p className="font-medium">Kitchen notes</p>
-          <p className="mt-3 leading-relaxed text-muted">Recipes, care tips, and new stock. No invented discount.</p>
+          <p className="font-medium">Stock updates</p>
+          <p className="mt-3 leading-relaxed text-muted">Restocks and listed appliances. No invented discount.</p>
           <NewsletterForm compact />
           <p className="mt-3 font-medium">Contact</p>
           <p className="mt-2 text-muted">

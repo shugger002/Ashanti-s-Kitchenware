@@ -16,7 +16,7 @@ export async function subscribeKitchenNotes(
   formData: FormData,
 ): Promise<{ ok: boolean; error?: string; notice?: string }> {
   if (formData.get("consent") !== "on" && formData.get("consent") !== "true") {
-    return { ok: false, error: "Tick the box if you want kitchen notes." };
+    return { ok: false, error: "Tick the box if you want stock updates." };
   }
   const parsed = schema.safeParse({ email: formData.get("email") });
   if (!parsed.success) {
@@ -32,14 +32,14 @@ export async function subscribeKitchenNotes(
   const { contact } = await getStorefrontConfig();
   const result = await sendEmail({
     to: contact.email,
-    subject: `Kitchen notes signup: ${parsed.data.email}`,
-    text: `${parsed.data.email} asked to receive kitchen notes. No discount is attached until the shop publishes one.`,
+    subject: `Stock updates signup: ${parsed.data.email}`,
+    text: `${parsed.data.email} asked to receive stock updates. No discount is attached until the shop publishes one.`,
   });
   if (!result.sent) {
     return {
       ok: false,
-      error: `Kitchen notes could not be sent automatically (${result.reason ?? "mail not configured"}). Email ${contact.email} if you still want to subscribe.`,
+      error: `Stock updates could not be sent automatically (${result.reason ?? "mail not configured"}). Email ${contact.email} if you still want to subscribe.`,
     };
   }
-  return { ok: true, notice: "Thank you. The shop will send kitchen notes from this address when the list is live." };
+  return { ok: true, notice: "Thank you. The shop will send stock updates from this address when the list is live." };
 }

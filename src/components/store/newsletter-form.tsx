@@ -24,7 +24,7 @@ export function NewsletterForm({ compact = false, invert = false }: { compact?: 
       />
       <label className={`flex gap-2 text-xs leading-relaxed ${invert ? "text-white" : "text-muted"}`}>
         <input type="checkbox" name="consent" required className="mt-0.5 accent-white" />
-        I want kitchen notes. This is not a discount unless the shop later publishes one.
+        I want stock updates. This is not a discount unless the shop later publishes one.
       </label>
       <Button
         type="submit"

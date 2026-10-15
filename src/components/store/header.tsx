@@ -56,7 +56,7 @@ export function StoreHeader({
   const desktop = [
     { href: "/products", label: "Shop" },
     { href: "/promo", label: "Promo" },
-    { href: "/journal", label: "Journal" },
+    { href: "/journal", label: "Guides" },
     { href: "/about", label: "About" },
   ];
 

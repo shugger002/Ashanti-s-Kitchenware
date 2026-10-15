@@ -2,7 +2,7 @@ export type JournalArticle = {
   slug: string;
   title: string;
   excerpt: string;
-  category: "Guide" | "Care" | "Recipe notes";
+  category: "Guide" | "Care";
   minutes: number;
   date: string;
   image: string;
@@ -14,42 +14,42 @@ export type JournalArticle = {
 export const journalArticles: JournalArticle[] = [
   {
     slug: "how-to-build-your-first-cookware-set",
-    title: "How to build your first cookware set",
-    excerpt: "Start with one good pot, one pan you will actually use, and a lid that fits. Add the rest as your meals ask for them.",
+    title: "How to choose a kitchen appliance",
+    excerpt: "Match wattage, plug, and size to the unit on the shelf before you pay.",
     category: "Guide",
     minutes: 6,
     date: "11 October 2026",
-    image: "/demo/pot-set.jpg",
-    imageAlt: "Stacked stainless pots (demo photograph)",
-    relatedSlugs: ["demo-stainless-pot-set", "demo-cast-iron-dutch-oven"],
+    image: "/demo/blender.jpg",
+    imageAlt: "Home blender (demo photograph)",
+    relatedSlugs: ["demo-home-blender", "demo-air-fryer"],
     body: [
       {
-        heading: "Buy for the meals you already cook",
+        heading: "Start with the job, then the model",
         paragraphs: [
-          "A first set does not need twelve pieces. In Accra kitchens, most weeks turn on soup, rice, stew, and something fried. A mid-size pot with a lid, a frying pan, and a heavy pot for slow dishes will cover more nights than a boxed set you never unpack.",
-          "If you share a cooker or cook on a compact hob, check the base size before you buy. A pan that overhangs the ring wastes heat and warps faster.",
+          "This shop sells kitchen appliances and related household pieces. Pick the appliance you need — blender, kettle, rice cooker, fryer — then check the listing against the unit on the shelf.",
+          "Piece count, litre mark, and colour should match the product page. Demo listings on this site are layout samples and are not offers for sale.",
         ],
       },
       {
-        heading: "Materials that earn their keep",
+        heading: "Power and plug",
         paragraphs: [
-          "Stainless steel is easy to wash and does not mind metal spoons. Cast iron holds heat for stews and oven finishes, but it is heavy and needs drying after a wash. Nonstick is useful for eggs; treat it gently and replace it when the coating wears.",
-          "Ignore marketing that promises one pan will do everything forever. Match the piece to the job, then look after it.",
+          "Confirm wattage and plug type for Ghanaian sockets before you order. If the listing does not name wattage, ask the Accra Mall shop rather than guessing.",
+          "A higher wattage figure is not automatically better. It has to match the wiring in the room where you will use the appliance.",
         ],
       },
       {
         heading: "What to add later",
         paragraphs: [
-          "A kettle, a rice cooker, and a blender earn their counter space if you use them weekly. Storage racks help only if you measure the gap between worktop and wall cupboard first.",
-          "When you are ready, photograph what you already own and bring the list to the Accra shop or use it against the online catalogue. Buy the next piece, not the whole aisle.",
+          "Buy the next appliance you will use, not a boxed bundle you cannot place. Measure the gap on the worktop first.",
+          "When you are ready, bring the model number to the Accra shop or match it against the online catalogue.",
         ],
       },
     ],
   },
   {
     slug: "essential-tools-every-home-cook-needs",
-    title: "The essential tools every home cook needs",
-    excerpt: "A short list of tools that earn drawer space: a board, a sharp knife, a ladle, and heat you can control.",
+    title: "What to check before you buy",
+    excerpt: "Size, wattage, piece count, and whether the photograph is of the stocked model.",
     category: "Guide",
     minutes: 5,
     date: "11 October 2026",
@@ -58,56 +58,56 @@ export const journalArticles: JournalArticle[] = [
     relatedSlugs: ["demo-electric-kettle", "demo-home-blender"],
     body: [
       {
-        heading: "The four that do most of the work",
+        heading: "Read the specification",
         paragraphs: [
-          "A stable cutting board, one sharp chef’s knife, a wooden or heat-safe spoon, and a pot that sits flat on your hob. Everything else is a specialist.",
-          "If your knife is dull, cooking feels harder than it is. If your board slides, you cook less often. Fix those two before buying gadgets.",
+          "Capacity, voltage, and accessories should be on the product page. If a field is missing, treat it as unconfirmed until staff check the carton.",
+          "Colour options are only listed when the shop stocks them. “As shown” means the photograph, not a range of unlisted colours.",
         ],
       },
       {
-        heading: "Heat and water",
+        heading: "Kettles, blenders, and fryers",
         paragraphs: [
-          "A kettle you trust is as useful as a spare pot. An air fryer or blender is worth it only if it replaces a method you already use — reheating leftovers, blending soups, or roasting small batches without lighting the oven.",
-          "Check plug type and wattage against your home wiring. Demo listings on this site still need wattage confirmed against the unit on the shelf.",
+          "A kettle, blender, or air fryer is worth the counter space if you will use that appliance. Check the base size and the cord length against your socket.",
+          "Demo listings still need wattage confirmed against the unit on the shelf.",
         ],
       },
       {
-        heading: "Keep the drawer honest",
+        heading: "Skip what you will not use",
         paragraphs: [
-          "If a tool has not been used in a month, it is taking space from something you reach for. The same rule applies to the catalogue: if a piece does not match how you cook, leave it.",
+          "If a piece does not match the model you need, leave it. The catalogue is stock, not a full kitchen makeover.",
         ],
       },
     ],
   },
   {
     slug: "how-to-care-for-wooden-kitchen-utensils",
-    title: "How to care for wooden kitchen utensils",
-    excerpt: "Wash, dry, and oil. Wood lasts when it is not left standing in the sink.",
+    title: "Looking after kitchen appliances",
+    excerpt: "Unplug, wash removable parts as the listing says, and dry before you store the unit.",
     category: "Care",
     minutes: 4,
     date: "11 October 2026",
-    image: "/demo/dutch-oven.jpg",
-    imageAlt: "Cast iron Dutch oven (demo photograph)",
-    relatedSlugs: ["demo-cast-iron-dutch-oven", "demo-kitchen-storage-rack"],
+    image: "/demo/rice-cooker.jpg",
+    imageAlt: "Rice cooker (demo photograph)",
+    relatedSlugs: ["demo-rice-cooker", "demo-air-fryer"],
     body: [
       {
-        heading: "Daily wash",
+        heading: "Daily use",
         paragraphs: [
-          "Use warm water, a little soap, and a cloth. Do not soak wooden spoons or boards. Standing water raises the grain and can split the piece.",
-          "Dry immediately and stand the utensil so air reaches both sides. A crowded drying rack that stays damp is worse than a quick towel dry.",
+          "Unplug before you wash. Removable jugs, bowls, and lids usually take warm water and a little soap. Do not immerse a motor housing unless the listing says it is safe.",
+          "Dry parts before you reassemble. Standing water in a jug or cooker bowl is a common way to shorten the life of a unit.",
         ],
       },
       {
-        heading: "Oil when the wood looks thirsty",
+        heading: "When something fails",
         paragraphs: [
-          "When the surface looks pale or feels rough, rub on a thin coat of food-safe mineral oil or a dedicated board oil. Wipe the excess. Do this more often in dry harmattan months.",
-          "Skip vegetable oil from the pantry for long-term care — it can go rancid on the surface.",
+          "If an item arrives faulty, damaged, or incorrect, you have seven days to ask for a return. Keep the carton and the proof of purchase.",
+          "We do not invent star ratings. Specs that are missing from a listing should be confirmed with the shop.",
         ],
       },
       {
-        heading: "When to retire a piece",
+        heading: "Storage",
         paragraphs: [
-          "Deep cracks that trap food, a sour smell that will not wash out, or a board that rocks on the counter are signs to replace it. Care extends life; it does not make a split board safe.",
+          "Leave space around vents. Do not coil a hot cord tightly against the housing. If a rack or cabinet is listed with the appliance, measure the gap first.",
         ],
       },
     ],

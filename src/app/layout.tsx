@@ -22,7 +22,7 @@ export const metadata: Metadata = {
     template: `%s | ${brand.name}`,
   },
   description:
-    "Kitchenware retailer in Accra selling cookware, appliances, and household essentials online.",
+    "Kitchen appliances from the Accra Mall shop, priced in Ghana Cedis.",
   metadataBase: new URL(getAppUrl()),
   icons: { icon: "/logo.png?v=official", apple: "/logo.png?v=official" },
 };
@@ -35,7 +35,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       className={`${figtree.variable} ${newsreader.variable} h-full antialiased`}
     >
       <body className="min-h-full bg-background font-sans text-foreground">
-        {/* THESIS: Accra kitchen shop. OWN-WORLD: cream paper, lacquer red CTAs, GIR-like product-first layout. STORY: tools for daily cooking in Ghana Cedis. FIRST VIEWPORT: photograph, then a shop CTA. */}
+        {/* THESIS: Accra kitchen-appliance shop. OWN-WORLD: cream paper, lacquer red CTAs. FIRST VIEWPORT: photograph, then a shop CTA. */}
         <Script id="ak-theme" strategy="beforeInteractive">
           {`try{if(localStorage.getItem("ak_theme")==="dark")document.documentElement.classList.add("dark")}catch(e){}`}
         </Script>

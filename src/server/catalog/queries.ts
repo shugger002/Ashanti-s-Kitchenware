@@ -6,7 +6,7 @@ import { colorsFromVariants, normalizeHex } from "@/lib/product-color";
 import { isUuid } from "@/lib/utils";
 
 const DEMO_CATEGORIES: Category[] = [
-  { id: "demo-cat-cookware", slug: "cookware", name: "Cookware", description: "Pots, pans, and cooking sets.", imageUrl: "/demo/pot-set.jpg", sortOrder: 10, isActive: true, parentId: null },
+  { id: "demo-cat-cookware", slug: "cookware", name: "Cookware", description: "Pots, pans, and sets.", imageUrl: "/demo/pot-set.jpg", sortOrder: 10, isActive: true, parentId: null },
   { id: "demo-cat-appliances", slug: "kitchen-appliances", name: "Kitchen Appliances", description: "Blenders, cookers, fryers, and related appliances.", imageUrl: "/demo/blender.jpg", sortOrder: 20, isActive: true, parentId: null },
   { id: "demo-cat-tableware", slug: "tableware", name: "Tableware", description: "Plates, serving pieces, and dining sets.", imageUrl: "/demo/tableware.jpg", sortOrder: 30, isActive: true, parentId: null },
   { id: "demo-cat-storage", slug: "storage-insulation", name: "Insulation & Food Storage", description: "Racks, lunch boxes, insulation, and food storage.", imageUrl: "/demo/storage-rack.jpg", sortOrder: 40, isActive: true, parentId: null },

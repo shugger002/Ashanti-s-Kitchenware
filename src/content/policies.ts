@@ -16,11 +16,11 @@ export const privacyPolicy = {
     },
     {
       heading: "What data we collect",
-      body: `We only collect the data we need to run the store and fulfil your orders: account data (name, email address and password — passwords are stored securely and never in plain text); order and delivery data (full name, delivery address, phone number and email); payment data (a payment reference and status only — we do not store your card or mobile-money credentials); reviews you choose to submit; newsletter emails you send us if you ask for kitchen notes; contact-form messages; and anonymised usage data collected only if you accept analytics cookies.`,
+      body: `We only collect the data we need to run the store and fulfil your orders: account data (name, email address and password — passwords are stored securely and never in plain text); order and delivery data (full name, delivery address, phone number and email); payment data (a payment reference and status only — we do not store your card or mobile-money credentials); reviews you choose to submit; newsletter emails you send us if you ask for stock updates; contact-form messages; and anonymised usage data collected only if you accept analytics cookies.`,
     },
     {
       heading: "How we use your data",
-      body: `To create and manage your account; process, deliver and support your orders; respond to enquiries and reviews; send kitchen notes only if you asked for them; understand how the store is used (only with analytics-cookie consent); and meet legal and accounting obligations. We do not sell your personal data, and we do not use it for automated decision-making or profiling.`,
+      body: `To create and manage your account; process, deliver and support your orders; respond to enquiries and reviews; send stock updates only if you asked for them; understand how the store is used (only with analytics-cookie consent); and meet legal and accounting obligations. We do not sell your personal data, and we do not use it for automated decision-making or profiling.`,
     },
     {
       heading: "Legal basis",

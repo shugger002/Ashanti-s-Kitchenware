@@ -5,7 +5,7 @@ export const dynamic = "force-dynamic";
 
 export const metadata = pageMeta({
   title: "Store",
-  description: "Browse Ashanti's Kitchenware cookware, appliances, and household essentials in Ghana Cedis.",
+  description: "Browse kitchen appliances from Ashanti's Kitchenware in Accra, priced in Ghana Cedis.",
   path: "/products",
 });
 

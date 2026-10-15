@@ -14,9 +14,9 @@ import { getStorefrontConfig } from "@/server/store/settings";
 export const dynamic = "force-dynamic";
 
 export const metadata = pageMeta({
-  title: "Tools for the way you cook",
+  title: "Kitchen appliances in Accra",
   description:
-    "Kitchenware retailer in Accra. Cookware, appliances, and tableware sold in Ghana Cedis.",
+    "Kitchen appliances from the Accra Mall shop, priced in Ghana Cedis.",
   path: "/",
 });
 
@@ -46,7 +46,7 @@ export default async function HomePage() {
         />
       </section>
 
-      <h1 className="sr-only">Ashanti's Kitchenware — kitchenware in Accra</h1>
+      <h1 className="sr-only">Ashanti's Kitchenware — kitchen appliances in Accra</h1>
 
       <LogoMarquee />
 
@@ -165,14 +165,14 @@ export default async function HomePage() {
               href={story.href}
               className={`${buttonClass("secondary", "mt-8 w-fit bg-white text-accent hover:bg-white/90")}`}
             >
-              Shop cookware
+              Shop appliances
             </Link>
           </div>
         </section>
       ) : null}
 
       <section className="px-5 py-16 md:py-20">
-        <h2 className="text-center text-3xl">Why these pieces stay</h2>
+        <h2 className="text-center text-3xl">How we list stock</h2>
         <ul className="mx-auto mt-10 grid max-w-4xl gap-x-12 gap-y-8 sm:grid-cols-2">
           {brandValues.slice(0, 4).map((value) => (
             <li key={value.title}>
@@ -192,7 +192,7 @@ export default async function HomePage() {
 
       <section className="mx-auto max-w-6xl px-5 py-16 lg:px-8">
         <div className="flex items-end justify-between">
-          <h2 className="text-3xl">Journal</h2>
+          <h2 className="text-3xl">Guides</h2>
           <Link href="/journal" className="text-sm text-accent">
             All guides
           </Link>
@@ -216,9 +216,9 @@ export default async function HomePage() {
       </section>
 
       <section className="bg-accent px-5 py-16 text-center text-white md:py-20">
-        <h2 className="text-3xl text-white">Bring More Good Things to the Table.</h2>
+        <h2 className="text-3xl text-white">New stock, when we have it.</h2>
         <p className="mx-auto mt-3 max-w-lg text-sm text-white/90">
-          Recipes, kitchen tips, and new stock. A first-order discount is offered only when the shop publishes one.
+          Email updates for restocks and listed appliances. A first-order discount is offered only when the shop publishes one.
         </p>
         <div className="mx-auto mt-8 max-w-md text-left">
           <NewsletterForm invert />

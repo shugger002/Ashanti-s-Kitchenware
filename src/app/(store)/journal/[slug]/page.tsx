@@ -10,7 +10,7 @@ import { getProductBySlug } from "@/server/catalog/queries";
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const article = getJournalArticle(slug);
-  if (!article) return pageMeta({ title: "Journal", description: "Article not found", path: `/journal/${slug}` });
+  if (!article) return pageMeta({ title: "Guides", description: "Article not found", path: `/journal/${slug}` });
   return pageMeta({ title: article.title, description: article.excerpt, path: `/journal/${article.slug}` });
 }
 
@@ -35,7 +35,7 @@ export default async function JournalArticlePage({ params }: { params: Promise<{
     <article className="mx-auto max-w-3xl px-5 py-16 lg:px-8">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdText(jsonLd) }} />
       <nav className="text-sm text-muted">
-        <Link href="/journal">Journal</Link> / {article.title}
+        <Link href="/journal">Guides</Link> / {article.title}
       </nav>
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src={article.image} alt={article.imageAlt} className="mt-6 h-80 w-full rounded-3xl object-cover" />
@@ -71,8 +71,8 @@ export default async function JournalArticlePage({ params }: { params: Promise<{
         </section>
       ) : null}
       <section className="mt-16 rounded-3xl bg-surface p-8">
-        <h2 className="text-2xl">Kitchen notes</h2>
-        <p className="mt-2 text-sm text-muted">Recipes and care tips. No invented first-order discount.</p>
+        <h2 className="text-2xl">Stock updates</h2>
+        <p className="mt-2 text-sm text-muted">Restocks and listed appliances. No invented first-order discount.</p>
         <NewsletterForm />
       </section>
       <section className="mt-16">
