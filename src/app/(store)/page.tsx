@@ -42,7 +42,7 @@ export default async function HomePage() {
         <img
           src="/demo/hero.jpg?v=2"
           alt="Kitchen utensils hung on a wall and arranged on a counter (layout photograph)"
-          className="h-[min(85dvh,calc(100vw*710/735))] w-full object-cover object-[center_42%]"
+          className="h-[min(42dvh,18rem)] w-full object-cover object-[center_42%] md:h-[min(85dvh,calc(100vw*710/735))]"
         />
       </section>
 
@@ -50,10 +50,10 @@ export default async function HomePage() {
 
       <LogoMarquee />
 
-      <section className="border-y border-border py-12 md:py-16">
+      <section className="border-y border-border py-8 md:py-16">
         <div className="mx-auto max-w-6xl px-5 text-center lg:px-8">
           <p className="text-xs uppercase tracking-[0.22em] text-accent">The Accra shop</p>
-          <h2 className="mt-3 text-3xl md:text-5xl">{config.hero.title}</h2>
+          <h2 className="mt-3 text-3xl text-pretty md:text-5xl">{config.hero.title}</h2>
           {config.hero.subtitle ? (
             <p className="mx-auto mt-3 max-w-xl text-sm leading-relaxed text-muted md:text-base">{config.hero.subtitle}</p>
           ) : null}
@@ -90,13 +90,17 @@ export default async function HomePage() {
                   <div className="aspect-[4/5] bg-background sm:aspect-[5/4] md:aspect-auto md:h-64" />
                 )}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent" />
-                <div className="absolute inset-x-0 bottom-0 p-3 text-white sm:p-5 md:p-6">
-                  <h3 className="font-serif text-lg tracking-tight text-white sm:text-2xl md:text-3xl">{category.name}</h3>
+                <div className="absolute inset-x-0 bottom-0 p-2.5 text-white sm:p-5 md:p-6">
+                  <h3 className="font-serif text-base leading-tight tracking-tight text-white sm:text-2xl md:text-3xl">
+                    {category.name}
+                  </h3>
                   {category.description ? (
-                    <p className="mt-1 line-clamp-2 max-w-md text-[11px] text-white/85 sm:text-sm">{category.description}</p>
+                    <p className="mt-1 hidden line-clamp-2 max-w-md text-[11px] text-white/85 sm:block sm:text-sm">
+                      {category.description}
+                    </p>
                   ) : null}
-                  <span className="mt-2 inline-block text-xs font-medium tracking-wide sm:mt-3 sm:text-sm">
-                    Shop this range →
+                  <span className="mt-1.5 inline-block text-[11px] font-medium tracking-wide sm:mt-3 sm:text-sm">
+                    Shop
                   </span>
                 </div>
               </Link>

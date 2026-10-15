@@ -53,7 +53,7 @@ export function PromoDiscountedSection({
 
   return (
     <section id="promo" className={isPage ? "pb-20" : undefined}>
-      <div className="bg-accent px-5 py-12 text-center text-white md:py-16">
+      <div className="bg-accent px-5 py-8 text-center text-white md:py-16">
         <p className="text-xs uppercase tracking-[0.22em] text-white/80">Promo · Accra</p>
         <Heading className="mt-3 text-3xl text-white md:text-5xl">
           {cut > 0 ? `Up to ${cut}% off selected pieces` : "Sale prices, on the listing"}

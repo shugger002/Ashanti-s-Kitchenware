@@ -107,24 +107,26 @@ export function ProductCardView({
         </div>
       </div>
 
-      <div className={cn("flex flex-1 flex-col", layout === "list" ? "py-1" : "pt-4")}>
-        <h3 className="font-serif text-lg leading-snug tracking-tight">
-          <Link href={`/products/${product.slug}`}>{product.name}</Link>
+      <div className={cn("flex flex-1 flex-col", layout === "list" ? "py-1" : "pt-3 md:pt-4")}>
+        <h3 className="font-serif text-base leading-snug tracking-tight md:text-lg">
+          <Link href={`/products/${product.slug}`} className="line-clamp-2">
+            {product.name}
+          </Link>
         </h3>
-        <div className="mt-1">
+        <div className={cn("mt-1", layout === "grid" && "hidden md:block")}>
           <StarRating average={product.ratingAverage} count={product.reviewCount} compact />
         </div>
         <p className="mt-2 flex flex-wrap items-center gap-2">
           {product.salePrice ? (
             <>
-              <span className="text-base text-muted line-through">{formatGhs(Number(product.price))}</span>
+              <span className="text-sm text-muted line-through md:text-base">{formatGhs(Number(product.price))}</span>
               <SalePriceBubble>{formatGhs(Number(price))}</SalePriceBubble>
             </>
           ) : (
-            <span className="price">{formatGhs(Number(price))}</span>
+            <span className="price text-lg md:text-[1.375rem]">{formatGhs(Number(price))}</span>
           )}
         </p>
-        <div className="mt-3 min-h-8">
+        <div className={cn("mt-3 min-h-8", layout === "grid" && "hidden md:block")}>
           <ColorSwatches
             colors={colors}
             value={colorId || colors[0]?.variantId || null}
@@ -134,12 +136,14 @@ export function ProductCardView({
           />
         </div>
         {demo ? <p className="mt-1 text-xs text-muted">Layout sample, not an offer for sale.</p> : null}
-        <div className="mt-4 flex items-center gap-2">
-          <QuantityStepper size="sm" value={qty} onChange={setQty} min={1} max={Math.max(product.available, 1)} />
+        <div className="mt-3 flex items-center gap-2 md:mt-4">
+          <div className="hidden md:block">
+            <QuantityStepper size="sm" value={qty} onChange={setQty} min={1} max={Math.max(product.available, 1)} />
+          </div>
           <button
             type="button"
             disabled={!canAdd}
-            className={buttonClass("primary", "h-10 min-w-0 flex-1 px-3 text-sm")}
+            className={buttonClass("primary", "h-11 min-h-11 min-w-0 flex-1 px-3 text-sm")}
             onClick={addLine}
           >
             {canAdd ? "Add to cart" : "Unavailable"}

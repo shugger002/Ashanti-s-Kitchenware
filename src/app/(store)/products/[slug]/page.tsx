@@ -82,7 +82,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
   ];
 
   return (
-    <div className="mx-auto max-w-6xl px-5 py-10 pb-28 lg:px-8 lg:py-12 lg:pb-12">
+    <div className="mx-auto max-w-6xl px-4 py-6 pb-32 lg:px-8 lg:py-12 lg:pb-12">
       <TrackViewed slug={product.slug} name={product.name} imageUrl={product.primaryImage?.url ?? null} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdText(jsonLd) }} />
       <nav className="text-sm text-muted">
@@ -100,7 +100,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
         <ProductGallery images={product.images} name={product.name} />
         <div>
           {product.categoryName ? <p className="text-xs uppercase tracking-wide text-muted">{product.categoryName}</p> : null}
-          <h1 className="mt-2 text-4xl">{product.name}</h1>
+          <h1 className="mt-2 text-3xl md:text-4xl">{product.name}</h1>
           {product.reviewCount > 0 ? (
             <div className="mt-2">
               <StarRating average={product.ratingAverage} count={product.reviewCount} />
@@ -176,7 +176,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
         </div>
       </div>
 
-      <div className="sticky bottom-[calc(var(--store-dock)+env(safe-area-inset-bottom))] z-30 mt-8 rounded-sm border border-border bg-surface/95 p-3 shadow-[var(--shadow)] backdrop-blur lg:bottom-4">
+      <div className="sticky bottom-[calc(var(--store-dock)+0.5rem+env(safe-area-inset-bottom))] z-30 mt-8 rounded-sm border border-border bg-surface/95 p-3 shadow-[var(--shadow)] backdrop-blur lg:bottom-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="min-w-0">
             <p className="truncate font-medium">{product.name}</p>

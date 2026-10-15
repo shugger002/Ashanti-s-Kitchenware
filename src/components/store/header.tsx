@@ -92,8 +92,8 @@ export function StoreHeader({
         >
           {menuOpen ? <X className="h-5 w-5" strokeWidth={1.75} /> : <Menu className="h-5 w-5" strokeWidth={1.75} />}
         </button>
-        <Link href="/" className="flex min-w-0 items-center" aria-label={brand.name}>
-          <StoreLogo className="h-8 w-auto max-w-[9.5rem] sm:max-w-[12rem] lg:h-10 lg:max-w-[14rem]" />
+        <Link href="/" className="flex min-w-0 flex-1 items-center lg:flex-none" aria-label={brand.name}>
+          <StoreLogo className="h-7 w-auto max-w-[8.5rem] sm:h-8 sm:max-w-[12rem] lg:h-10 lg:max-w-[14rem]" />
         </Link>
         <nav className="hidden flex-1 items-center justify-center gap-7 text-[13px] lg:flex" aria-label="Primary">
           {desktop.map((item) => {

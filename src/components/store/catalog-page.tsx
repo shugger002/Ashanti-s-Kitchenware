@@ -59,25 +59,25 @@ export async function CatalogPage({
           : "Store";
 
   return (
-    <div className="mx-auto max-w-6xl px-5 py-10 lg:px-8 lg:py-12">
+    <div className="mx-auto max-w-6xl px-4 py-8 lg:px-8 lg:py-12">
       <nav className="text-sm text-muted">
         <Link href="/">Home</Link> / <span>Store</span>
       </nav>
-      <h1 className="mt-4 text-4xl">{title}</h1>
+      <h1 className="mt-3 text-3xl md:mt-4 md:text-4xl">{title}</h1>
       <p className="mt-2 max-w-2xl text-sm text-muted">
         {params.sale === "1"
           ? "Pieces with a sale price staff entered below the regular Ghana Cedi price. Demo listings stay labelled and are not for sale."
           : "Priced in Ghana Cedis. Demo listings are labelled and are not for sale. Filter by what you can use this week."}
       </p>
       <p className="mt-2 text-sm text-muted">{total} products</p>
-      <ul className="mt-6 flex flex-wrap gap-2 text-sm">
+      <ul className="-mx-4 mt-6 flex gap-2 overflow-x-auto px-4 text-sm [scrollbar-width:none] md:mx-0 md:flex-wrap md:overflow-visible md:px-0 [&::-webkit-scrollbar]:hidden">
         {categories.map((c) => (
           <li key={c.id} id={c.slug}>
             {c.slug === "cookware" ? <span id="cooking-ware" className="sr-only" /> : null}
             {c.slug === "storage-insulation" ? <span id="insulations" className="sr-only" /> : null}
             <Link
               href={`/shop/${c.slug}`}
-              className="inline-flex min-h-11 items-center rounded-full border border-border bg-background px-3"
+              className="inline-flex min-h-11 shrink-0 items-center rounded-full border border-border bg-background px-3"
             >
               {c.name}
             </Link>
@@ -105,7 +105,7 @@ export async function CatalogPage({
             <option value="price_desc">Price: high to low</option>
           </select>
           <div className="flex items-center gap-3">
-            <button className={buttonClass("primary")} type="submit">
+            <button className={buttonClass("primary", "w-full sm:w-auto")} type="submit">
               Apply
             </button>
             <Link href={basePath} className="text-sm text-muted">

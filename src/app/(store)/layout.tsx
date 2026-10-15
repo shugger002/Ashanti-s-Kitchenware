@@ -37,14 +37,14 @@ async function StoreShell({ children }: { children: React.ReactNode }) {
       announcement={
         <>
           {config.announcement.enabled && config.announcement.text ? (
-            <p className="line-clamp-2 bg-accent px-4 py-2 text-center text-[11px] uppercase leading-snug tracking-[0.14em] text-white sm:line-clamp-none sm:text-xs">
+            <p className="line-clamp-1 bg-accent px-3 py-1.5 text-center text-[10px] uppercase leading-snug tracking-[0.12em] text-white sm:line-clamp-none sm:px-4 sm:py-2 sm:text-xs sm:tracking-[0.14em]">
               {config.announcement.text}
             </p>
           ) : null}
           {promo.total > 0 ? (
             <a
               href="/promo"
-              className="block bg-foreground px-4 py-2 text-center text-[11px] uppercase leading-snug tracking-[0.14em] text-white sm:text-xs"
+              className="block bg-foreground px-3 py-1.5 text-center text-[10px] uppercase leading-snug tracking-[0.12em] text-white sm:px-4 sm:py-2 sm:text-xs sm:tracking-[0.14em]"
             >
               <span className="sm:hidden">
                 Promo: {promo.total} reduced GHS {promo.total === 1 ? "price" : "prices"}

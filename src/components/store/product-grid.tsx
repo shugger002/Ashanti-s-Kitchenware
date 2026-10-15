@@ -12,7 +12,7 @@ export function ProductGrid({ products }: { products: ProductCard[] }) {
       <div className="mb-6 flex justify-end gap-2">
         <button
           type="button"
-          className="rounded-xl border border-border p-2"
+          className="inline-flex size-11 items-center justify-center rounded-xl border border-border"
           aria-pressed={layout === "grid"}
           aria-label="Grid view"
           onClick={() => setLayout("grid")}
@@ -21,7 +21,7 @@ export function ProductGrid({ products }: { products: ProductCard[] }) {
         </button>
         <button
           type="button"
-          className="rounded-xl border border-border p-2"
+          className="inline-flex size-11 items-center justify-center rounded-xl border border-border"
           aria-pressed={layout === "list"}
           aria-label="List view"
           onClick={() => setLayout("list")}
@@ -29,7 +29,7 @@ export function ProductGrid({ products }: { products: ProductCard[] }) {
           <List className="h-4 w-4" strokeWidth={1.5} />
         </button>
       </div>
-      <div className={layout === "grid" ? "grid gap-x-6 gap-y-12 sm:grid-cols-2 lg:grid-cols-4" : "flex flex-col gap-8"}>
+      <div className={layout === "grid" ? "grid grid-cols-2 gap-x-3 gap-y-8 sm:gap-x-6 sm:gap-y-12 lg:grid-cols-4" : "flex flex-col gap-8"}>
         {products.map((product) => (
           <ProductCardView key={product.id} product={product} layout={layout} />
         ))}

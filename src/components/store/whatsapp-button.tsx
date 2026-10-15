@@ -46,7 +46,7 @@ export function WhatsAppButton({ phoneE164 }: { phoneE164: string }) {
       `}</style>
       <a
         href={`https://wa.me/${digits}`}
-        className="ak-wa-hit group fixed right-4 z-50 flex size-14 items-center justify-center bottom-[calc(var(--store-dock)+0.85rem+env(safe-area-inset-bottom))] lg:bottom-6"
+        className="ak-wa-hit group fixed right-3 z-50 flex size-12 items-center justify-center bottom-[calc(var(--store-dock)+0.65rem+env(safe-area-inset-bottom))] lg:bottom-6 lg:right-4 lg:size-14"
         aria-label={`Chat on WhatsApp ${display}`}
         target="_blank"
         rel="noopener noreferrer"

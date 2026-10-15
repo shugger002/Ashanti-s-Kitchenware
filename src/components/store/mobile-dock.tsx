@@ -8,7 +8,7 @@ export function MobileDock({ onSearch }: { onSearch: () => void }) {
   const { count, openDrawer } = useCart();
   return (
     <nav
-      className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-4 border-t border-border bg-background/95 pb-[env(safe-area-inset-bottom)] text-[11px] lg:hidden"
+      className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-4 border-t border-border bg-background/95 pb-[max(0.35rem,env(safe-area-inset-bottom))] text-[11px] lg:hidden"
       aria-label="Mobile shortcuts"
     >
       <Link href="/" className="flex min-h-11 flex-col items-center justify-center gap-1 py-2">

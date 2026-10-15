@@ -79,7 +79,7 @@ export function ProductRail({
           <div
             key={product.id}
             data-rail-card
-            className="w-[72%] min-w-[72%] shrink-0 snap-start sm:w-[46%] sm:min-w-[46%] lg:w-[28%] lg:min-w-[28%]"
+            className="w-[78%] min-w-[78%] shrink-0 snap-start sm:w-[46%] sm:min-w-[46%] lg:w-[28%] lg:min-w-[28%]"
           >
             <ProductCardView product={product} />
           </div>

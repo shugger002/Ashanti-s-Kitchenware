@@ -74,7 +74,7 @@ export function SearchOverlay({
         role="dialog"
         aria-modal="true"
         aria-labelledby="search-title"
-        className="absolute inset-0 flex flex-col overflow-y-auto bg-background p-5 md:inset-x-0 md:top-0 md:bottom-auto md:mx-auto md:mt-16 md:max-h-[min(80vh,40rem)] md:max-w-2xl md:rounded-3xl md:bg-surface md:shadow-[var(--shadow)]"
+        className="absolute inset-0 flex flex-col overflow-y-auto bg-background p-5 pb-[calc(var(--store-dock)+env(safe-area-inset-bottom)+1rem)] md:inset-x-0 md:top-0 md:bottom-auto md:mx-auto md:mt-16 md:max-h-[min(80vh,40rem)] md:max-w-2xl md:rounded-3xl md:bg-surface md:pb-5 md:shadow-[var(--shadow)]"
       >
         <div className="flex items-center justify-between">
           <h2 id="search-title" className="font-serif text-2xl">

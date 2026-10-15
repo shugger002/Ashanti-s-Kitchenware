@@ -89,10 +89,10 @@ function Wordmark({ id, label }: { id: string; label: string }) {
 export function LogoMarquee() {
   const loop = [...marks, ...marks];
   return (
-    <section className="overflow-hidden bg-accent py-10 text-white md:py-12" aria-label="Brands">
-      <p className="text-center font-serif text-2xl md:text-3xl">BRANDS</p>
+    <section className="overflow-hidden bg-accent py-6 text-white md:py-12" aria-label="Brands">
+      <p className="text-center font-serif text-xl md:text-3xl">BRANDS</p>
       <div
-        className="ak-logo-marquee-wrap mt-8 overflow-hidden"
+        className="ak-logo-marquee-wrap mt-5 overflow-hidden md:mt-8"
         style={{
           maskImage: "linear-gradient(to right, transparent, #000 8%, #000 92%, transparent)",
         }}

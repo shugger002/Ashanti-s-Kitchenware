@@ -26,7 +26,7 @@ export default async function CategoryPage({
   const { items, total } = await searchProducts({ category: cat.slug, pageSize: 24 });
 
   return (
-    <div className="mx-auto max-w-6xl px-5 py-12 lg:px-8">
+    <div className="mx-auto max-w-6xl px-4 py-8 lg:px-8 lg:py-12">
       <nav className="text-sm text-muted">
         <Link href="/products">Store</Link> / <span>{cat.name}</span>
       </nav>
