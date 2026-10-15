@@ -184,7 +184,7 @@ export function ProductForm({
       <section className="space-y-4 rounded-2xl border border-border bg-background p-5">
         <h2 className="font-serif text-xl">Visibility</h2>
         <label className="flex gap-2 text-sm">
-          <input type="checkbox" name="isActive" defaultChecked={product?.isActive} /> Visible in shop
+          <input type="checkbox" name="isActive" defaultChecked={product ? product.isActive : true} /> Visible in shop
         </label>
         <label className="flex gap-2 text-sm">
           <input type="checkbox" name="isFeatured" defaultChecked={product?.isFeatured} /> Featured

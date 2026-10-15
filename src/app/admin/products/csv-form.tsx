@@ -23,8 +23,8 @@ export function ProductCsvForm() {
     <div className="rounded-xl border border-border bg-white p-5">
       <h2 className="text-lg font-medium">Upload products CSV or PDF</h2>
       <p className="mt-1 text-sm leading-relaxed text-muted">
-        Load the current container list (PIC, description, price in Cedis, qty), or upload a CSV. Pieces stay hidden on
-        the shop until you attach a photograph and list them. Name photographs after the SKU (
+        Load the current container list (PIC, description, price in Cedis, qty), or upload a CSV. Pieces appear on the
+        shop even without a photograph. Name photographs after the SKU (
         <span className="text-foreground">APA-126.jpg</span>).
       </p>
       <div className="mt-4 flex flex-wrap gap-3">

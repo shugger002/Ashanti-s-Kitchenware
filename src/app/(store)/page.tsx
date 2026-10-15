@@ -121,7 +121,7 @@ export default async function HomePage() {
         <section className="mx-auto max-w-6xl px-5 pb-16 lg:px-8">
           <h2 className="text-3xl">Catalogue</h2>
           <p className="mt-3 max-w-2xl text-muted">
-            Products appear here after staff photograph stock and publish it in the admin.
+            Products appear here after staff publish them in the admin. Photographs can be added later.
           </p>
         </section>
       )}

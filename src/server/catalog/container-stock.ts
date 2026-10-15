@@ -30,7 +30,7 @@ export async function importAsanteContainerStock(actorId: string): Promise<Produ
     stock: item.stock,
     category: item.category,
     description: item.description,
-    listed: false,
+    listed: true,
     featured: false,
     isNew: false,
     lowStock: 3,
@@ -43,20 +43,22 @@ export async function importAsanteContainerStock(actorId: string): Promise<Produ
        SET archived_at = now(), is_active = FALSE
      WHERE archived_at IS NULL AND (sku ILIKE 'DEMO-%' OR slug ILIKE 'demo-%')
   `);
+  await query(sql`
+    UPDATE products
+       SET is_active = TRUE, updated_at = now()
+     WHERE archived_at IS NULL AND sku NOT ILIKE 'DEMO-%' AND slug NOT ILIKE 'demo-%'
+  `);
   const photos = await attachAsanteContainerPhotos();
   const created = result.created.length;
   const listed = photos.listed.length;
-  const remainder = ASANTE_CONTAINER_STOCK.length - listed;
   return {
     ok: created > 0 || result.skipped.length > 0 || listed > 0,
     message:
-      listed > 0
-        ? `Loaded the container list. ${listed} piece${listed === 1 ? "" : "s"} have exact-model photos and are listed. ${remainder} stay hidden until stock is photographed.`
-        : created > 0
-          ? `Loaded ${created} piece${created === 1 ? "" : "s"} from the container list. They stay hidden on the shop until you add a photograph and list them.`
-          : result.skipped.length > 0
-            ? "The container list is already on the desk."
-            : result.errors[0] ?? "Could not load the container list.",
+      created > 0 || result.skipped.length > 0
+        ? `Loaded the container list onto the shop. Photographs can be added later.`
+        : listed > 0
+          ? `Attached photos to ${listed} listed piece${listed === 1 ? "" : "s"}.`
+          : result.errors[0] ?? "Could not load the container list.",
     created: result.created,
     skipped: result.skipped,
     attached: photos.attached,

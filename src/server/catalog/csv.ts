@@ -184,7 +184,7 @@ function parseRowsFromGrid(
       errors.push(`Line ${lineNo} (${sku}): stock must be a whole number.`);
       continue;
     }
-    const listedParsed = parseBool(cell(cells, listedIndex), false);
+    const listedParsed = parseBool(cell(cells, listedIndex), true);
     const featuredParsed = parseBool(cell(cells, featuredIndex), false);
     const newParsed = parseBool(cell(cells, newIndex), false);
     if (listedParsed == null || featuredParsed == null || newParsed == null) {
