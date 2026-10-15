@@ -1,4 +1,5 @@
 import { requirePermission } from "@/server/auth/authorize";
+import { shopMap } from "@/config/brand";
 import { getStorefrontConfig, updateSetting } from "@/server/store/settings";
 import { revalidatePath } from "next/cache";
 import { adminButton, AdminPageHeader } from "@/components/admin/ui";
@@ -17,6 +18,7 @@ async function saveContact(formData: FormData) {
     city: String(formData.get("city")),
     region: String(formData.get("region")),
     country: String(formData.get("country")),
+    mapsUrl: shopMap.url,
   });
   revalidatePath("/");
 }

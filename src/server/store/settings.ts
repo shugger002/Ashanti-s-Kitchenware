@@ -13,6 +13,7 @@ export type ContactSettings = {
   city: string;
   region: string;
   country: string;
+  mapsUrl?: string;
   sourceNote?: string;
 };
 
@@ -69,7 +70,7 @@ const fallback: StorefrontConfig = {
     coverage: "accra",
     collectionEnabled: true,
     deliveryEnabled: true,
-    coverageNote: "Collection at the Accra shop. Delivery cost and timing are confirmed on WhatsApp after you order.",
+    coverageNote: "Collection at Hyde Street, Sakaman, Odorkor, Accra. Delivery cost and timing are confirmed on WhatsApp after you order.",
   },
 };
 
@@ -100,9 +101,12 @@ export async function getStorefrontConfig(): Promise<StorefrontConfig> {
     contact.legalName === "Ashantis Kitchenware" || contact.tradingName === "Ashantis Kitchenware"
       ? { ...contact, legalName: fallback.contact.legalName, tradingName: fallback.contact.tradingName }
       : contact;
-  const liveContact = /accra mall/i.test(namedContact.addressLine1)
-    ? { ...namedContact, addressLine1: "" }
-    : namedContact;
+  const mallAddress = /accra mall/i.test(namedContact.addressLine1);
+  const liveContact = {
+    ...namedContact,
+    addressLine1: mallAddress ? fallback.contact.addressLine1 : namedContact.addressLine1,
+    mapsUrl: namedContact.mapsUrl || fallback.contact.mapsUrl,
+  };
   const cookingCopy = /what are you cooking|cooking tonight|\bcooking\b|\bcook\b|recipe|kitchen tip|kitchen note/i;
   const strippedSubtitle = /blenders,\s*cookers|accra mall shop, priced/i.test(hero.subtitle) ? "" : hero.subtitle;
   const liveHero = cookingCopy.test(`${hero.title} ${strippedSubtitle}`)

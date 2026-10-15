@@ -1,4 +1,5 @@
 import { ContactForm } from "@/components/store/contact-form";
+import { shopMap } from "@/config/brand";
 import { pageMeta } from "@/lib/seo";
 import { getStorefrontConfig } from "@/server/store/settings";
 
@@ -11,6 +12,7 @@ export const metadata = pageMeta({
 export default async function ContactPage() {
   const { contact } = await getStorefrontConfig();
   const digits = contact.whatsappE164.replace(/[^\d]/g, "");
+  const mapsUrl = contact.mapsUrl || shopMap.url;
   return (
     <div className="mx-auto max-w-3xl px-5 py-16 lg:px-8">
       <h1 className="text-4xl">Contact</h1>
@@ -33,7 +35,12 @@ export default async function ContactPage() {
         <p>
           <a href={`https://wa.me/${digits}`}>WhatsApp</a>
         </p>
-        <p className="text-sm text-muted">Ask the shop for the street address before you travel.</p>
+        <p className="text-sm">
+          <a href={mapsUrl} rel="noreferrer" className="text-accent">
+            Open the shop in Google Maps
+          </a>
+          . That link leaves this site and uses Google’s own terms.
+        </p>
       </div>
       <ContactForm />
     </div>

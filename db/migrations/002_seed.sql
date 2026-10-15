@@ -21,11 +21,12 @@ INSERT INTO store_settings (key, value) VALUES
     "phoneDisplay": "+233 (0) 20 194 4235",
     "phoneE164": "+233201944235",
     "whatsappE164": "+233201944235",
-    "addressLine1": "",
+    "addressLine1": "Hyde Street, Sakaman, Odorkor",
     "city": "Accra",
     "region": "Greater Accra",
     "country": "Ghana",
-    "sourceNote": "Transcribed from ashantiskitchenware.com, 5 Oct 2026. Confirm before launch."
+    "mapsUrl": "https://maps.google.com/?q=5.571348,-0.272244",
+    "sourceNote": "Map pin supplied by the shop. Road name from OpenStreetMap reverse of that pin."
   }'::jsonb
 ),
 (

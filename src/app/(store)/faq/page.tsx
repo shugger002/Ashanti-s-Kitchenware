@@ -10,7 +10,7 @@ export const metadata = pageMeta({
 const faqs = [
   {
     q: "Where are you based?",
-    a: "The shop is in Accra. Call +233 (0) 20 194 4235, WhatsApp, or email support@ashantiskitchenware.com for the pickup address before travelling. Collection and delivery are arranged with the shop.",
+    a: "The shop is at Hyde Street, Sakaman, Odorkor, Accra. Open the pin in Google Maps, or call +233 (0) 20 194 4235 / WhatsApp / support@ashantiskitchenware.com. Collection and delivery are arranged with the shop.",
   },
   {
     q: "What currency are prices in?",
