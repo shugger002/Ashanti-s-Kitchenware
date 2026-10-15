@@ -58,7 +58,7 @@ async function StoreShell({ children }: { children: React.ReactNode }) {
         </>
       }
       chrome={<StoreChrome signedIn={Boolean(customer)} categories={categoryLinks} searchHints={searchHints} />}
-      footer={<StoreFooter contact={config.contact} social={config.social} />}
+      footer={<StoreFooter contact={config.contact} social={config.social} categories={categoryLinks} />}
       extras={
         <>
           <WhatsAppButton phoneE164={config.contact.whatsappE164} />

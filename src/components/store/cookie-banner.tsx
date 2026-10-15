@@ -66,11 +66,11 @@ export function CookieBanner() {
   );
 }
 
-export function CookieSettingsButton() {
+export function CookieSettingsButton({ className }: { className?: string }) {
   return (
     <button
       type="button"
-      className="text-xs text-muted hover:text-foreground"
+      className={className ?? "text-xs text-muted hover:text-foreground"}
       onClick={() => {
         hydrateCookieConsent();
         openCookieSettings();

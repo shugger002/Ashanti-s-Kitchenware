@@ -19,6 +19,9 @@ export const shopMap = {
   directionsUrl: "https://www.google.com/maps/dir/?api=1&destination=5.5713673,-0.2722907",
 } as const;
 
+/** Hours transcribed from the shop’s Google listing. Confirm there if you are travelling. */
+export const shopHours = "Monday to Saturday, 8:00–19:00. Closed Sunday." as const;
+
 export const defaultContact = {
   legalName: "Ashanti's Kitchenware",
   tradingName: "Ashanti's Kitchenware",
