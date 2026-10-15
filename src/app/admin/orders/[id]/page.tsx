@@ -25,7 +25,7 @@ function money(value: unknown) {
 }
 
 const STAFF_NEXT: Record<string, string> = {
-  paid: "Order Received — paid, start packaging",
+  paid: "Order Received: paid, start packaging",
   packing: "Packaging order",
   shipped: "Order Out for Delivery",
   ready_for_collection: "Ready at the shop",
@@ -59,7 +59,7 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
   const quoteHref =
     waDigits.length >= 11
       ? `https://wa.me/${waDigits}?text=${encodeURIComponent(
-          `Ashanti's Kitchenware — ${text(order.public_ref)}\nHi ${text(order.full_name)}, we have your order. Please confirm your location so we can quote the delivery charge.`,
+          `Ashanti's Kitchenware, ${text(order.public_ref)}\nHi ${text(order.full_name)}, we have your order. Please confirm your location so we can quote the delivery charge.`,
         )}`
       : null;
 
@@ -306,7 +306,7 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
                       <p className="mt-1">
                         {same
                           ? "Note"
-                          : `${ORDER_STATUS_LABEL[from] ?? (from.replaceAll("_", " ") || "—")} → ${ORDER_STATUS_LABEL[to] ?? to.replaceAll("_", " ")}`}
+                          : `${ORDER_STATUS_LABEL[from] ?? (from.replaceAll("_", " ") || "-")} → ${ORDER_STATUS_LABEL[to] ?? to.replaceAll("_", " ")}`}
                       </p>
                       {text(row.note) ? <p className="mt-1 text-muted">{text(row.note)}</p> : null}
                     </li>

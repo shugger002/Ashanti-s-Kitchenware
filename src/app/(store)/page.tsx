@@ -46,7 +46,7 @@ export default async function HomePage() {
         />
       </section>
 
-      <h1 className="sr-only">Ashanti's Kitchenware — kitchen appliances in Accra</h1>
+      <h1 className="sr-only">Ashanti's Kitchenware, kitchen appliances in Accra</h1>
 
       <LogoMarquee />
 

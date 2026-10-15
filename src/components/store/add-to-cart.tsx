@@ -38,7 +38,7 @@ export function AddToCart({ product, sticky = false }: { product: ProductDetail;
         productId: product.id,
         variantId,
         slug: product.slug,
-        name: variant ? `${product.name} — ${variant.name}` : product.name,
+        name: variant ? `${product.name}, ${variant.name}` : product.name,
         sku: variant?.sku ?? product.sku,
         unitPrice,
         imageUrl: product.primaryImage?.url ?? null,
@@ -90,7 +90,7 @@ export function AddToCart({ product, sticky = false }: { product: ProductDetail;
       {sticky ? null : (
         <p className="text-sm text-muted">
           {available > 0 ? `${available} available` : "Out of stock"}
-          {demo ? " · Demo photograph — confirm against stock before paying" : ""}
+          {demo ? " · Demo photograph: confirm against stock before paying" : ""}
         </p>
       )}
       <div className="flex flex-wrap items-center gap-3">

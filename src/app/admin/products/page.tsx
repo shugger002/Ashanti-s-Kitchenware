@@ -104,7 +104,7 @@ export default async function AdminProductsPage({
                 <td className="px-4 py-3 font-medium">
                   <Link href={`/admin/products/${p.id}`}>{p.name}</Link>
                 </td>
-                <td className="px-4 py-3 uppercase text-muted">{p.categoryName ?? "—"}</td>
+                <td className="px-4 py-3 uppercase text-muted">{p.categoryName ?? "-"}</td>
                 <td className="px-4 py-3 tabular-nums">
                   {p.salePrice ? (
                     <>

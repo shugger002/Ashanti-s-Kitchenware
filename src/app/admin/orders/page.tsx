@@ -33,7 +33,7 @@ export default async function AdminOrdersPage({
     <div>
       <AdminPageHeader
         title="Orders"
-        description="Same steps the customer tracker uses: Order Received, Packaging order, Order Out for Delivery, Order Delivered. Quote delivery on WhatsApp — checkout does not add a fee."
+        description="Same steps the customer tracker uses: Order Received, Packaging order, Order Out for Delivery, Order Delivered. Quote delivery on WhatsApp. Checkout does not add a fee."
       />
       <Toolbar>
         <form className="flex flex-wrap items-center gap-2" method="get">

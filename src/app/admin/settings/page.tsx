@@ -69,7 +69,7 @@ export default async function SettingsPage() {
     <div className="space-y-6">
       <AdminPageHeader
         title="Settings"
-        description="Legal name Ashanti's Kitchenware. The homepage photo is the utensils wall — it is not uploaded here. Delivery is quoted on WhatsApp, not charged at checkout."
+        description="Legal name Ashanti's Kitchenware. The homepage photo is the utensils wall; it is not uploaded here. Delivery is quoted on WhatsApp, not charged at checkout."
       />
       <form action={saveContact} className="max-w-xl space-y-4 rounded-xl border border-border bg-surface p-5">
         <h2 className="font-serif text-xl">Contact</h2>

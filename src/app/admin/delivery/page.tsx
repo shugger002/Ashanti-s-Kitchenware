@@ -96,7 +96,7 @@ export default async function DeliveryPage() {
       <section>
         <h2 className="font-serif text-xl">Rates</h2>
         <p className="mt-1 text-sm text-muted">
-          Optional internal rates. Customer checkout does not charge them — delivery is confirmed on WhatsApp.
+          Optional internal rates. Customer checkout does not charge them. Delivery is confirmed on WhatsApp.
         </p>
         {rates.length === 0 ? (
           <div className="mt-4">

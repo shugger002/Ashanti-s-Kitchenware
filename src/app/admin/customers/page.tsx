@@ -32,7 +32,7 @@ export default async function CustomersPage() {
               <tr key={c.id} className="border-b border-border last:border-0 hover:bg-surface">
                 <td className="px-4 py-3 font-medium">{c.full_name}</td>
                 <td className="px-4 py-3">{c.phone}</td>
-                <td className="px-4 py-3">{c.email ?? "—"}</td>
+                <td className="px-4 py-3">{c.email ?? "-"}</td>
                 <td className="px-4 py-3 tabular-nums">{c.order_count}</td>
                 <td className="px-4 py-3 tabular-nums">{formatGhs(Number(c.paid_total))}</td>
               </tr>

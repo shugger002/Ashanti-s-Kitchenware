@@ -28,7 +28,7 @@ const demos: DemoProduct[] = [
     sku: "DEMO-POT-10",
     price: "6199.00",
     description:
-      "A stacked stainless cooking set for family meals. Demo listing — confirm price, contents, and photograph against real stock before sale.",
+      "A stacked stainless cooking set for family meals. Demo listing: confirm price, contents, and photograph against real stock before sale.",
     categorySlug: "cookware",
     categoryName: "Cookware",
     image: "/demo/pot-set.jpg",
@@ -42,7 +42,7 @@ const demos: DemoProduct[] = [
     sku: "DEMO-DUTCH",
     price: "7499.00",
     description:
-      "Heavy enamel-coated pot for stews. Demo listing — replace this photograph with the actual piece in the Accra shop.",
+      "Heavy enamel-coated pot for stews. Demo listing: replace this photograph with the actual piece in the Accra shop.",
     categorySlug: "cookware",
     categoryName: "Cookware",
     image: "/demo/dutch-oven.jpg",
@@ -67,7 +67,7 @@ const demos: DemoProduct[] = [
     price: "3299.00",
     salePrice: "2799.00",
     description:
-      "Upright blender with a clear jug. Demo listing — wattage and plug type must be verified before publishing live.",
+      "Upright blender with a clear jug. Demo listing: wattage and plug type must be verified before publishing live.",
     categorySlug: "kitchen-appliances",
     categoryName: "Kitchen Appliances",
     image: "/demo/blender.jpg",
@@ -87,7 +87,7 @@ const demos: DemoProduct[] = [
     price: "4599.00",
     salePrice: "3899.00",
     description:
-      "Basket-style air fryer. Demo listing — capacity and voltage must match the unit on the shelf.",
+      "Basket-style air fryer. Demo listing: capacity and voltage must match the unit on the shelf.",
     categorySlug: "kitchen-appliances",
     categoryName: "Kitchen Appliances",
     image: "/demo/air-fryer.jpg",
@@ -102,7 +102,7 @@ const demos: DemoProduct[] = [
     price: "1599.00",
     salePrice: "1299.00",
     description:
-      "Cordless kettle shown with a 3-pin plug. Demo listing — confirm litre size against stock.",
+      "Cordless kettle shown with a 3-pin plug. Demo listing: confirm litre size against stock.",
     categorySlug: "kitchen-appliances",
     categoryName: "Kitchen Appliances",
     image: "/demo/kettle.jpg",
@@ -122,7 +122,7 @@ const demos: DemoProduct[] = [
     price: "2899.00",
     salePrice: "2499.00",
     description:
-      "Plates, bowls, and a jug for a dining table. Demo listing — piece count must be counted from the boxed set.",
+      "Plates, bowls, and a jug for a dining table. Demo listing: piece count must be counted from the boxed set.",
     categorySlug: "tableware",
     categoryName: "Tableware",
     image: "/demo/tableware.jpg",
@@ -141,7 +141,7 @@ const demos: DemoProduct[] = [
     sku: "DEMO-RICE",
     price: "2399.00",
     description:
-      "Family-size rice cooker with a glass lid. Demo listing — confirm litre mark and plug before sale.",
+      "Family-size rice cooker with a glass lid. Demo listing: confirm litre mark and plug before sale.",
     categorySlug: "kitchen-appliances",
     categoryName: "Kitchen Appliances",
     image: "/demo/rice-cooker.jpg",
@@ -155,7 +155,7 @@ const demos: DemoProduct[] = [
     sku: "DEMO-RACK",
     price: "2899.00",
     description:
-      "Open metal rack for pans and dry goods. Demo listing — confirm height against the packed unit.",
+      "Open metal rack for pans and dry goods. Demo listing: confirm height against the packed unit.",
     categorySlug: "storage-insulation",
     categoryName: "Insulation & Food Storage",
     image: "/demo/storage-rack.jpg",

@@ -22,7 +22,7 @@ export const lifestyleBlocks = [
 export const editorialCollections = [
   {
     title: "Pots and kettles",
-    text: "A pot set, a heavy pot, and a kettle — add each piece separately from the current catalogue.",
+    text: "A pot set, a heavy pot, and a kettle. Add each piece separately from the current catalogue.",
     href: "/shop/cookware",
     image: "/demo/pot-set.jpg",
     slugs: ["demo-stainless-pot-set", "demo-cast-iron-dutch-oven", "demo-electric-kettle"],
@@ -58,7 +58,7 @@ export const brandValues = [
   },
   {
     title: "Named materials",
-    text: "Stainless, enamel, ceramic, and steel — named on the listing, not hidden in marketing.",
+    text: "Stainless, enamel, ceramic, and steel, named on the listing, not hidden in marketing.",
   },
   {
     title: "Clear shipping",

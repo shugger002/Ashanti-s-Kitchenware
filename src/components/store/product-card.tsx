@@ -50,7 +50,7 @@ export function ProductCardView({
         productId: product.id,
         variantId: hasRealColour ? selectedColor?.variantId ?? null : null,
         slug: product.slug,
-        name: hasRealColour && selectedColor ? `${product.name} — ${selectedColor.name}` : product.name,
+        name: hasRealColour && selectedColor ? `${product.name}, ${selectedColor.name}` : product.name,
         sku: product.sku,
         unitPrice: Number(price),
         imageUrl: product.primaryImage?.url ?? null,
@@ -133,7 +133,7 @@ export function ProductCardView({
             showLabel={false}
           />
         </div>
-        {demo ? <p className="mt-1 text-xs text-muted">Layout sample — not an offer for sale.</p> : null}
+        {demo ? <p className="mt-1 text-xs text-muted">Layout sample, not an offer for sale.</p> : null}
         <div className="mt-4 flex items-center gap-2">
           <QuantityStepper size="sm" value={qty} onChange={setQty} min={1} max={Math.max(product.available, 1)} />
           <button

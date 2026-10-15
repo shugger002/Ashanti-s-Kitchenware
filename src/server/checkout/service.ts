@@ -141,7 +141,7 @@ export async function placeOrder(input: CheckoutInput, sessionCustomerId?: strin
         const v = variant.rows[0];
         if (!v || !v.is_active) throw new Error("Selected option is unavailable");
         sku = v.sku;
-        name = `${p.name} — ${v.name}`;
+        name = `${p.name}, ${v.name}`;
         if (v.price_override) unit = parseMoney(v.price_override);
       }
       await lockAndReserve(db, {

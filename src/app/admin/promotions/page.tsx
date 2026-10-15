@@ -41,7 +41,7 @@ export default async function PromotionsPage() {
 
   return (
     <div>
-      <AdminPageHeader title="Product Discounts" description="Set a percent off a piece. That writes a Ghana Cedi sale price — not a store-wide coupon." />
+      <AdminPageHeader title="Product Discounts" description="Set a percent off a piece. That writes a Ghana Cedi sale price, not a store-wide coupon." />
       {items.length === 0 ? (
         <div className="mt-6">
           <EmptyState title="Catalogue is empty" body="Add a product before applying a discount." />
@@ -63,7 +63,7 @@ export default async function PromotionsPage() {
               <tr key={p.id} className="border-b border-border last:border-0">
                 <td className="px-4 py-3 tabular-nums text-muted">{index + 1}</td>
                 <td className="px-4 py-3 font-medium">{p.name}</td>
-                <td className="px-4 py-3 uppercase text-muted">{p.categoryName ?? "—"}</td>
+                <td className="px-4 py-3 uppercase text-muted">{p.categoryName ?? "-"}</td>
                 <td className="px-4 py-3 tabular-nums">{formatGhs(Number(p.price))}</td>
                 <td className="px-4 py-3">
                   <form id={`discount-${p.id}`} action={applyDiscount}>

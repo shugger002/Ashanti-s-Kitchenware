@@ -16,7 +16,7 @@ export const privacyPolicy = {
     },
     {
       heading: "What data we collect",
-      body: `We only collect the data we need to run the store and fulfil your orders: account data (name, email address and password — passwords are stored securely and never in plain text); order and delivery data (full name, delivery address, phone number and email); payment data (a payment reference and status only — we do not store your card or mobile-money credentials); reviews you choose to submit; newsletter emails you send us if you ask for stock updates; contact-form messages; and anonymised usage data collected only if you accept analytics cookies.`,
+      body: `We only collect the data we need to run the store and fulfil your orders: account data (name, email address and password; passwords are stored securely and never in plain text); order and delivery data (full name, delivery address, phone number and email); payment data (a payment reference and status only; we do not store your card or mobile-money credentials); reviews you choose to submit; newsletter emails you send us if you ask for stock updates; contact-form messages; and anonymised usage data collected only if you accept analytics cookies.`,
     },
     {
       heading: "How we use your data",
@@ -40,7 +40,7 @@ export const privacyPolicy = {
     },
     {
       heading: "Data security",
-      body: `We use appropriate technical and organisational measures — including encrypted connections (HTTPS), hashed passwords and access controls — to protect your data against loss, misuse or unauthorised access.`,
+      body: `We use appropriate technical and organisational measures, including encrypted connections (HTTPS), hashed passwords and access controls, to protect your data against loss, misuse or unauthorised access.`,
     },
     {
       heading: "Children",
@@ -67,7 +67,7 @@ export const termsPolicy = {
     },
     {
       heading: "Products and pricing",
-      body: `All prices are shown in Ghana Cedis (GHS) as displayed on the listing. We do not claim a separate tax breakdown unless an invoice from the shop says so. We try to describe and picture products accurately, but colours and finishes may vary slightly from images on your screen. Listings marked as demo, or with a SKU beginning DEMO-, are layout samples and are not offers for sale. Sale or “was” prices must be genuine previous selling prices set by the shop — not invented compare-at figures. If we discover a genuine pricing or description error, we will contact you before processing your order and you may cancel it. Product availability is not guaranteed and stock may sell out.`,
+      body: `All prices are shown in Ghana Cedis (GHS) as displayed on the listing. We do not claim a separate tax breakdown unless an invoice from the shop says so. We try to describe and picture products accurately, but colours and finishes may vary slightly from images on your screen. Listings marked as demo, or with a SKU beginning DEMO-, are layout samples and are not offers for sale. Sale or “was” prices must be genuine previous selling prices set by the shop, not invented compare-at figures. If we discover a genuine pricing or description error, we will contact you before processing your order and you may cancel it. Product availability is not guaranteed and stock may sell out.`,
     },
     {
       heading: "Orders and payment",
@@ -153,7 +153,7 @@ export const cookiePolicy = {
     },
     {
       heading: "Strictly necessary",
-      body: `These are required for the store to work — for example keeping you signed in, remembering the items in your cart, and storing your cookie preferences. They are always on and do not need consent.`,
+      body: `These are required for the store to work, for example keeping you signed in, remembering the items in your cart, and storing your cookie preferences. They are always on and do not need consent.`,
     },
     {
       heading: "Analytics (optional)",

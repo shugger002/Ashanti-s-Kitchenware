@@ -41,7 +41,7 @@ export default async function CouponsPage() {
     <div>
       <AdminPageHeader
         title="Promo & Coupon Management"
-        description="Create and monitor checkout codes. Delivery is still quoted on WhatsApp — these codes do not invent free shipping."
+        description="Create and monitor checkout codes. Delivery is still quoted on WhatsApp. These codes do not invent free shipping."
       />
 
       <ul className="mt-8 grid gap-3 sm:grid-cols-3">
@@ -61,7 +61,7 @@ export default async function CouponsPage() {
 
       {coupons.length === 0 ? (
         <div className="mt-6">
-          <EmptyState title="No coupons yet" body="Add a percent or Ghana Cedi off the basket. Do not create a shipping coupon — delivery stays on WhatsApp." />
+          <EmptyState title="No coupons yet" body="Add a percent or Ghana Cedi off the basket. Do not create a shipping coupon. Delivery stays on WhatsApp." />
         </div>
       ) : (
         <AdminTable className="mt-6">
@@ -80,7 +80,7 @@ export default async function CouponsPage() {
             {coupons.map((c) => (
               <tr key={c.id} className="border-b border-border last:border-0">
                 <td className="px-4 py-3 font-medium">{c.code}</td>
-                <td className="px-4 py-3 text-sm text-muted">{c.description || "—"}</td>
+                <td className="px-4 py-3 text-sm text-muted">{c.description || "-"}</td>
                 <td className="px-4 py-3 text-sm">
                   {c.discount_type === "percent" ? `${c.discount_value}%` : formatGhs(Number(c.discount_value))}
                   {c.max_discount ? <span className="mt-1 block text-xs text-muted">Max: {formatGhs(Number(c.max_discount))}</span> : null}

@@ -30,7 +30,7 @@ export default async function UsersPage() {
             <tr key={u.id} className="border-b border-border last:border-0 hover:bg-surface">
               <td className="px-4 py-3 font-medium">{u.full_name}</td>
               <td className="px-4 py-3">{u.email}</td>
-              <td className="px-4 py-3">{(u.roles ?? []).join(", ") || "—"}</td>
+              <td className="px-4 py-3">{(u.roles ?? []).join(", ") || "-"}</td>
               <td className="px-4 py-3">
                 <StatusPill value={u.is_active ? "Active" : "Disabled"} tone={u.is_active ? "ok" : "muted"} />
               </td>

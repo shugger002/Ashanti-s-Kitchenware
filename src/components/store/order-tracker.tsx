@@ -41,7 +41,7 @@ export function OrderTracker({
       <p className="text-xs uppercase tracking-[0.16em] text-muted">{order.public_ref}</p>
       <h2 className="mt-2 font-serif text-2xl tracking-tight">{headline(order.status)}</h2>
       <p className="mt-1 text-sm text-muted">
-        {collection ? "Collection at the Accra shop." : "Delivery timing is confirmed on WhatsApp — not a live map."}
+        {collection ? "Collection at the Accra shop." : "Delivery timing is confirmed on WhatsApp, not a live map."}
       </p>
 
       {stopped ? null : (

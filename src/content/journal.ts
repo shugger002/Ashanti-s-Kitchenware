@@ -26,7 +26,7 @@ export const journalArticles: JournalArticle[] = [
       {
         heading: "Start with the job, then the model",
         paragraphs: [
-          "This shop sells kitchen appliances and related household pieces. Pick the appliance you need — blender, kettle, rice cooker, fryer — then check the listing against the unit on the shelf.",
+          "This shop sells kitchen appliances and related household pieces. Pick the appliance you need (blender, kettle, rice cooker, fryer), then check the listing against the unit on the shelf.",
           "Piece count, litre mark, and colour should match the product page. Demo listings on this site are layout samples and are not offers for sale.",
         ],
       },
