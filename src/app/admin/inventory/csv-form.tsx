@@ -55,7 +55,7 @@ export function InventoryCsvForm() {
           />
         </label>
         <button className={adminButton("shrink-0")} type="submit" disabled={pending}>
-          {pending ? "Updating…" : "Update inventory"}
+          {pending ? "Reading spreadsheet…" : "Update inventory"}
         </button>
       </form>
       {state ? (

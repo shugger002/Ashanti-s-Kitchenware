@@ -73,7 +73,7 @@ export function ProductCsvForm() {
           </label>
         </div>
         <button className={adminButton()} type="submit" disabled={pending}>
-          {pending ? "Adding…" : "Add products"}
+          {pending ? "Reading spreadsheet…" : "Add products"}
         </button>
       </form>
       {state ? (

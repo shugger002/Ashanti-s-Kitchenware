@@ -11,6 +11,7 @@ const securityHeaders = [
       "default-src 'self'",
       "img-src 'self' data: blob: https:",
       `script-src 'self' 'unsafe-inline'${process.env.NODE_ENV === "production" ? "" : " 'unsafe-eval'"}`,
+      "worker-src 'self' blob:",
       "style-src 'self' 'unsafe-inline'",
       "font-src 'self' data:",
       "connect-src 'self' https://api.moolre.com https://rmp.hubtel.com https://payproxyapi.hubtel.com ws: wss:",
