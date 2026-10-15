@@ -96,10 +96,13 @@ export async function getStorefrontConfig(): Promise<StorefrontConfig> {
   const liveAnnouncement = announcement.text.toLowerCase().includes("logo")
     ? fallback.announcement
     : announcement;
-  const liveContact =
+  const namedContact =
     contact.legalName === "Ashantis Kitchenware" || contact.tradingName === "Ashantis Kitchenware"
       ? { ...contact, legalName: fallback.contact.legalName, tradingName: fallback.contact.tradingName }
       : contact;
+  const liveContact = /accra mall/i.test(namedContact.addressLine1)
+    ? { ...namedContact, addressLine1: "" }
+    : namedContact;
   const cookingCopy = /what are you cooking|cooking tonight|\bcooking\b|\bcook\b|recipe|kitchen tip|kitchen note/i;
   const strippedSubtitle = /blenders,\s*cookers|accra mall shop, priced/i.test(hero.subtitle) ? "" : hero.subtitle;
   const liveHero = cookingCopy.test(`${hero.title} ${strippedSubtitle}`)

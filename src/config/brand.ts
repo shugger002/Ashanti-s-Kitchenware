@@ -1,7 +1,8 @@
 /**
  * Visual system: client red and white. Official wordmark lettering reads Ashanti's Kitchenwear.
  * Legal name of the shop is Ashanti's Kitchenware.
- * Contact details below were transcribed from ashantiskitchenware.com.
+ * Phone and email below were transcribed from ashantiskitchenware.com.
+ * Street address is left blank until the shop confirms it — Accra Mall is not the location.
  */
 export const brand = {
   name: "Ashanti's Kitchenware",
@@ -18,7 +19,7 @@ export const defaultContact = {
   phoneDisplay: "+233 (0) 20 194 4235",
   phoneE164: "+233201944235",
   whatsappE164: "+233201944235",
-  addressLine1: "Accra Mall, Tetteh Quarshie Interchange, Spintex Road",
+  addressLine1: "",
   city: "Accra",
   region: "Greater Accra",
   country: "Ghana",

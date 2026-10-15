@@ -267,7 +267,7 @@ export function CheckoutForm({
             </>
           ) : (
             <p className="rounded-sm border border-border bg-surface px-3 py-3 text-sm text-muted">
-              Collection at {defaultContact.addressLine1}, {defaultContact.city}.
+              Collection in {defaultContact.city}. Confirm the pickup point with the shop.
             </p>
           )}
         </section>

@@ -1,7 +1,7 @@
 export const lifestyleBlocks = [
   {
     title: "Kitchen appliances",
-    text: "Blenders, cookers, kettles, and fryers from the Accra Mall shop. Priced in Ghana Cedis.",
+    text: "Blenders, cookers, kettles, and fryers from the Accra shop. Priced in Ghana Cedis.",
     href: "/shop/kitchen-appliances",
     image: "/demo/blender.jpg",
   },

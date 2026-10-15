@@ -10,7 +10,7 @@ export const metadata = pageMeta({
 const faqs = [
   {
     q: "Where are you based?",
-    a: "The shop publishes Accra Mall, Tetteh Quarshie Interchange, Spintex Road, Accra, with +233 (0) 20 194 4235 and support@ashantiskitchenware.com. Accra Mall’s public store list does not currently name this shop, so call or WhatsApp before travelling. Collection and delivery are arranged with the shop.",
+    a: "The shop is in Accra. Call +233 (0) 20 194 4235, WhatsApp, or email support@ashantiskitchenware.com for the pickup address before travelling. Collection and delivery are arranged with the shop.",
   },
   {
     q: "What currency are prices in?",

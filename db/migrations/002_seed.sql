@@ -21,7 +21,7 @@ INSERT INTO store_settings (key, value) VALUES
     "phoneDisplay": "+233 (0) 20 194 4235",
     "phoneE164": "+233201944235",
     "whatsappE164": "+233201944235",
-    "addressLine1": "Accra Mall, Tetteh Quarshie Interchange, Spintex Road",
+    "addressLine1": "",
     "city": "Accra",
     "region": "Greater Accra",
     "country": "Ghana",

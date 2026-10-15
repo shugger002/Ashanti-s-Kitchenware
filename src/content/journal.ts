@@ -33,7 +33,7 @@ export const journalArticles: JournalArticle[] = [
       {
         heading: "Power and plug",
         paragraphs: [
-          "Confirm wattage and plug type for Ghanaian sockets before you order. If the listing does not name wattage, ask the Accra Mall shop rather than guessing.",
+          "Confirm wattage and plug type for Ghanaian sockets before you order. If the listing does not name wattage, ask the shop rather than guessing.",
           "A higher wattage figure is not automatically better. It has to match the wiring in the room where you will use the appliance.",
         ],
       },

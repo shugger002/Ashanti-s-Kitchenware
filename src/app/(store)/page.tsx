@@ -16,7 +16,7 @@ export const dynamic = "force-dynamic";
 export const metadata = pageMeta({
   title: "Kitchen appliances in Accra",
   description:
-    "Kitchen appliances from the Accra Mall shop, priced in Ghana Cedis.",
+    "Kitchen appliances from the Accra shop, priced in Ghana Cedis.",
   path: "/",
 });
 
@@ -221,7 +221,7 @@ export default async function HomePage() {
           <NewsletterForm invert />
         </div>
         <p className="mt-10 text-sm text-white/90">
-          {config.contact.addressLine1}, {config.contact.city}.{" "}
+          {[config.contact.addressLine1, config.contact.city].filter(Boolean).join(", ")}.{" "}
           <Link href="/contact" className="text-white underline underline-offset-2">
             Write to us
           </Link>

@@ -22,7 +22,7 @@ export const metadata: Metadata = {
     template: `%s | ${brand.name}`,
   },
   description:
-    "Kitchen appliances from the Accra Mall shop, priced in Ghana Cedis.",
+    "Kitchen appliances from the Accra shop, priced in Ghana Cedis.",
   metadataBase: new URL(getAppUrl()),
   icons: { icon: "/logo.png?v=official", apple: "/logo.png?v=official" },
 };

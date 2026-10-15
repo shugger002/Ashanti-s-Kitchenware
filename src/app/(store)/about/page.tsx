@@ -5,7 +5,7 @@ import { getStorefrontConfig } from "@/server/store/settings";
 
 export const metadata = pageMeta({
   title: "About",
-  description: "Ashanti's Kitchenware sells kitchen appliances from Accra Mall, priced in Ghana Cedis.",
+  description: "Ashanti's Kitchenware sells kitchen appliances in Accra, priced in Ghana Cedis.",
   path: "/about",
 });
 
@@ -23,7 +23,7 @@ export default async function AboutPage() {
       </section>
       <div className="mx-auto max-w-3xl px-5 py-16 lg:px-8">
         <p className="max-w-prose text-lg leading-relaxed text-muted">
-          Ashanti's Kitchenware is a kitchen-appliance retailer at Accra Mall taking orders online. We are not a luxury
+          Ashanti's Kitchenware is a kitchen-appliance retailer in Accra taking orders online. We are not a luxury
           house and we are not a discount warehouse. The work is simpler: sell appliances that are on the shelf,
           photograph them, and price them in Ghana Cedis.
         </p>
@@ -49,9 +49,8 @@ export default async function AboutPage() {
         </p>
         <h2 className="mt-14 text-2xl">The shop</h2>
         <p className="mt-4 max-w-prose leading-relaxed text-muted">
-          The shop publishes this address: {contact.addressLine1}, {contact.city}. Call {contact.phoneDisplay} or email{" "}
-          {contact.email} before travelling — Accra Mall’s public store directory does not currently list this shop by
-          name. Online prices are in Ghana Cedis. Collection and delivery are agreed with the shop.
+          Call {contact.phoneDisplay} or email {contact.email} for the shop address before travelling. Online prices are
+          in Ghana Cedis. Collection and delivery are agreed with the shop.
         </p>
         <Link href="/shop" className={`${buttonClass("primary")} mt-10`}>
           Shop appliances

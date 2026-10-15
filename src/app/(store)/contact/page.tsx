@@ -22,25 +22,19 @@ export default async function ContactPage() {
           <a href={`mailto:${contact.email}`}>{contact.email}</a>
         </p>
         <p className="text-muted">
-          {contact.addressLine1}
-          <br />
+          {contact.addressLine1 ? (
+            <>
+              {contact.addressLine1}
+              <br />
+            </>
+          ) : null}
           {[contact.city, contact.region, contact.country].filter(Boolean).join(", ")}
         </p>
         <p>
           <a href={`https://wa.me/${digits}`}>WhatsApp</a>
         </p>
+        <p className="text-sm text-muted">Ask the shop for the street address before you travel.</p>
       </div>
-      <p className="mt-8 text-sm">
-        <a
-          href="https://www.google.com/maps/search/?api=1&query=Accra+Mall+Tetteh+Quarshie"
-          rel="noreferrer"
-          className="text-accent"
-        >
-          Open Accra Mall in Google Maps
-        </a>
-        . That is the mall’s published location. Confirm with the shop before travelling. The link leaves this site and
-        uses Google’s own terms.
-      </p>
       <ContactForm />
     </div>
   );

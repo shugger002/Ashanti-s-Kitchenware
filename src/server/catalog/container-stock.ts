@@ -51,7 +51,7 @@ export async function importAsanteContainerStock(actorId: string): Promise<Produ
     ok: created > 0 || result.skipped.length > 0 || listed > 0,
     message:
       listed > 0
-        ? `Loaded the container list. ${listed} piece${listed === 1 ? "" : "s"} have exact-model photos and are listed. ${remainder} stay hidden until Accra Mall stock is photographed.`
+        ? `Loaded the container list. ${listed} piece${listed === 1 ? "" : "s"} have exact-model photos and are listed. ${remainder} stay hidden until stock is photographed.`
         : created > 0
           ? `Loaded ${created} piece${created === 1 ? "" : "s"} from the container list. They stay hidden on the shop until you add a photograph and list them.`
           : result.skipped.length > 0

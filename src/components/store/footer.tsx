@@ -26,7 +26,7 @@ export function StoreFooter({
         <div>
           <StoreLogo className="h-12 w-auto max-w-[14rem]" />
           <p className="mt-4 max-w-sm text-sm leading-relaxed text-muted">
-            Kitchen appliances from the Accra Mall shop, priced in Ghana Cedis.
+            Kitchen appliances from the Accra shop, priced in Ghana Cedis.
           </p>
           <p className="mt-3 text-xs leading-relaxed text-muted">{DEMO_PHOTO_NOTICE}</p>
         </div>
@@ -86,8 +86,12 @@ export function StoreFooter({
             <br />
             <a href={`mailto:${contact.email}`}>{contact.email}</a>
             <br />
-            {contact.addressLine1}
-            <br />
+            {contact.addressLine1 ? (
+              <>
+                {contact.addressLine1}
+                <br />
+              </>
+            ) : null}
             {[contact.city, contact.country].filter(Boolean).join(", ")}
           </p>
         </div>

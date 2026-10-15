@@ -8,11 +8,11 @@ export const policySourceNote =
 
 export const privacyPolicy = {
   title: "Privacy Policy",
-  updated: "13 October 2026",
+  updated: "15 October 2026",
   sections: [
     {
       heading: "Who we are",
-      body: `Ashanti's Kitchenware is the legal name used on this store ("we", "us", "our"). We sell home and kitchen appliances and household essentials as a retailer. We are the data controller for personal data collected through this site. You can reach us at support@ashantiskitchenware.com or +233 (0) 20 194 4235. The address published on ashantiskitchenware.com is Accra Mall, Tetteh Quarshie Interchange, Spintex Road, Accra, Ghana. Accra Mall’s public store directory does not currently list this shop by name, so confirm a visit with the shop first.`,
+      body: `Ashanti's Kitchenware is the legal name used on this store ("we", "us", "our"). We sell home and kitchen appliances and household essentials as a retailer. We are the data controller for personal data collected through this site. You can reach us at support@ashantiskitchenware.com or +233 (0) 20 194 4235. Confirm the shop address with us before visiting. Accra Mall is not our location.`,
     },
     {
       heading: "What data we collect",
@@ -55,11 +55,11 @@ export const privacyPolicy = {
 
 export const termsPolicy = {
   title: "Terms & Conditions",
-  updated: "13 October 2026",
+  updated: "15 October 2026",
   sections: [
     {
       heading: "About us",
-      body: `This store is operated by Ashanti's Kitchenware, a kitchenware retailer. We are not the manufacturer of every product we sell. You can contact us at support@ashantiskitchenware.com or +233 (0) 20 194 4235. The address published by the shop is Accra Mall, Tetteh Quarshie Interchange, Spintex Road, Accra. Ask the shop if you need this legal name on an invoice.`,
+      body: `This store is operated by Ashanti's Kitchenware, a kitchenware retailer. We are not the manufacturer of every product we sell. You can contact us at support@ashantiskitchenware.com or +233 (0) 20 194 4235. Confirm the shop address with us before visiting. Accra Mall is not our location. Ask the shop if you need this legal name on an invoice.`,
     },
     {
       heading: "Using our site",
@@ -110,7 +110,7 @@ export const termsPolicy = {
 
 export const refundPolicy = {
   title: "Refund & Return Policy",
-  updated: "13 October 2026",
+  updated: "15 October 2026",
   sections: [
     {
       heading: "Your right to return",
@@ -145,7 +145,7 @@ export const refundPolicy = {
 
 export const cookiePolicy = {
   title: "Cookie Policy",
-  updated: "13 October 2026",
+  updated: "15 October 2026",
   sections: [
     {
       heading: "What are cookies?",
