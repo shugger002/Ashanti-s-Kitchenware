@@ -83,11 +83,13 @@ export function ProductCsvForm() {
           {state.skipped.length > 0 ? <p className="text-muted">Already on the desk: {state.skipped.join(", ")}</p> : null}
           {state.attached.length > 0 ? <p className="text-muted">Photos: {state.attached.join("; ")}</p> : null}
           {state.unmatched.length > 0 ? <p className="text-accent">No SKU match: {state.unmatched.join(", ")}</p> : null}
-          {state.errors.length > 0 ? (
+          {state.errors.filter((error) => error !== state.message).length > 0 ? (
             <ul className="space-y-1 text-accent">
-              {state.errors.map((error) => (
-                <li key={error}>{error}</li>
-              ))}
+              {state.errors
+                .filter((error) => error !== state.message)
+                .map((error) => (
+                  <li key={error}>{error}</li>
+                ))}
             </ul>
           ) : null}
         </div>
