@@ -74,18 +74,18 @@ export function SearchOverlay({
         role="dialog"
         aria-modal="true"
         aria-labelledby="search-title"
-        className="absolute inset-0 flex flex-col overflow-y-auto bg-background p-5 pb-[calc(var(--store-dock)+env(safe-area-inset-bottom)+1rem)] md:inset-x-0 md:top-0 md:bottom-auto md:mx-auto md:mt-16 md:max-h-[min(80vh,40rem)] md:max-w-2xl md:rounded-3xl md:bg-surface md:pb-5 md:shadow-[var(--shadow)]"
+        className="absolute inset-0 flex flex-col overflow-y-auto bg-background p-4 pb-[max(1.25rem,env(safe-area-inset-bottom))] md:inset-x-0 md:top-0 md:bottom-auto md:mx-auto md:mt-16 md:max-h-[min(80vh,40rem)] md:max-w-2xl md:rounded-3xl md:bg-surface md:p-5 md:shadow-[var(--shadow)]"
       >
         <div className="flex items-center justify-between">
           <h2 id="search-title" className="font-serif text-2xl">
             Search
           </h2>
-          <button type="button" aria-label="Close search" onClick={onClose}>
+          <button type="button" className="inline-flex size-11 items-center justify-center" aria-label="Close search" onClick={onClose}>
             <X strokeWidth={1.5} />
           </button>
         </div>
         <form
-          className="mt-4 flex gap-2"
+          className="mt-4 flex flex-col gap-2 sm:flex-row"
           onSubmit={(event) => {
             event.preventDefault();
             go(q);
@@ -102,7 +102,7 @@ export function SearchOverlay({
             placeholder="Pots, kettles, appliances"
             className="input"
           />
-          <button type="submit" className={buttonClass("primary")}>
+          <button type="submit" className={buttonClass("primary", "h-12 w-full sm:w-auto")}>
             Search
           </button>
         </form>
