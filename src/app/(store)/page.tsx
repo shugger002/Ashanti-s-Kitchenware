@@ -27,7 +27,7 @@ export default async function HomePage() {
     searchProducts({ onSale: true, pageSize: 8 }),
     searchProducts({ featured: true, pageSize: 12 }),
     searchProducts({ isNew: true, pageSize: 12 }),
-    searchProducts({ pageSize: 12 }),
+    searchProducts({ pageSize: 16 }),
   ]);
   const mix = featured.items.length > 0 ? featured.items : catalogue.items;
   const extraArrivals = arrivals.items.filter(
@@ -58,7 +58,7 @@ export default async function HomePage() {
             <p className="mx-auto mt-3 max-w-xl text-sm leading-relaxed text-muted md:text-base">{config.hero.subtitle}</p>
           ) : null}
           {config.hero.ctaLabel ? (
-            <Link href={config.hero.ctaHref || "/shop"} className={buttonClass("primary", "mt-6")}>
+            <Link href={config.hero.ctaHref || "/products"} className={buttonClass("primary", "mt-6")}>
               {config.hero.ctaLabel}
             </Link>
           ) : null}

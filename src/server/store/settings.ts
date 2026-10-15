@@ -58,7 +58,7 @@ const fallback: StorefrontConfig = {
     title: "Equip Your Kitchen",
     subtitle: "",
     ctaLabel: "Shop",
-    ctaHref: "/shop",
+    ctaHref: "/products",
     placeholder: true,
   },
   announcement: {

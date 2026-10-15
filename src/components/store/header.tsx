@@ -62,7 +62,7 @@ export function StoreHeader({
 
   const menuPrimary = [
     { href: "/", label: "Home" },
-    { href: "/shop", label: "Shop" },
+    { href: "/products", label: "Shop" },
     { href: "/promo", label: "Promo" },
   ];
   const menuAfterCategories = [

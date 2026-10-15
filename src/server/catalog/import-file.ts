@@ -26,6 +26,8 @@ export async function runProductCsvImport(formData: FormData, user: AdminUser): 
     const photosResult = await attachPhotosBySku(photos);
     revalidatePath("/admin/products");
     revalidatePath("/admin/inventory");
+    revalidatePath("/");
+    revalidatePath("/products");
     revalidatePath("/shop");
     return {
       ok: photosResult.attached.length > 0,
@@ -74,6 +76,8 @@ export async function runProductCsvImport(formData: FormData, user: AdminUser): 
   const photosResult = photos.length > 0 ? await attachPhotosBySku(photos) : { attached: [], unmatched: [], errors: [] };
   revalidatePath("/admin/products");
   revalidatePath("/admin/inventory");
+  revalidatePath("/");
+  revalidatePath("/products");
   revalidatePath("/shop");
   const errors = [...parsed.errors, ...result.errors, ...photosResult.errors];
   const created = result.created.length;

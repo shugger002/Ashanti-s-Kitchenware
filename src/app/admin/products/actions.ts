@@ -64,6 +64,8 @@ export async function saveProduct(formData: FormData) {
   }
   revalidatePath("/admin/products");
   revalidatePath(`/admin/products/${savedId}`);
+  revalidatePath("/");
+  revalidatePath("/products");
   revalidatePath("/shop");
   redirect(`/admin/products/${savedId}`);
 }
@@ -78,6 +80,8 @@ export async function setReviewPublishedAction(formData: FormData) {
     actorUserId: user.id,
   });
   revalidatePath(`/admin/products/${productId}`);
+  revalidatePath("/");
+  revalidatePath("/products");
   revalidatePath("/shop");
 }
 

@@ -14,6 +14,8 @@ export async function loadContainerStock(): Promise<ProductCsvResult> {
     const result = await importAsanteContainerStock(user.id);
     revalidatePath("/admin/products");
     revalidatePath("/admin/inventory");
+    revalidatePath("/");
+    revalidatePath("/products");
     revalidatePath("/shop");
     return result;
   } catch (error) {
