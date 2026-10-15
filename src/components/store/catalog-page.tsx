@@ -70,14 +70,14 @@ export async function CatalogPage({
           : "Priced in Ghana Cedis. Demo listings are labelled and are not for sale. Filter by what you can use this week."}
       </p>
       <p className="mt-2 text-sm text-muted">{total} products</p>
-      <ul className="-mx-4 mt-6 flex gap-2 overflow-x-auto px-4 text-sm [scrollbar-width:none] md:mx-0 md:flex-wrap md:overflow-visible md:px-0 [&::-webkit-scrollbar]:hidden">
+      <ul className="-mx-4 mt-6 flex flex-nowrap gap-2 overflow-x-auto px-4 text-sm [scrollbar-width:none] md:mx-0 md:flex-wrap md:overflow-visible md:px-0 [&::-webkit-scrollbar]:hidden">
         {categories.map((c) => (
           <li key={c.id} id={c.slug}>
             {c.slug === "cookware" ? <span id="cooking-ware" className="sr-only" /> : null}
             {c.slug === "storage-insulation" ? <span id="insulations" className="sr-only" /> : null}
             <Link
               href={`/shop/${c.slug}`}
-              className="inline-flex min-h-11 shrink-0 items-center rounded-full border border-border bg-background px-3"
+              className="inline-flex min-h-11 shrink-0 items-center whitespace-nowrap rounded-full border border-border bg-background px-3"
             >
               {c.name}
             </Link>
