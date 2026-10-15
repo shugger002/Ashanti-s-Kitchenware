@@ -115,11 +115,6 @@ export default async function HomePage() {
               View all
             </Link>
           </div>
-          <p className="mt-2 text-sm text-muted">
-            {featured.items.length > 0
-              ? "Pieces staff are highlighting now — not a fabricated sales rank."
-              : "The current catalogue. Demo pieces stay labelled and are not for sale."}
-          </p>
           <ProductRail products={mix} className="mt-10" />
         </section>
       ) : (
