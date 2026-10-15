@@ -26,6 +26,15 @@ AK-KETTLE-01
   assert.equal(parsed.rows[0]?.sku, "AK-KETTLE-01");
 });
 
+test("reads packing-list PIC and Price in Cedis headers", () => {
+  const parsed = parseProductCsv(`PIC,GOODS OF DESCRIPTION,QTY,Price in Cedis
+APA-126,32CM 10L ROUND COOKING POT,30,312
+`);
+  assert.equal(parsed.rows[0]?.sku, "APA-126");
+  assert.equal(parsed.rows[0]?.price, 312);
+  assert.equal(parsed.rows[0]?.stock, 30);
+});
+
 test("infers columns without english headers", () => {
   const parsed = parseProductCsv(`Stainless kettle,AK-KETTLE-01,1599
 Cast iron pot,AK-POT-02,890

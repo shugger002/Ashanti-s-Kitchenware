@@ -296,8 +296,8 @@ export async function listAdminProducts(q?: string): Promise<AdminProductRow[]> 
      FROM products p
      LEFT JOIN categories c ON c.id = p.category_id
      WHERE ${sqlAnd(where)}
-     ORDER BY p.created_at DESC
-     LIMIT 80
+     ORDER BY p.name ASC
+     LIMIT 200
   `);
   return result.rows.map((row) => ({
     id: row.id,

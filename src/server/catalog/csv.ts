@@ -56,21 +56,34 @@ function isNameHeader(key: string) {
     /^(name|product|title|item|desc)/.test(key) ||
     key.includes("product_name") ||
     key.includes("item_name") ||
-    key === "goods"
+    key.includes("goods") ||
+    key.includes("description")
   );
 }
 
 function isSkuHeader(key: string) {
   return (
     key.includes("sku") ||
+    key === "pic" ||
     /^(code|barcode|ean|upc|model|ref|reference)$/.test(key) ||
     /item_code|product_code|stock_code|sku_code/.test(key)
   );
 }
 
 function isPriceHeader(key: string) {
+  if (key.includes("price_in_cedis") || key === "cedis" || key === "ghs") return true;
   if (key.includes("sale") && !key.includes("regular")) return false;
-  return /price|ghs|cedi|amount|retail|unit_price|selling/.test(key);
+  if (
+    key.includes("total") ||
+    key.includes("cbm") ||
+    key.includes("tax") ||
+    key === "pirce" ||
+    key === "amount" ||
+    key === "unit_price"
+  ) {
+    return false;
+  }
+  return /price|cedi|retail|selling/.test(key);
 }
 
 function looksLikeSku(value: string) {

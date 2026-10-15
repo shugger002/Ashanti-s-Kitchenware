@@ -48,7 +48,7 @@ export default async function AdminProductsPage({
 
       <AdminPageHeader
         title="Admin Products Page"
-        description="Manage your products here."
+        description="The desk list should match the container sheet: description, PIC, Ghana Cedi price, and quantity."
         action={
           <Link href="/admin/products/new" className={adminButton()}>
             Add Product

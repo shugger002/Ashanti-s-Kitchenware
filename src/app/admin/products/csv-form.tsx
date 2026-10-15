@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { type ProductCsvResult } from "@/lib/desk-import";
+import { loadContainerStock } from "@/app/admin/products/csv-actions";
 import { downloadDeskFile, postDeskForm } from "@/components/admin/desk-file";
 import { adminButton } from "@/components/admin/ui";
 
@@ -22,22 +23,30 @@ export function ProductCsvForm() {
     <div className="rounded-xl border border-border bg-white p-5">
       <h2 className="text-lg font-medium">Upload products CSV or PDF</h2>
       <p className="mt-1 text-sm leading-relaxed text-muted">
-        Download the template, or upload CSV, Excel, or a spreadsheet PDF. Google Sheets: File → Download → CSV.
-        Required: <span className="text-foreground">name</span>,{" "}
-        <span className="text-foreground">sku</span>, <span className="text-foreground">price</span> in Ghana Cedis.
-        Set <span className="text-foreground">listed</span> to yes to publish. Name photographs after the SKU or the
-        product name (<span className="text-foreground">AK-KETTLE.jpg</span> or{" "}
-        <span className="text-foreground">Stainless Kettle.jpg</span>; extra shots{" "}
-        <span className="text-foreground">Stainless Kettle-2.jpg</span>). SKU wins if both could match. Existing SKUs
-        are skipped; matching photos still attach.
+        Load the current container list (PIC, description, price in Cedis, qty), or upload a CSV. Pieces stay hidden on
+        the shop until you attach a photograph and list them. Name photographs after the SKU (
+        <span className="text-foreground">APA-126.jpg</span>).
       </p>
-      <div className="mt-4">
+      <div className="mt-4 flex flex-wrap gap-3">
+        <button
+          type="button"
+          className={adminButton()}
+          disabled={pending}
+          onClick={() => {
+            setPending(true);
+            void loadContainerStock()
+              .then((result) => setState(result))
+              .finally(() => setPending(false));
+          }}
+        >
+          {pending ? "Loading list…" : "Load container stock"}
+        </button>
         <button
           type="button"
           className="text-sm text-accent underline-offset-2 hover:underline"
           onClick={() => downloadDeskFile("/api/admin/products-template")}
         >
-          Download template
+          Download CSV template
         </button>
       </div>
       <form
