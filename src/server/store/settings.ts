@@ -55,8 +55,7 @@ const fallback: StorefrontConfig = {
   contact: { ...defaultContact },
   hero: {
     title: "Equip Your Kitchen",
-    subtitle:
-      "Blenders, cookers, kettles, fryers, and related kitchen appliances from the Accra Mall shop, priced in Ghana Cedis.",
+    subtitle: "",
     ctaLabel: "Shop",
     ctaHref: "/shop",
     placeholder: true,
@@ -102,9 +101,14 @@ export async function getStorefrontConfig(): Promise<StorefrontConfig> {
       ? { ...contact, legalName: fallback.contact.legalName, tradingName: fallback.contact.tradingName }
       : contact;
   const cookingCopy = /what are you cooking|cooking tonight|\bcooking\b|\bcook\b|recipe|kitchen tip|kitchen note/i;
-  const liveHero = cookingCopy.test(`${hero.title} ${hero.subtitle}`)
-    ? { ...fallback.hero, title: "Equip Your Kitchen" }
-    : { ...hero, title: hero.title.replace(/what are you cooking tonight\??/i, "Equip Your Kitchen") };
+  const strippedSubtitle = /blenders,\s*cookers|accra mall shop, priced/i.test(hero.subtitle) ? "" : hero.subtitle;
+  const liveHero = cookingCopy.test(`${hero.title} ${strippedSubtitle}`)
+    ? { ...fallback.hero, title: "Equip Your Kitchen", subtitle: "" }
+    : {
+        ...hero,
+        title: hero.title.replace(/what are you cooking tonight\??/i, "Equip Your Kitchen"),
+        subtitle: strippedSubtitle,
+      };
   return { contact: liveContact, hero: liveHero, announcement: liveAnnouncement, social, fulfillment };
 }
 

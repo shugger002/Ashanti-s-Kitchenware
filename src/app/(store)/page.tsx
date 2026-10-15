@@ -54,7 +54,9 @@ export default async function HomePage() {
         <div className="mx-auto max-w-6xl px-5 text-center lg:px-8">
           <p className="text-xs uppercase tracking-[0.22em] text-accent">The Accra shop</p>
           <h2 className="mt-3 text-3xl md:text-5xl">{config.hero.title}</h2>
-          <p className="mx-auto mt-3 max-w-xl text-sm leading-relaxed text-muted md:text-base">{config.hero.subtitle}</p>
+          {config.hero.subtitle ? (
+            <p className="mx-auto mt-3 max-w-xl text-sm leading-relaxed text-muted md:text-base">{config.hero.subtitle}</p>
+          ) : null}
           {config.hero.ctaLabel ? (
             <Link href={config.hero.ctaHref || "/shop"} className={buttonClass("primary", "mt-6")}>
               {config.hero.ctaLabel}
