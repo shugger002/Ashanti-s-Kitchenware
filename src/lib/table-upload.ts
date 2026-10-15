@@ -54,7 +54,7 @@ function looksLikeInventoryTable(table: string[][]): boolean {
   return /sku|product|item|code|qty|quantity|stock|restock|on.?hand|\bname\b/.test(header);
 }
 
-export async function extractInventorySpreadsheetText(file: File): Promise<string> {
+export async function extractSpreadsheetText(file: File): Promise<string> {
   const bytes = new Uint8Array(await file.arrayBuffer());
   if (!isPdfUpload(file, bytes)) {
     return tabularTextToCsv(Buffer.from(bytes).toString("utf8"));
@@ -79,3 +79,5 @@ export async function extractInventorySpreadsheetText(file: File): Promise<strin
     await parser.destroy();
   }
 }
+
+export const extractInventorySpreadsheetText = extractSpreadsheetText;

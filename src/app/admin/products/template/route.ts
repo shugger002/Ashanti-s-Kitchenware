@@ -12,9 +12,10 @@ export async function GET() {
   ];
   return new Response(`${lines.join("\n")}\n`, {
     headers: {
-      "Content-Type": "text/csv; charset=utf-8",
+      "Content-Type": "application/octet-stream",
       "Content-Disposition": 'attachment; filename="products-import.csv"',
       "Cache-Control": "no-store",
+      "X-Content-Type-Options": "nosniff",
     },
   });
 }

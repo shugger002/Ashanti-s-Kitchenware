@@ -8,9 +8,9 @@ export function ProductCsvForm() {
   const [state, action, pending] = useActionState(importProductsCsv, null as ProductCsvState);
   return (
     <div className="rounded-xl border border-border bg-white p-5">
-      <h2 className="text-lg font-medium">Upload products CSV</h2>
+      <h2 className="text-lg font-medium">Upload products CSV or PDF</h2>
       <p className="mt-1 text-sm leading-relaxed text-muted">
-        Download the template and add one row per piece. Required: <span className="text-foreground">name</span>,{" "}
+        Download the template, or upload a CSV or a spreadsheet saved as PDF. Required: <span className="text-foreground">name</span>,{" "}
         <span className="text-foreground">sku</span>, <span className="text-foreground">price</span> in Ghana Cedis.
         Set <span className="text-foreground">listed</span> to yes to publish. Name photographs after the SKU or the
         product name (<span className="text-foreground">AK-KETTLE.jpg</span> or{" "}
@@ -19,19 +19,35 @@ export function ProductCsvForm() {
         are skipped; matching photos still attach.
       </p>
       <div className="mt-4">
-        <a href="/admin/products/template" className="text-sm text-accent">
+        <button
+          type="button"
+          className="text-sm text-accent underline-offset-2 hover:underline"
+          onClick={() => {
+            window.location.assign("/admin/products/template");
+          }}
+        >
           Download template
-        </a>
+        </button>
       </div>
-      <form action={action} className="mt-4 space-y-3">
+      <form action={action} encType="multipart/form-data" className="mt-4 space-y-3">
         <div className="flex flex-wrap items-end gap-3">
           <label className="block min-w-0 flex-1 text-sm">
-            CSV file
-            <input name="file" type="file" accept=".csv,text/csv" className="input mt-1" />
+            CSV or PDF
+            <input
+              name="file"
+              type="file"
+              className="mt-1 block w-full cursor-pointer rounded-md border border-border bg-white py-2 pl-2 text-sm file:mr-3 file:rounded-md file:border-0 file:bg-accent file:px-3 file:py-2 file:text-sm file:font-medium file:text-white"
+            />
           </label>
           <label className="block min-w-0 flex-1 text-sm">
             Photographs
-            <input name="images" type="file" accept="image/jpeg,image/png,image/webp" multiple className="input mt-1" />
+            <input
+              name="images"
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              multiple
+              className="mt-1 block w-full cursor-pointer rounded-md border border-border bg-white py-2 pl-2 text-sm file:mr-3 file:rounded-md file:border-0 file:bg-accent file:px-3 file:py-2 file:text-sm file:font-medium file:text-white"
+            />
           </label>
         </div>
         <button className={adminButton()} type="submit" disabled={pending}>

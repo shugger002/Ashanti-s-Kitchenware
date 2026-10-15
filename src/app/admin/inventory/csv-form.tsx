@@ -15,19 +15,24 @@ export function InventoryCsvForm() {
         <span className="text-foreground">on_hand</span> (new shelf count).
       </p>
       <div className="mt-4 flex flex-wrap items-center gap-3">
-        <a href="/admin/inventory/template" className="text-sm text-accent">
+        <button
+          type="button"
+          className="text-sm text-accent underline-offset-2 hover:underline"
+          onClick={() => {
+            window.location.assign("/admin/inventory/template");
+          }}
+        >
           Download template
-        </a>
+        </button>
       </div>
-      <form action={action} className="mt-4 flex flex-wrap items-end gap-3">
+      <form action={action} encType="multipart/form-data" className="mt-4 flex flex-wrap items-end gap-3">
         <label className="block min-w-0 flex-1 text-sm">
           CSV or PDF
           <input
             name="file"
             type="file"
-            accept=".csv,.pdf,text/csv,application/pdf"
             required
-            className="input mt-1"
+            className="mt-1 block w-full cursor-pointer rounded-md border border-border bg-white py-2 pl-2 text-sm file:mr-3 file:rounded-md file:border-0 file:bg-accent file:px-3 file:py-2 file:text-sm file:font-medium file:text-white"
           />
         </label>
         <button className={adminButton("shrink-0")} type="submit" disabled={pending}>

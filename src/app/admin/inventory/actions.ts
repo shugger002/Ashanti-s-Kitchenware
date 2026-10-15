@@ -2,7 +2,7 @@
 
 import { requirePermission } from "@/server/auth/authorize";
 import { applyInventoryCsv, listInventory } from "@/server/inventory/service";
-import { assertTableUploadSize, extractInventorySpreadsheetText } from "@/lib/table-upload";
+import { assertTableUploadSize, extractSpreadsheetText } from "@/lib/table-upload";
 import { parseInventoryCsv } from "@/server/inventory/csv";
 import { revalidatePath } from "next/cache";
 
@@ -36,7 +36,7 @@ export async function importInventoryCsv(
   }
   let text = "";
   try {
-    text = await extractInventorySpreadsheetText(file);
+    text = await extractSpreadsheetText(file);
   } catch (error) {
     return {
       ok: false,

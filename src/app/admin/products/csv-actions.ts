@@ -4,7 +4,7 @@ import { requirePermission } from "@/server/auth/authorize";
 import { importProductsFromCsv } from "@/server/catalog/admin";
 import { attachPhotosBySku } from "@/server/catalog/images";
 import { parseProductCsv } from "@/server/catalog/csv";
-import { assertCsvSize } from "@/lib/csv";
+import { assertTableUploadSize, extractSpreadsheetText } from "@/lib/table-upload";
 import { revalidatePath } from "next/cache";
 
 export type ProductCsvState = {
@@ -27,7 +27,7 @@ export async function importProductsCsv(
   const empty = { created: [] as string[], skipped: [] as string[], attached: [] as string[], unmatched: [] as string[], errors: [] as string[] };
   if (!(file instanceof File) || file.size === 0) {
     if (photos.length === 0) {
-      return { ok: false, message: "Choose a CSV file and/or product photographs.", ...empty };
+      return { ok: false, message: "Choose a CSV or PDF and/or product photographs.", ...empty };
     }
     const photosResult = await attachPhotosBySku(photos);
     revalidatePath("/admin/products");
@@ -46,7 +46,7 @@ export async function importProductsCsv(
     };
   }
   try {
-    assertCsvSize(file.size);
+    assertTableUploadSize(file.size);
   } catch (error) {
     return {
       ok: false,
@@ -54,7 +54,17 @@ export async function importProductsCsv(
       ...empty,
     };
   }
-  const parsed = parseProductCsv(await file.text());
+  let text = "";
+  try {
+    text = await extractSpreadsheetText(file);
+  } catch (error) {
+    return {
+      ok: false,
+      message: error instanceof Error ? error.message : "Could not read that CSV or PDF.",
+      ...empty,
+    };
+  }
+  const parsed = parseProductCsv(text);
   if (parsed.rows.length === 0 && photos.length === 0) {
     return {
       ok: false,
