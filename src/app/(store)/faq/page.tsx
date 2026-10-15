@@ -10,7 +10,7 @@ export const metadata = pageMeta({
 const faqs = [
   {
     q: "Where are you based?",
-    a: "The shop is at Hyde Street, Sakaman, Odorkor, Accra. Open the pin in Google Maps, or call +233 (0) 20 194 4235 / WhatsApp / support@ashantiskitchenware.com. Collection and delivery are arranged with the shop.",
+    a: "The shop is at Hyde Street, Sakaman, Odorkor, Accra. Use Get Directions in the menu for the Google Maps route, or call +233 (0) 20 194 4235 / WhatsApp / support@ashantiskitchenware.com. Collection and delivery are arranged with the shop.",
   },
   {
     q: "What currency are prices in?",

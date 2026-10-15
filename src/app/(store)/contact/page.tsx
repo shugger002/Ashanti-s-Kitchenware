@@ -36,10 +36,14 @@ export default async function ContactPage() {
           <a href={`https://wa.me/${digits}`}>WhatsApp</a>
         </p>
         <p className="text-sm">
+          <a href="/directions" className="text-accent">
+            Get directions
+          </a>
+          {" · "}
           <a href={mapsUrl} rel="noreferrer" className="text-accent">
             Open the shop in Google Maps
           </a>
-          . That link leaves this site and uses Google’s own terms.
+          . Maps links leave this site and use Google’s own terms.
         </p>
       </div>
       <ContactForm />

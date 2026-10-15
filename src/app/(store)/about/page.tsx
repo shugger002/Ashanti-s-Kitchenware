@@ -49,8 +49,12 @@ export default async function AboutPage() {
         </p>
         <h2 className="mt-14 text-2xl">The shop</h2>
         <p className="mt-4 max-w-prose leading-relaxed text-muted">
-          The shop is at {contact.addressLine1}, {contact.city}. Call {contact.phoneDisplay} or email {contact.email}.
-          Online prices are in Ghana Cedis. Collection and delivery are agreed with the shop.
+          The shop is at {contact.addressLine1}, {contact.city}.{" "}
+          <Link href="/directions" className="text-accent">
+            Get directions
+          </Link>
+          . Call {contact.phoneDisplay} or email {contact.email}. Online prices are in Ghana Cedis. Collection and
+          delivery are agreed with the shop.
         </p>
         <Link href="/shop" className={`${buttonClass("primary")} mt-10`}>
           Shop appliances

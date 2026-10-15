@@ -161,7 +161,7 @@ export const cookiePolicy = {
     },
     {
       heading: "Third-party content",
-      body: `The contact page links out to Google Maps and WhatsApp. Those services are not loaded until you choose to open them, and they then apply their own terms and cookies. Product images may be served from a content delivery network.`,
+      body: `The contact and Get directions pages link out to Google Maps and WhatsApp. Those services are not loaded until you choose to open them, and they then apply their own terms and cookies. Product images may be served from a content delivery network.`,
     },
     {
       heading: "Managing your choices",

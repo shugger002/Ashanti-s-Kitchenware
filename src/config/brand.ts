@@ -16,6 +16,7 @@ export const shopMap = {
   lat: 5.571348,
   lng: -0.272244,
   url: "https://maps.google.com/?q=5.571348,-0.272244",
+  directionsUrl: "https://www.google.com/maps/dir/?api=1&destination=5.571348,-0.272244",
 } as const;
 
 export const defaultContact = {

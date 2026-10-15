@@ -63,6 +63,9 @@ export function StoreFooter({
               <Link href="/contact">Contact</Link>
             </li>
             <li>
+              <Link href="/directions">Get directions</Link>
+            </li>
+            <li>
               <Link href="/faq">FAQ</Link>
             </li>
             <li>

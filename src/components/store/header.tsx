@@ -69,6 +69,7 @@ export function StoreHeader({
     { href: "/faq#payments", label: "Payments" },
     { href: "/about", label: "About" },
     { href: "/contact", label: "Contact" },
+    { href: "/directions", label: "Get Directions" },
   ];
   const menuSecondary = [
     { href: "/orders/track", label: "Track Order" },
