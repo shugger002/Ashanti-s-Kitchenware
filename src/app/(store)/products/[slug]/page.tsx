@@ -176,7 +176,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
         </div>
       </div>
 
-      <div className="fixed inset-x-0 bottom-[var(--store-dock)] z-30 border-t border-border bg-surface/95 p-3 shadow-[var(--shadow)] backdrop-blur lg:sticky lg:inset-x-auto lg:bottom-4 lg:mt-8 lg:rounded-sm lg:border">
+      <div className="fixed inset-x-0 bottom-[var(--store-dock)] z-50 border-t border-border bg-surface/95 p-3 shadow-[var(--shadow)] backdrop-blur lg:sticky lg:inset-x-auto lg:bottom-4 lg:z-30 lg:mt-8 lg:rounded-sm lg:border">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="min-w-0">
             <p className="truncate font-medium">{product.name}</p>
