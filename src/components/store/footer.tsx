@@ -61,14 +61,14 @@ export function StoreFooter({
   return (
     <footer className="mt-auto bg-surface pb-[calc(var(--store-dock)+env(safe-area-inset-bottom))] lg:pb-0">
       <section className="border-t border-border">
-        <div className="mx-auto grid max-w-6xl gap-8 px-5 py-12 lg:grid-cols-[1.45fr_1fr] lg:items-end lg:px-8 lg:py-16">
-          <div>
-            <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-accent">Visit the Accra shop</p>
-            <p className="mt-3 font-serif text-3xl text-pretty md:text-4xl">{contact.addressLine1 || locality}</p>
-            {contact.addressLine1 ? <p className="mt-2 text-sm text-muted">{locality}</p> : null}
-            <p className="mt-4 max-w-md text-pretty text-sm leading-relaxed text-muted">{shopHours}</p>
-          </div>
-          <div className="flex flex-wrap gap-3 lg:justify-end">
+        <div className="mx-auto max-w-6xl px-5 py-12 lg:px-8 lg:py-16">
+          <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-accent">Visit the Accra shop</p>
+          <p className="mt-3 max-w-3xl font-serif text-3xl text-pretty md:text-4xl">
+            {contact.addressLine1 || locality}
+          </p>
+          {contact.addressLine1 ? <p className="mt-2 text-sm text-muted">{locality}</p> : null}
+          <p className="mt-4 max-w-md text-pretty text-sm leading-relaxed text-muted">{shopHours}</p>
+          <div className="mt-6 flex flex-wrap gap-3">
             <Link href="/directions" className={buttonClass("primary")}>
               Get directions
             </Link>
