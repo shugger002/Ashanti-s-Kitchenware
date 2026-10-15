@@ -8,13 +8,33 @@ export function assertTableUploadSize(bytes: number) {
   }
 }
 
-export function isPdfUpload(file: { name: string; type: string }, bytes?: Uint8Array) {
-  if (file.type === "application/pdf") return true;
-  if (file.name.toLowerCase().includes(".pdf")) return true;
-  if (bytes && bytes.length >= 5) {
-    return bytes[0] === 0x25 && bytes[1] === 0x50 && bytes[2] === 0x44 && bytes[3] === 0x46;
+function decodeName(name: string) {
+  try {
+    return decodeURIComponent(name);
+  } catch {
+    return name;
   }
-  return false;
+}
+
+export function isPdfUpload(file: { name: string; type: string }, bytes?: Uint8Array) {
+  if (bytes && bytes.length >= 5 && bytes[0] === 0x25 && bytes[1] === 0x50 && bytes[2] === 0x44 && bytes[3] === 0x46) {
+    return true;
+  }
+  if (looksLikeZip(bytes) || looksLikeXls(bytes)) return false;
+  if (file.type === "application/pdf") return true;
+  return decodeName(file.name).toLowerCase().includes(".pdf");
+}
+
+function looksLikeZip(bytes?: Uint8Array) {
+  return Boolean(bytes && bytes.length >= 2 && bytes[0] === 0x50 && bytes[1] === 0x4b);
+}
+
+function looksLikeXls(bytes?: Uint8Array) {
+  return Boolean(bytes && bytes.length >= 8 && bytes[0] === 0xd0 && bytes[1] === 0xcf);
+}
+
+function looksLikePdf(bytes?: Uint8Array) {
+  return Boolean(bytes && bytes.length >= 5 && bytes[0] === 0x25 && bytes[1] === 0x50 && bytes[2] === 0x44 && bytes[3] === 0x46);
 }
 
 export function tableToCsv(table: string[][]): string {
@@ -49,39 +69,21 @@ export function tabularTextToCsv(raw: string): string {
     .join("\n");
 }
 
-function looksLikeInventoryTable(table: string[][]): boolean {
-  const header = (table[0] ?? []).map((cell) => cell.toLowerCase().replace(/[\s-]+/g, "_")).join(" ");
-  return /sku|product|item|code|qty|quantity|stock|restock|on.?hand|\bname\b/.test(header);
-}
-
-export async function extractSpreadsheetText(file: File): Promise<string> {
-  const bytes = new Uint8Array(await file.arrayBuffer());
-  if (!isPdfUpload(file, bytes)) {
-    return tabularTextToCsv(Buffer.from(bytes).toString("utf8"));
-  }
+async function extractPdfText(bytes: Uint8Array): Promise<string> {
+  await import("pdf-parse/worker");
   const { PDFParse } = await import("pdf-parse");
   const parser = new PDFParse({ data: bytes.slice() });
   try {
-    let tables: { mergedTables?: string[][][]; pages?: { tables: string[][][] }[] } = {};
-    try {
-      tables = await parser.getTable();
-    } catch {
-      tables = {};
-    }
     const text = await parser.getText();
-    const candidates = [...(tables.mergedTables ?? []), ...(tables.pages ?? []).flatMap((page) => page.tables)].filter(
-      (table) => table.length > 0,
-    );
-    const ranked = [
-      ...candidates.filter(looksLikeInventoryTable),
-      ...candidates.sort((a, b) => b.length * (b[0]?.length ?? 0) - a.length * (a[0]?.length ?? 0)),
-    ];
-    const chunks = ranked.map((table) => tableToCsv(table));
-    chunks.push(tabularTextToCsv(text.text ?? ""));
-    chunks.push(text.text ?? "");
-    const extracted = chunks.filter(Boolean).join("\n\n").trim();
-    if (!extracted) throw new Error("Could not read a table from that PDF.");
-    return extracted;
+    const extracted = tabularTextToCsv(text.text ?? "");
+    const plain = (text.text ?? "").trim();
+    const combined = [extracted, plain].filter(Boolean).join("\n\n").trim();
+    if (!combined) {
+      throw new Error(
+        "That PDF has no selectable text. In Google Sheets use File → Download → Comma-separated values (.csv).",
+      );
+    }
+    return combined;
   } finally {
     try {
       await parser.destroy();
@@ -89,6 +91,33 @@ export async function extractSpreadsheetText(file: File): Promise<string> {
       /* ignore */
     }
   }
+}
+
+async function extractWorkbookText(bytes: Uint8Array): Promise<string> {
+  const XLSX = await import("xlsx");
+  const workbook = XLSX.read(bytes, { type: "array", cellDates: false, raw: false });
+  const chunks: string[] = [];
+  for (const name of workbook.SheetNames) {
+    const sheet = workbook.Sheets[name];
+    if (!sheet) continue;
+    const csv = XLSX.utils.sheet_to_csv(sheet, { blankrows: false }).trim();
+    if (csv) chunks.push(csv);
+  }
+  const text = chunks.join("\n\n").trim();
+  if (!text) throw new Error("That spreadsheet is empty.");
+  return text;
+}
+
+export async function extractSpreadsheetText(file: File): Promise<string> {
+  const bytes = new Uint8Array(await file.arrayBuffer());
+  if (bytes.length === 0) throw new Error("The file is empty.");
+  if (looksLikePdf(bytes) || (isPdfUpload(file, bytes) && !looksLikeZip(bytes) && !looksLikeXls(bytes))) {
+    return extractPdfText(bytes);
+  }
+  if (looksLikeZip(bytes) || looksLikeXls(bytes) || /\.(xlsx|xls|ods)$/i.test(decodeName(file.name))) {
+    return extractWorkbookText(bytes);
+  }
+  return tabularTextToCsv(Buffer.from(bytes).toString("utf8"));
 }
 
 export const extractInventorySpreadsheetText = extractSpreadsheetText;

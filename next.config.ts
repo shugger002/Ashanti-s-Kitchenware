@@ -32,7 +32,7 @@ if (process.env.NODE_ENV === "production") {
 const nextConfig: NextConfig = {
   allowedDevOrigins: ["127.0.0.1"],
   poweredByHeader: false,
-  serverExternalPackages: ["pdf-parse", "pg", "argon2"],
+  serverExternalPackages: ["pdf-parse", "@napi-rs/canvas", "xlsx", "pg", "argon2"],
   experimental: {
     serverActions: {
       bodySizeLimit: "40mb",

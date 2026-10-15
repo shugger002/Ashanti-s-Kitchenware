@@ -2,13 +2,23 @@ export function downloadDeskFile(url: string) {
   window.location.assign(url);
 }
 
-export async function postDeskForm<T>(url: string, form: HTMLFormElement, fallback: T): Promise<T> {
+export async function postDeskForm<T extends { message: string }>(
+  url: string,
+  form: HTMLFormElement,
+  fallback: T,
+): Promise<T> {
   const response = await fetch(url, {
     method: "POST",
     body: new FormData(form),
     credentials: "same-origin",
   });
-  const data = (await response.json().catch(() => null)) as T | null;
-  if (!data) return fallback;
-  return data;
+  const text = await response.text();
+  try {
+    return JSON.parse(text) as T;
+  } catch {
+    return {
+      ...fallback,
+      message: `Could not import that file (${response.status}). Try a CSV from Google Sheets: File → Download → Comma-separated values.`,
+    };
+  }
 }

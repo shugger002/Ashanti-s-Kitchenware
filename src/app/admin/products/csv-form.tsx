@@ -22,7 +22,8 @@ export function ProductCsvForm() {
     <div className="rounded-xl border border-border bg-white p-5">
       <h2 className="text-lg font-medium">Upload products CSV or PDF</h2>
       <p className="mt-1 text-sm leading-relaxed text-muted">
-        Download the template, or upload a CSV or a spreadsheet saved as PDF. Required: <span className="text-foreground">name</span>,{" "}
+        Download the template, or upload CSV, Excel, or a spreadsheet PDF. Google Sheets: File → Download → CSV.
+        Required: <span className="text-foreground">name</span>,{" "}
         <span className="text-foreground">sku</span>, <span className="text-foreground">price</span> in Ghana Cedis.
         Set <span className="text-foreground">listed</span> to yes to publish. Name photographs after the SKU or the
         product name (<span className="text-foreground">AK-KETTLE.jpg</span> or{" "}

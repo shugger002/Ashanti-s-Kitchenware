@@ -18,15 +18,12 @@ export async function POST(request: Request) {
     const result = await runInventoryCsvImport(formData, user);
     return NextResponse.json(result);
   } catch (error) {
-    return NextResponse.json(
-      {
-        ok: false,
-        message: error instanceof Error ? error.message : "Could not import that file.",
-        updated: [],
-        skipped: [],
-        errors: [],
-      },
-      { status: 400 },
-    );
+    return NextResponse.json({
+      ok: false,
+      message: error instanceof Error ? error.message : "Could not import that file.",
+      updated: [],
+      skipped: [],
+      errors: [],
+    });
   }
 }

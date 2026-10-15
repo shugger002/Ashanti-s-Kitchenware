@@ -58,16 +58,38 @@ export function parseProductCsv(raw: string): CsvProductParseResult {
   if (lines.length < 2) {
     return { rows: [], errors: ["Add a header row and at least one product row."] };
   }
-  if (lines.length - 1 > MAX_ROWS) {
-    return { rows: [], errors: [`Use at most ${MAX_ROWS} product rows.`] };
+  const nameHeaders = ["name", "product", "product_name", "title", "item", "item_name"];
+  const skuHeaders = ["sku", "sku_code", "product_sku", "item_code", "code"];
+  const priceHeaders = ["price", "ghs", "regular_price", "unit_price", "selling_price", "amount", "cedi", "cedis"];
+  let headerAt = 0;
+  let headers = splitCsvLine(lines[0] ?? "").map(csvHeaderKey);
+  let nameIndex = col(headers, nameHeaders);
+  let skuIndex = col(headers, skuHeaders);
+  let priceIndex = col(headers, priceHeaders);
+  for (let i = 0; i < Math.min(lines.length, 40); i += 1) {
+    const keys = splitCsvLine(lines[i] ?? "").map(csvHeaderKey);
+    const nextName = col(keys, nameHeaders);
+    const nextSku = col(keys, skuHeaders);
+    const nextPrice = col(keys, priceHeaders);
+    if (nextName >= 0 && nextSku >= 0 && nextPrice >= 0) {
+      headerAt = i;
+      headers = keys;
+      nameIndex = nextName;
+      skuIndex = nextSku;
+      priceIndex = nextPrice;
+      break;
+    }
   }
-
-  const headers = splitCsvLine(lines[0] ?? "").map(csvHeaderKey);
-  const nameIndex = col(headers, ["name", "product", "product_name", "title"]);
-  const skuIndex = col(headers, ["sku", "sku_code", "product_sku"]);
-  const priceIndex = col(headers, ["price", "ghs", "regular_price"]);
   if (nameIndex < 0 || skuIndex < 0 || priceIndex < 0) {
-    return { rows: [], errors: ["The first row must include name, sku, and price."] };
+    return {
+      rows: [],
+      errors: [
+        "Need columns named name, sku, and price. Google Sheets: File → Download → Comma-separated values (.csv).",
+      ],
+    };
+  }
+  if (lines.length - headerAt - 1 > MAX_ROWS) {
+    return { rows: [], errors: [`Use at most ${MAX_ROWS} product rows.`] };
   }
   const saleIndex = col(headers, ["sale_price", "sale", "promo_price"]);
   const stockIndex = col(headers, ["stock", "on_hand", "qty", "quantity", "initial_stock"]);
@@ -82,7 +104,7 @@ export function parseProductCsv(raw: string): CsvProductParseResult {
 
   const rows: CsvProductRow[] = [];
   const seen = new Set<string>();
-  for (let i = 1; i < lines.length; i += 1) {
+  for (let i = headerAt + 1; i < lines.length; i += 1) {
     const lineNo = i + 1;
     const cells = splitCsvLine(lines[i] ?? "");
     const name = cell(cells, nameIndex);

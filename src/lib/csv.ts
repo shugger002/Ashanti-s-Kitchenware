@@ -49,7 +49,7 @@ export function csvHeaderKey(value: string) {
 }
 
 export function parseCsvNumber(raw: string): number | null {
-  const text = raw.replace(/,/g, "").trim();
+  const text = raw.replace(/GHS|GH₵|₵/gi, "").replace(/,/g, "").replace(/\s/g, "").trim();
   if (!text) return null;
   const n = Number(text);
   if (!Number.isFinite(n)) return null;

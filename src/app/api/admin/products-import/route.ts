@@ -26,17 +26,14 @@ export async function POST(request: Request) {
     const result = await runProductCsvImport(formData, user);
     return NextResponse.json(result);
   } catch (error) {
-    return NextResponse.json(
-      {
-        ok: false,
-        message: error instanceof Error ? error.message : "Could not import that file.",
-        created: [],
-        skipped: [],
-        attached: [],
-        unmatched: [],
-        errors: [],
-      },
-      { status: 400 },
-    );
+    return NextResponse.json({
+      ok: false,
+      message: error instanceof Error ? error.message : "Could not import that file.",
+      created: [],
+      skipped: [],
+      attached: [],
+      unmatched: [],
+      errors: [],
+    });
   }
 }
