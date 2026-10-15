@@ -47,6 +47,14 @@ const nextConfig: NextConfig = {
     if (process.env.NODE_ENV !== "production") return [];
     return [{ source: "/:path*", headers: securityHeaders }];
   },
+  async rewrites() {
+    return {
+      beforeFiles: [
+        { source: "/admin/products/template", destination: "/api/admin/products-template" },
+        { source: "/admin/inventory/template", destination: "/api/admin/inventory-template" },
+      ],
+    };
+  },
   async redirects() {
     return [
       { source: "/privacy-policy", destination: "/privacy", permanent: true },

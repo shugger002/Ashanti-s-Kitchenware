@@ -16,8 +16,6 @@ const failed: InventoryCsvResult = {
 export function InventoryCsvForm() {
   const [state, setState] = useState<InventoryCsvResult | null>(null);
   const [pending, setPending] = useState(false);
-  const [downloadError, setDownloadError] = useState("");
-
   return (
     <div className="rounded-xl border border-border bg-white p-5">
       <h2 className="text-lg font-medium">Upload restock file</h2>
@@ -30,16 +28,10 @@ export function InventoryCsvForm() {
         <button
           type="button"
           className="text-sm text-accent underline-offset-2 hover:underline"
-          onClick={() => {
-            setDownloadError("");
-            void downloadDeskFile("/api/admin/inventory-template", "inventory-restock.csv").catch((error: unknown) => {
-              setDownloadError(error instanceof Error ? error.message : "Could not download the template.");
-            });
-          }}
+          onClick={() => downloadDeskFile("/api/admin/inventory-template")}
         >
           Download template
         </button>
-        {downloadError ? <p className="w-full text-sm text-accent">{downloadError}</p> : null}
       </div>
       <form
         encType="multipart/form-data"

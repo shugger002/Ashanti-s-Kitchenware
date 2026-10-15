@@ -18,8 +18,6 @@ const failed: ProductCsvResult = {
 export function ProductCsvForm() {
   const [state, setState] = useState<ProductCsvResult | null>(null);
   const [pending, setPending] = useState(false);
-  const [downloadError, setDownloadError] = useState("");
-
   return (
     <div className="rounded-xl border border-border bg-white p-5">
       <h2 className="text-lg font-medium">Upload products CSV or PDF</h2>
@@ -36,16 +34,10 @@ export function ProductCsvForm() {
         <button
           type="button"
           className="text-sm text-accent underline-offset-2 hover:underline"
-          onClick={() => {
-            setDownloadError("");
-            void downloadDeskFile("/api/admin/products-template", "products-import.csv").catch((error: unknown) => {
-              setDownloadError(error instanceof Error ? error.message : "Could not download the template.");
-            });
-          }}
+          onClick={() => downloadDeskFile("/api/admin/products-template")}
         >
           Download template
         </button>
-        {downloadError ? <p className="mt-2 text-sm text-accent">{downloadError}</p> : null}
       </div>
       <form
         encType="multipart/form-data"
