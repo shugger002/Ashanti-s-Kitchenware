@@ -7,7 +7,7 @@ import { ChevronDown } from "lucide-react";
 import { useCart } from "@/components/store/cart-provider";
 import { submitCheckout } from "@/app/(store)/checkout/actions";
 import { formatGhs } from "@/lib/money";
-import { Button } from "@/components/ui/button";
+import { Button, buttonClass } from "@/components/ui/button";
 import { isDemoListing } from "@/lib/listing";
 import { defaultContact } from "@/config/brand";
 import type { PaymentOption } from "@/server/payments/types";
@@ -173,7 +173,7 @@ export function CheckoutForm({
         }
       }}
     >
-      <div className="sticky top-14 z-20 border-b border-border bg-background lg:hidden">
+      <div className="sticky top-14 z-30 border-b border-border bg-background lg:hidden">
         <button
           type="button"
           className="flex min-h-12 w-full items-center justify-between px-4 py-3 text-sm"
@@ -220,7 +220,7 @@ export function CheckoutForm({
         <section className="space-y-3">
           <h2 className="text-lg font-semibold tracking-tight">Delivery</h2>
           {fulfillment.coverageNote ? <p className="text-sm text-muted">{fulfillment.coverageNote}</p> : null}
-          <input readOnly value="Ghana" className="input bg-background text-muted" aria-label="Country" />
+          <p className="text-sm text-muted">Ghana</p>
           <div className="grid grid-cols-2 gap-2 sm:gap-3">
             <input
               required
@@ -304,7 +304,7 @@ export function CheckoutForm({
                   />
                   Delivery
                 </span>
-                <span className="shrink-0 text-sm text-muted">Quoted on WhatsApp</span>
+                <span className="shrink-0 text-xs text-muted sm:text-sm">Quoted on WhatsApp</span>
               </label>
             ) : null}
             {!collectionOn && !deliveryOn ? (
@@ -381,8 +381,8 @@ export function CheckoutForm({
               ))}
             </fieldset>
           ) : null}
-          <label className="flex items-start gap-2 text-xs text-muted">
-            <input type="checkbox" name="agree" required className="mt-0.5" />
+          <label className="flex min-h-11 items-start gap-2 py-1 text-sm text-muted">
+            <input type="checkbox" name="agree" required className="mt-1 size-4" />
             <span>
               By paying, you agree to our{" "}
               <Link href="/terms" className="underline">
@@ -400,23 +400,33 @@ export function CheckoutForm({
         <input type="hidden" name="idempotencyKey" value={idempotencyKey} />
         {error ? <p className="text-sm text-red-800">{error}</p> : null}
 
-        <Button
-          type="submit"
-          className="hidden h-14 w-full text-base lg:inline-flex"
-          disabled={pending || !paymentsReady}
-        >
-          {pending ? "Placing order…" : `Pay now · ${formatGhs(total)}`}
-        </Button>
+        {paymentsReady ? (
+          <Button type="submit" className="hidden h-14 w-full text-base lg:inline-flex" disabled={pending}>
+            {pending ? "Placing order…" : `Pay now · ${formatGhs(total)}`}
+          </Button>
+        ) : (
+          <a
+            href={whatsappHref}
+            className={`${buttonClass("primary", "hidden h-14 w-full text-base lg:inline-flex")}`}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            WhatsApp to order · {formatGhs(total)}
+          </a>
+        )}
       </div>
 
       <div className="fixed inset-x-0 bottom-0 z-50 border-t border-border bg-background px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] lg:hidden">
-        <Button
-          type="submit"
-          className="h-12 w-full text-base"
-          disabled={pending || !paymentsReady}
-        >
-          {pending ? "Placing order…" : `Pay now · ${formatGhs(total)}`}
-        </Button>
+        {error ? <p className="mb-2 text-sm text-red-800">{error}</p> : null}
+        {paymentsReady ? (
+          <Button type="submit" className="h-12 w-full text-base" disabled={pending}>
+            {pending ? "Placing order…" : `Pay now · ${formatGhs(total)}`}
+          </Button>
+        ) : (
+          <a href={whatsappHref} className={buttonClass("primary", "h-12 w-full text-base")} target="_blank" rel="noopener noreferrer">
+            WhatsApp to order · {formatGhs(total)}
+          </a>
+        )}
       </div>
 
       <aside className="hidden border-l border-border bg-surface lg:block">

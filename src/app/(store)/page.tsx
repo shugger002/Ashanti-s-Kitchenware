@@ -51,19 +51,19 @@ export default async function HomePage() {
       <LogoMarquee />
 
       <section className="border-y border-border py-8 md:py-16">
-        <div className="mx-auto max-w-6xl px-5 text-center lg:px-8">
+        <div className="mx-auto max-w-6xl px-4 text-center lg:px-8">
           <p className="text-xs uppercase tracking-[0.22em] text-accent">The Accra shop</p>
-          <h2 className="mt-3 text-3xl text-pretty md:text-5xl">{config.hero.title}</h2>
+          <h2 className="mt-3 text-2xl text-pretty md:text-5xl">{config.hero.title}</h2>
           {config.hero.subtitle ? (
             <p className="mx-auto mt-3 max-w-xl text-sm leading-relaxed text-muted md:text-base">{config.hero.subtitle}</p>
           ) : null}
           {config.hero.ctaLabel ? (
-            <Link href={config.hero.ctaHref || "/products"} className={buttonClass("primary", "mt-6")}>
+            <Link href={config.hero.ctaHref || "/products"} className={buttonClass("primary", "mt-6 h-12 w-full sm:w-auto")}>
               {config.hero.ctaLabel}
             </Link>
           ) : null}
         </div>
-        <ul className="mx-auto mt-10 grid max-w-6xl grid-cols-2 items-stretch gap-3 px-5 lg:grid-cols-3 lg:px-8">
+        <ul className="mx-auto mt-8 grid max-w-6xl grid-cols-2 items-stretch gap-2.5 px-4 md:mt-10 md:gap-3 lg:grid-cols-3 lg:px-8 [&>li:last-child]:col-span-2 lg:[&>li:last-child]:col-span-1">
           {categories.map((category) => (
             <li
               key={category.id}
@@ -84,14 +84,14 @@ export default async function HomePage() {
                   <img
                     src={category.imageUrl}
                     alt=""
-                    className={`aspect-[4/5] h-full w-full object-cover sm:aspect-[5/4] md:aspect-auto md:h-64 ${mediaZoomClass}`}
+                    className={`aspect-[4/3] h-full w-full object-cover sm:aspect-[5/4] md:aspect-auto md:h-64 ${mediaZoomClass}`}
                   />
                 ) : (
-                  <div className="aspect-[4/5] bg-background sm:aspect-[5/4] md:aspect-auto md:h-64" />
+                  <div className="aspect-[4/3] bg-background sm:aspect-[5/4] md:aspect-auto md:h-64" />
                 )}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent" />
                 <div className="absolute inset-x-0 bottom-0 p-2.5 text-white sm:p-5 md:p-6">
-                  <h3 className="font-serif text-base leading-tight tracking-tight text-white sm:text-2xl md:text-3xl">
+                  <h3 className="font-serif text-sm leading-tight tracking-tight text-white sm:text-2xl md:text-3xl">
                     {category.name}
                   </h3>
                   {category.description ? (
@@ -112,40 +112,40 @@ export default async function HomePage() {
       <PromoDiscountedSection products={promo.items} />
 
       {mix.length > 0 ? (
-        <section className="mx-auto max-w-6xl px-5 py-16 lg:px-8">
+        <section className="mx-auto max-w-6xl px-4 py-10 lg:px-8 lg:py-16">
           <div className="flex items-end justify-between gap-4">
-            <h2 className="text-3xl">In the shop</h2>
-            <Link href="/products" className="text-sm tracking-wide text-accent">
+            <h2 className="text-2xl md:text-3xl">In the shop</h2>
+            <Link href="/products" className="min-h-11 py-2 text-sm tracking-wide text-accent">
               View all
             </Link>
           </div>
-          <ProductRail products={mix} className="mt-10" />
+          <ProductRail products={mix} className="mt-6 md:mt-10" />
         </section>
       ) : (
-        <section className="mx-auto max-w-6xl px-5 pb-16 lg:px-8">
-          <h2 className="text-3xl">Catalogue</h2>
+        <section className="mx-auto max-w-6xl px-4 pb-10 lg:px-8 lg:pb-16">
+          <h2 className="text-2xl md:text-3xl">Catalogue</h2>
           <p className="mt-3 max-w-2xl text-muted">
             Products appear here after staff publish them in the admin. Photographs can be added later.
           </p>
         </section>
       )}
 
-      <section className="mx-auto max-w-6xl px-5 py-16 lg:px-8">
-        <h2 className="text-center text-3xl">Sets from the current catalogue</h2>
+      <section className="mx-auto max-w-6xl px-4 py-10 lg:px-8 lg:py-16">
+        <h2 className="text-center text-2xl md:text-3xl">Sets from the current catalogue</h2>
         <p className="mx-auto mt-3 max-w-xl text-center text-sm text-muted">
           Editorial groupings, not discounted bundles. Add each piece on its own product page.
         </p>
-        <ul className="mt-10 grid gap-8 md:grid-cols-3">
+        <ul className="-mx-4 mt-6 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-2 md:mx-0 md:mt-10 md:grid md:grid-cols-3 md:gap-8 md:overflow-visible md:px-0 md:pb-0">
           {editorialCollections.map((collection) => (
-            <li key={collection.title}>
+            <li key={collection.title} className="w-[78%] shrink-0 snap-start md:w-auto">
               <Link href={collection.href} className="group block">
                 <span className="block overflow-hidden bg-surface">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={collection.image} alt="" className={`aspect-[4/5] w-full object-cover ${mediaZoomClass}`} />
                 </span>
-                <h3 className="mt-4 font-serif text-2xl">{collection.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-muted">{collection.text}</p>
-                <span className="mt-3 inline-block text-sm text-accent">Shop this range</span>
+                <h3 className="mt-3 font-serif text-xl md:mt-4 md:text-2xl">{collection.title}</h3>
+                <p className="mt-2 line-clamp-3 text-sm leading-relaxed text-muted">{collection.text}</p>
+                <span className="mt-3 inline-block min-h-11 py-2 text-sm text-accent">Shop this range</span>
               </Link>
             </li>
           ))}
@@ -156,15 +156,15 @@ export default async function HomePage() {
         <section className="grid md:grid-cols-2">
           <div className="overflow-hidden bg-surface">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={story.image} alt="" className="h-full min-h-[320px] w-full object-cover md:min-h-[520px]" />
+            <img src={story.image} alt="" className="h-full min-h-[14rem] w-full object-cover md:min-h-[520px]" />
           </div>
-          <div className="flex flex-col justify-center bg-accent px-6 py-14 text-white md:px-14">
+          <div className="flex flex-col justify-center bg-accent px-4 py-10 text-white md:px-14 md:py-14">
             <p className="text-xs uppercase tracking-[0.22em] text-white/80">From the Accra shop</p>
-            <h2 className="mt-4 text-3xl text-white md:text-4xl">{story.title}</h2>
+            <h2 className="mt-3 text-2xl text-white md:mt-4 md:text-4xl">{story.title}</h2>
             <p className="mt-4 max-w-md text-sm leading-relaxed text-white/90 md:text-base">{story.text}</p>
             <Link
               href={story.href}
-              className={`${buttonClass("secondary", "mt-8 w-fit bg-white text-accent hover:bg-white/90")}`}
+              className={`${buttonClass("secondary", "mt-6 h-12 w-full bg-white text-accent hover:bg-white/90 md:mt-8 md:w-fit")}`}
             >
               Shop appliances
             </Link>
@@ -172,9 +172,9 @@ export default async function HomePage() {
         </section>
       ) : null}
 
-      <section className="px-5 py-16 md:py-20">
-        <h2 className="text-center text-3xl">How we list stock</h2>
-        <ul className="mx-auto mt-10 grid max-w-4xl gap-x-12 gap-y-8 sm:grid-cols-2">
+      <section className="px-4 py-10 md:px-5 md:py-20">
+        <h2 className="text-center text-2xl md:text-3xl">How we list stock</h2>
+        <ul className="mx-auto mt-8 grid max-w-4xl gap-x-12 gap-y-6 sm:grid-cols-2 md:mt-10 md:gap-y-8">
           {brandValues.slice(0, 4).map((value) => (
             <li key={value.title}>
               <h3 className="font-serif text-xl">{value.title}</h3>
@@ -185,26 +185,26 @@ export default async function HomePage() {
       </section>
 
       {extraArrivals.length > 0 ? (
-        <section className="mx-auto max-w-6xl px-5 py-16 lg:px-8">
-          <h2 className="text-3xl">New arrivals</h2>
-          <ProductRail products={extraArrivals} className="mt-10" />
+        <section className="mx-auto max-w-6xl px-4 py-10 lg:px-8 lg:py-16">
+          <h2 className="text-2xl md:text-3xl">New arrivals</h2>
+          <ProductRail products={extraArrivals} className="mt-6 md:mt-10" />
         </section>
       ) : null}
 
-      <section className="mx-auto max-w-6xl px-5 py-16 lg:px-8">
+      <section className="mx-auto max-w-6xl px-4 py-10 lg:px-8 lg:py-16">
         <div className="flex items-end justify-between">
-          <h2 className="text-3xl">Guides</h2>
-          <Link href="/journal" className="text-sm text-accent">
+          <h2 className="text-2xl md:text-3xl">Guides</h2>
+          <Link href="/journal" className="min-h-11 py-2 text-sm text-accent">
             All guides
           </Link>
         </div>
-        <ul className="mt-10 grid gap-8 md:grid-cols-3">
+        <ul className="-mx-4 mt-6 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-2 md:mx-0 md:mt-10 md:grid md:grid-cols-3 md:gap-8 md:overflow-visible md:px-0 md:pb-0">
           {journalArticles.map((article) => (
-            <li key={article.slug}>
+            <li key={article.slug} className="w-[78%] shrink-0 snap-start md:w-auto">
               <Link href={`/journal/${article.slug}`} className="group block">
                 <span className="block overflow-hidden bg-surface">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={article.image} alt={article.imageAlt} className={`h-52 w-full object-cover ${mediaZoomClass}`} />
+                  <img src={article.image} alt={article.imageAlt} className={`h-40 w-full object-cover md:h-52 ${mediaZoomClass}`} />
                 </span>
                 <p className="mt-3 text-xs uppercase tracking-wide text-muted">
                   {article.category} · {article.minutes} min
@@ -216,8 +216,8 @@ export default async function HomePage() {
         </ul>
       </section>
 
-      <section className="bg-accent px-5 py-16 text-center text-white md:py-20">
-        <h2 className="text-3xl text-white">New stock, when we have it.</h2>
+      <section className="bg-accent px-4 py-10 text-center text-white md:px-5 md:py-20">
+        <h2 className="text-2xl text-white md:text-3xl">New stock, when we have it.</h2>
         <p className="mx-auto mt-3 max-w-lg text-sm text-white/90">
           Email updates for restocks and listed appliances. A first-order discount is offered only when the shop publishes one.
         </p>

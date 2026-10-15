@@ -20,7 +20,7 @@ export function ThemeToggle() {
   }
 
   return (
-    <button type="button" onClick={toggle} aria-label={ready && dark ? "Switch to light mode" : "Switch to dark mode"}>
+    <button type="button" className="inline-flex size-11 items-center justify-center" onClick={toggle} aria-label={ready && dark ? "Switch to light mode" : "Switch to dark mode"}>
       {ready && dark ? <Sun className="h-5 w-5" strokeWidth={1.5} /> : <Moon className="h-5 w-5" strokeWidth={1.5} />}
     </button>
   );

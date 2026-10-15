@@ -26,8 +26,8 @@ export default async function SuccessPage({
 
   return (
     <CheckoutShell>
-      <div className="mx-auto max-w-xl px-5 py-16 lg:px-8">
-        <h1 className="text-4xl">Thank you</h1>
+      <div className="mx-auto max-w-xl px-4 py-8 lg:px-8 lg:py-16">
+        <h1 className="text-3xl md:text-4xl">Thank you</h1>
         <p className="mt-4 text-muted">
           {paymentStatus === "paid"
             ? "Payment has been confirmed. We will contact you about fulfilment."
@@ -47,7 +47,7 @@ export default async function SuccessPage({
           </Link>{" "}
           with your phone or this order number.
         </p>
-        <Link href="/shop" className="mt-8 inline-block text-sm text-accent">
+        <Link href="/shop" className="mt-8 inline-flex h-12 w-full items-center justify-center bg-accent text-sm text-white sm:w-auto sm:px-5">
           Continue shopping
         </Link>
       </div>

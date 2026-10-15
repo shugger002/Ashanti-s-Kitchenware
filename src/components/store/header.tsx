@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect } from "react";
 import { createPortal } from "react-dom";
 import { Heart, Menu, Search, ShoppingBag, User, X } from "lucide-react";
-import { brand } from "@/config/brand";
+import { brand, defaultContact } from "@/config/brand";
 import { StoreLogo } from "@/components/store/logo";
 import { ThemeToggle } from "@/components/store/theme-toggle";
 import { useCart } from "@/components/store/cart-provider";
@@ -77,7 +77,8 @@ export function StoreHeader({
     { href: signedIn ? "/account" : "/login", label: "My Account" },
   ];
   const menuRow =
-    "block py-3.5 text-[17px] leading-snug tracking-tight text-[#2c3544] hover:text-accent";
+    "flex min-h-12 items-center py-3 text-[17px] leading-snug tracking-tight text-foreground hover:text-accent";
+  const whatsappDigits = defaultContact.whatsappE164.replace(/\D/g, "");
 
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-background">
@@ -169,21 +170,32 @@ export function StoreHeader({
                 onClick={() => onMenuOpenChange(false)}
               />
               <nav
-                className="relative flex h-full w-[min(22rem,86vw)] flex-col bg-background shadow-[var(--shadow)]"
+                className="relative flex h-dvh w-[min(22rem,92vw)] flex-col bg-background shadow-[var(--shadow)]"
                 aria-label="Menu"
               >
-                <div className="flex items-center justify-between border-b border-border px-5 py-3">
-                  <StoreLogo className="h-8 w-auto max-w-[11rem]" />
+                <div className="flex items-center justify-between border-b border-border px-4 py-2">
+                  <StoreLogo className="h-7 w-auto max-w-[10rem]" />
                   <button
                     type="button"
-                    className="inline-flex size-10 items-center justify-center"
+                    className="inline-flex size-11 items-center justify-center"
                     aria-label="Close menu"
                     onClick={() => onMenuOpenChange(false)}
                   >
                     <X className="h-5 w-5" strokeWidth={1.75} />
                   </button>
                 </div>
-                <div className="flex-1 overflow-y-auto px-6 py-4 pb-[max(6rem,env(safe-area-inset-bottom))]">
+                <div className="flex-1 overflow-y-auto px-4 py-3 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
+                  <button
+                    type="button"
+                    className="mb-3 flex h-12 w-full items-center gap-3 rounded-sm border border-border bg-surface px-3 text-left text-sm text-muted"
+                    onClick={() => {
+                      onMenuOpenChange(false);
+                      onSearch();
+                    }}
+                  >
+                    <Search className="h-4 w-4 shrink-0" strokeWidth={1.75} aria-hidden />
+                    Search products
+                  </button>
                   <ul>
                     {menuPrimary.map((item) => (
                       <li key={item.href}>
@@ -196,32 +208,30 @@ export function StoreHeader({
                         </Link>
                       </li>
                     ))}
-                    <li>
-                      {categories.length > 0 ? (
-                        <details className="group">
-                          <summary className={`${menuRow} cursor-pointer list-none [&::-webkit-details-marker]:hidden`}>
-                            Categories
-                          </summary>
-                          <ul className="mb-2 ml-3 border-l border-border pl-3">
-                            {categories.map((category) => (
-                              <li key={category.slug}>
-                                <Link
-                                  href={`/shop/${category.slug}`}
-                                  className="block py-2.5 text-[15px] text-[#2c3544] hover:text-accent"
-                                  onClick={() => onMenuOpenChange(false)}
-                                >
-                                  {category.name}
-                                </Link>
-                              </li>
-                            ))}
-                          </ul>
-                        </details>
-                      ) : (
-                        <Link href="/shop" className={menuRow} onClick={() => onMenuOpenChange(false)}>
-                          Categories
-                        </Link>
-                      )}
-                    </li>
+                  </ul>
+                  <p className="mt-4 text-[11px] uppercase tracking-[0.16em] text-muted">Categories</p>
+                  <ul className="mt-1">
+                    {categories.length > 0
+                      ? categories.map((category) => (
+                          <li key={category.slug}>
+                            <Link
+                              href={`/shop/${category.slug}`}
+                              className={cn(menuRow, "text-[15px]", navActive(pathname, `/shop/${category.slug}`) && "text-accent")}
+                              onClick={() => onMenuOpenChange(false)}
+                            >
+                              {category.name}
+                            </Link>
+                          </li>
+                        ))
+                      : (
+                          <li>
+                            <Link href="/shop" className={menuRow} onClick={() => onMenuOpenChange(false)}>
+                              Shop all
+                            </Link>
+                          </li>
+                        )}
+                  </ul>
+                  <ul className="mt-2 border-t border-border pt-2">
                     {menuAfterCategories.map((item) => (
                       <li key={item.href}>
                         <Link
@@ -234,8 +244,7 @@ export function StoreHeader({
                       </li>
                     ))}
                   </ul>
-                  <hr className="my-3 border-border" />
-                  <ul>
+                  <ul className="mt-2 border-t border-border pt-2">
                     {menuSecondary.map((item) => (
                       <li key={item.href}>
                         <Link
@@ -248,6 +257,25 @@ export function StoreHeader({
                       </li>
                     ))}
                   </ul>
+                  <div className="mt-4 flex items-center justify-between border-t border-border pt-3">
+                    <p className="text-sm text-muted">Appearance</p>
+                    <ThemeToggle />
+                  </div>
+                  <div className="mt-4 grid grid-cols-2 gap-2">
+                    <a href={`tel:${defaultContact.phoneE164}`} className={cn(menuRow, "justify-center rounded-sm border border-border text-sm")}>
+                      Call
+                    </a>
+                    {whatsappDigits ? (
+                      <a
+                        href={`https://wa.me/${whatsappDigits}`}
+                        className={cn(menuRow, "justify-center rounded-sm border border-border text-sm")}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        WhatsApp
+                      </a>
+                    ) : null}
+                  </div>
                 </div>
               </nav>
             </div>,

@@ -52,7 +52,7 @@ export function NewsletterForm({ compact = false, invert = false }: { compact?: 
         <Button
           type="submit"
           variant={invert ? "secondary" : "primary"}
-          className={invert ? "bg-white text-accent hover:bg-white/90" : undefined}
+          className={invert ? "h-12 w-full bg-white text-accent hover:bg-white/90" : "h-12 w-full sm:w-auto"}
           disabled={pending}
         >
           {pending ? "Sending…" : "Subscribe"}
