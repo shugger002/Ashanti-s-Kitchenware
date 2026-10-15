@@ -5,7 +5,7 @@ import { getStorefrontConfig } from "@/server/store/settings";
 
 export const metadata = pageMeta({
   title: "Get directions",
-  description: "Directions to Ashanti's Kitchenware at Hyde Street, Sakaman, Odorkor, Accra.",
+  description: "Directions to Ashanti's Kitchenware on Alui Mahama Street, Sakaman, Accra.",
   path: "/directions",
 });
 
@@ -46,7 +46,7 @@ export default async function DirectionsPage() {
           Shop location
         </h2>
         <p className="max-w-prose leading-relaxed text-muted">
-          The shop is at {locality}. The map pin is the location the shop gave us. Google Maps opens in a new
+          The shop is at {locality}. That is the address on the shop’s Google listing. Google Maps opens in a new
           window and uses Google’s terms.
         </p>
         <p className="leading-relaxed">
@@ -68,7 +68,7 @@ export default async function DirectionsPage() {
             Get directions in Google Maps
           </a>
           <a href={mapsUrl} rel="noreferrer" target="_blank" className={buttonClass("secondary")}>
-            Open the pin
+            Open in Google Maps
           </a>
         </div>
         <p className="text-sm leading-relaxed text-muted">

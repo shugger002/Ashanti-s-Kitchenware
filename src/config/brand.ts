@@ -2,7 +2,7 @@
  * Visual system: client red and white. Official wordmark lettering reads Ashanti's Kitchenwear.
  * Legal name of the shop is Ashanti's Kitchenware.
  * Phone and email below were transcribed from ashantiskitchenware.com.
- * Map pin supplied by the shop. Road name is OpenStreetMap’s reverse of that pin.
+ * Google listing supplied by the shop: https://maps.app.goo.gl/MQ5u4nCsSU6oH1q2A
  */
 export const brand = {
   name: "Ashanti's Kitchenware",
@@ -13,10 +13,10 @@ export const brand = {
 } as const;
 
 export const shopMap = {
-  lat: 5.571348,
-  lng: -0.272244,
-  url: "https://maps.google.com/?q=5.571348,-0.272244",
-  directionsUrl: "https://www.google.com/maps/dir/?api=1&destination=5.571348,-0.272244",
+  lat: 5.5713673,
+  lng: -0.2722907,
+  url: "https://maps.app.goo.gl/MQ5u4nCsSU6oH1q2A",
+  directionsUrl: "https://www.google.com/maps/dir/?api=1&destination=5.5713673,-0.2722907",
 } as const;
 
 export const defaultContact = {
@@ -26,7 +26,7 @@ export const defaultContact = {
   phoneDisplay: "+233 (0) 20 194 4235",
   phoneE164: "+233201944235",
   whatsappE164: "+233201944235",
-  addressLine1: "Hyde Street, Sakaman, Odorkor",
+  addressLine1: "108 Dansoman-Sakaman, Alui Mahama Street, Blue Lagoon Loop",
   city: "Accra",
   region: "Greater Accra",
   country: "Ghana",

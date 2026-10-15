@@ -70,7 +70,7 @@ const fallback: StorefrontConfig = {
     coverage: "accra",
     collectionEnabled: true,
     deliveryEnabled: true,
-    coverageNote: "Collection at Hyde Street, Sakaman, Odorkor, Accra. Delivery cost and timing are confirmed on WhatsApp after you order.",
+    coverageNote: "Collection at 108 Dansoman-Sakaman, Alui Mahama Street, Blue Lagoon Loop, Accra. Delivery cost and timing are confirmed on WhatsApp after you order.",
   },
 };
 
