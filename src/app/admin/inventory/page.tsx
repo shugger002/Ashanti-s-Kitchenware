@@ -36,8 +36,7 @@ async function restock(formData: FormData) {
 }
 
 export default async function InventoryPage() {
-  await requirePermission("inventory.write");
-  const rows = await listInventory();
+  const [, rows] = await Promise.all([requirePermission("inventory.write"), listInventory()]);
   const out = rows.filter((row) => row.available <= 0).length;
   const low = rows.filter((row) => row.available > 0 && row.available <= row.lowStockThreshold).length;
   return (

@@ -33,8 +33,7 @@ async function toggleCoupon(formData: FormData) {
 }
 
 export default async function CouponsPage() {
-  await requirePermission("products.write");
-  const coupons = await listCoupons();
+  const [, coupons] = await Promise.all([requirePermission("products.write"), listCoupons()]);
   const active = coupons.filter((c) => c.is_active).length;
   const uses = coupons.reduce((sum, c) => sum + c.uses, 0);
 

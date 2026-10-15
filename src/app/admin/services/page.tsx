@@ -16,8 +16,7 @@ async function pingDatabase() {
 }
 
 export default async function ServiceHealthPage() {
-  await requirePermission("settings.write");
-  const databaseOk = await pingDatabase();
+  const [, databaseOk] = await Promise.all([requirePermission("settings.write"), pingDatabase()]);
   const smtpReady = Boolean(process.env.SMTP_HOST && process.env.SMTP_FROM);
   const objectStorage =
     process.env.S3_BUCKET && process.env.S3_ACCESS_KEY_ID

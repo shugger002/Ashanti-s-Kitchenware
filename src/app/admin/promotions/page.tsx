@@ -1,5 +1,5 @@
 import { requirePermission } from "@/server/auth/authorize";
-import { searchProducts } from "@/server/catalog/queries";
+import { listAdminProducts } from "@/server/catalog/queries";
 import { setProductSalePrice } from "@/server/catalog/admin";
 import { formatGhs, parseMoney } from "@/lib/money";
 import { revalidatePath } from "next/cache";
@@ -34,8 +34,10 @@ function discountPercent(price: string, salePrice: string | null) {
 }
 
 export default async function PromotionsPage() {
-  await requirePermission("products.write");
-  const { items } = await searchProducts({ includeInactive: true, pageSize: 48 });
+  const [, items] = await Promise.all([
+    requirePermission("products.write"),
+    listAdminProducts(),
+  ]);
 
   return (
     <div>

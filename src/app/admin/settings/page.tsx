@@ -62,8 +62,7 @@ function Field({
 }
 
 export default async function SettingsPage() {
-  await requirePermission("settings.write");
-  const config = await getStorefrontConfig();
+  const [, config] = await Promise.all([requirePermission("settings.write"), getStorefrontConfig()]);
   return (
     <div className="space-y-6">
       <AdminPageHeader

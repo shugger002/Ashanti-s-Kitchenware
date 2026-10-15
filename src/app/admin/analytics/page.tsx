@@ -4,8 +4,11 @@ import { formatGhs } from "@/lib/money";
 import { AdminPageHeader, AdminTable, EmptyState } from "@/components/admin/ui";
 
 export default async function AnalyticsPage() {
-  await requirePermission("reports.read");
-  const [metrics, logs] = await Promise.all([dashboardMetrics(), listAuditLogs()]);
+  const [, metrics, logs] = await Promise.all([
+    requirePermission("reports.read"),
+    dashboardMetrics(),
+    listAuditLogs(),
+  ]);
   const totalProducts = Number(metrics.total_products);
   const promo = Number(metrics.promoListings);
   const coverage = totalProducts > 0 ? Math.round((promo / totalProducts) * 100) : 0;

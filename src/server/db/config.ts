@@ -42,7 +42,7 @@ export function createPgPool(kind: "runtime" | "migrate" = "runtime"): Pool {
   return new Pool({
     connectionString,
     ssl: databaseSsl(connectionString),
-    max: onVercel ? 1 : 10,
+    max: onVercel ? 3 : 10,
     idleTimeoutMillis: onVercel ? 5_000 : 10_000,
     connectionTimeoutMillis: 8_000,
     allowExitOnIdle: onVercel,

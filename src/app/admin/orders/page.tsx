@@ -19,13 +19,15 @@ export default async function AdminOrdersPage({
 }: {
   searchParams: Promise<{ q?: string; status?: string; payment?: string }>;
 }) {
-  await requirePermission("orders.read");
   const params = await searchParams;
-  const orders = await listOrders({
-    q: params.q,
-    status: params.status,
-    paymentStatus: params.payment,
-  });
+  const [, orders] = await Promise.all([
+    requirePermission("orders.read"),
+    listOrders({
+      q: params.q,
+      status: params.status,
+      paymentStatus: params.payment,
+    }),
+  ]);
   const filtered = Boolean(params.q || params.status || params.payment);
   return (
     <div>

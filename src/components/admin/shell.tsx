@@ -20,8 +20,6 @@ import {
   X,
 } from "lucide-react";
 import { logoutAdmin } from "@/app/admin/logout/action";
-import { useAdminPagePending } from "@/components/admin/pending-outlet";
-import { AdminPageSkeleton } from "@/components/ui/skeleton";
 import { brand } from "@/config/brand";
 import type { AdminUser, Permission } from "@/server/auth/types";
 import { hasPermission } from "@/server/auth/types";
@@ -147,6 +145,7 @@ function Nav({
                     <Link
                       key={link.href}
                       href={link.href}
+                      prefetch
                       title={link.label}
                       onClick={onNavigate}
                       className={cn(
@@ -174,11 +173,17 @@ export function AdminShell({ user, children }: { user: AdminUser; children: Reac
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
-  const { pending, captureProps } = useAdminPagePending(children);
 
   useEffect(() => {
     setCollapsed(window.localStorage.getItem("ak_admin_nav_collapsed") === "1");
   }, []);
+
+  useEffect(() => {
+    const hrefs = groups.flatMap((group) =>
+      group.items.filter((item) => hasPermission(user.roles, item.permission)).map((item) => item.href),
+    );
+    for (const href of hrefs) router.prefetch(href);
+  }, [router, user.roles]);
 
   if (AUTH_PATHS.some((path) => pathname === path || pathname.startsWith(`${path}/`))) {
     return children;
@@ -198,7 +203,7 @@ export function AdminShell({ user, children }: { user: AdminUser; children: Reac
   }
 
   return (
-    <div className="flex min-h-dvh" {...captureProps}>
+    <div className="flex min-h-dvh">
       {menuOpen ? (
         <button
           type="button"
@@ -312,10 +317,7 @@ export function AdminShell({ user, children }: { user: AdminUser; children: Reac
             <PanelLeft className="h-4 w-4" />
           </button>
         </div>
-        <div className="relative z-10 mx-auto max-w-6xl px-5 py-7 sm:px-8 sm:py-9" aria-busy={pending}>
-          {pending ? <AdminPageSkeleton /> : null}
-          <div className={pending ? "hidden" : undefined}>{children}</div>
-        </div>
+        <div className="relative z-10 mx-auto max-w-6xl px-5 py-7 sm:px-8 sm:py-9">{children}</div>
       </div>
     </div>
   );

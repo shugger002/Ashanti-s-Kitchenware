@@ -246,6 +246,70 @@ export async function searchProducts(filters: ShopFilters): Promise<{
   };
 }
 
+export type AdminProductRow = {
+  id: string;
+  name: string;
+  sku: string;
+  price: string;
+  salePrice: string | null;
+  categoryName: string | null;
+  available: number;
+  isActive: boolean;
+};
+
+export async function listAdminProducts(q?: string): Promise<AdminProductRow[]> {
+  if (!process.env.DATABASE_URL) {
+    return demoSearch({ q, includeInactive: true, pageSize: 80 }).items.map((item) => ({
+      id: item.id,
+      name: item.name,
+      sku: item.sku,
+      price: item.price,
+      salePrice: item.salePrice,
+      categoryName: item.categoryName,
+      available: item.available,
+      isActive: item.isActive,
+    }));
+  }
+  const where = [sql`p.archived_at IS NULL`];
+  if (q?.trim()) {
+    const pattern = likeContains(q.trim());
+    where.push(
+      sql`(p.name ILIKE ${pattern} ESCAPE E'\\\\' OR p.sku ILIKE ${pattern} ESCAPE E'\\\\')`,
+    );
+  }
+  const result = await query<{
+    id: string;
+    name: string;
+    sku: string;
+    price: string;
+    sale_price: string | null;
+    category_name: string | null;
+    available: string;
+    is_active: boolean;
+  }>(sql`
+    SELECT p.id, p.name, p.sku, p.price::text, p.sale_price::text, p.is_active,
+            c.name AS category_name,
+            COALESCE((
+              SELECT SUM(GREATEST(i.on_hand - i.reserved, 0)) FROM inventory i WHERE i.product_id = p.id
+            ), 0)::text AS available
+     FROM products p
+     LEFT JOIN categories c ON c.id = p.category_id
+     WHERE ${sqlAnd(where)}
+     ORDER BY p.created_at DESC
+     LIMIT 80
+  `);
+  return result.rows.map((row) => ({
+    id: row.id,
+    name: row.name,
+    sku: row.sku,
+    price: row.price,
+    salePrice: row.sale_price,
+    categoryName: row.category_name,
+    available: Number(row.available),
+    isActive: row.is_active,
+  }));
+}
+
 export async function getProductBySlug(slug: string, opts?: { includeInactive?: boolean }): Promise<ProductDetail | null> {
   if (!process.env.DATABASE_URL) return getDemoProduct(slug);
   const result = await query<{

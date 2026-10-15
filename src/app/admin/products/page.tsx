@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { requirePermission } from "@/server/auth/authorize";
-import { searchProducts } from "@/server/catalog/queries";
+import { listAdminProducts } from "@/server/catalog/queries";
 import { formatGhs } from "@/lib/money";
 import { archiveProductAction } from "@/app/admin/products/actions";
 import { ProductCsvForm } from "@/app/admin/products/csv-form";
@@ -14,10 +14,12 @@ export default async function AdminProductsPage({
 }: {
   searchParams: Promise<{ q?: string }>;
 }) {
-  const user = await requirePermission("products.read");
-  const canWrite = hasPermission(user.roles, "products.write");
   const { q } = await searchParams;
-  const { items } = await searchProducts({ q, includeInactive: true, pageSize: 50 });
+  const [user, items] = await Promise.all([
+    requirePermission("products.read"),
+    listAdminProducts(q),
+  ]);
+  const canWrite = hasPermission(user.roles, "products.write");
   const low = items.filter((p) => p.available > 0 && p.available <= LOW_STOCK_ALERT);
 
   return (

@@ -4,8 +4,7 @@ import { listAdminUsers } from "@/server/reporting/service";
 import { adminButton, AdminPageHeader, AdminTable, StatusPill } from "@/components/admin/ui";
 
 export default async function UsersPage() {
-  await requirePermission("users.write");
-  const users = await listAdminUsers();
+  const [, users] = await Promise.all([requirePermission("users.write"), listAdminUsers()]);
   return (
     <div>
       <AdminPageHeader
