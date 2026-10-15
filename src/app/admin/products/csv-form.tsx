@@ -1,11 +1,25 @@
 "use client";
 
-import { useActionState } from "react";
-import { importProductsCsv, type ProductCsvState } from "@/app/admin/products/csv-actions";
+import { useState } from "react";
+import { type ProductCsvResult } from "@/lib/desk-import";
+import { downloadDeskFile, postDeskForm } from "@/components/admin/desk-file";
 import { adminButton } from "@/components/admin/ui";
 
+const failed: ProductCsvResult = {
+  ok: false,
+  message: "Could not import that file.",
+  created: [],
+  skipped: [],
+  attached: [],
+  unmatched: [],
+  errors: [],
+};
+
 export function ProductCsvForm() {
-  const [state, action, pending] = useActionState(importProductsCsv, null as ProductCsvState);
+  const [state, setState] = useState<ProductCsvResult | null>(null);
+  const [pending, setPending] = useState(false);
+  const [downloadError, setDownloadError] = useState("");
+
   return (
     <div className="rounded-xl border border-border bg-white p-5">
       <h2 className="text-lg font-medium">Upload products CSV or PDF</h2>
@@ -23,13 +37,28 @@ export function ProductCsvForm() {
           type="button"
           className="text-sm text-accent underline-offset-2 hover:underline"
           onClick={() => {
-            window.location.assign("/admin/products/template");
+            setDownloadError("");
+            void downloadDeskFile("/api/admin/products-template", "products-import.csv").catch((error: unknown) => {
+              setDownloadError(error instanceof Error ? error.message : "Could not download the template.");
+            });
           }}
         >
           Download template
         </button>
+        {downloadError ? <p className="mt-2 text-sm text-accent">{downloadError}</p> : null}
       </div>
-      <form action={action} encType="multipart/form-data" className="mt-4 space-y-3">
+      <form
+        encType="multipart/form-data"
+        className="mt-4 space-y-3"
+        onSubmit={(event) => {
+          event.preventDefault();
+          const form = event.currentTarget;
+          setPending(true);
+          void postDeskForm("/api/admin/products-import", form, failed)
+            .then((result) => setState(result))
+            .finally(() => setPending(false));
+        }}
+      >
         <div className="flex flex-wrap items-end gap-3">
           <label className="block min-w-0 flex-1 text-sm">
             CSV or PDF
@@ -57,18 +86,10 @@ export function ProductCsvForm() {
       {state ? (
         <div className="mt-4 space-y-2 text-sm">
           <p className={state.ok ? "font-medium" : "text-accent"}>{state.message}</p>
-          {state.created.length > 0 ? (
-            <p className="text-muted">Added: {state.created.join(", ")}</p>
-          ) : null}
-          {state.skipped.length > 0 ? (
-            <p className="text-muted">Already on the desk: {state.skipped.join(", ")}</p>
-          ) : null}
-          {state.attached.length > 0 ? (
-            <p className="text-muted">Photos: {state.attached.join("; ")}</p>
-          ) : null}
-          {state.unmatched.length > 0 ? (
-            <p className="text-accent">No SKU match: {state.unmatched.join(", ")}</p>
-          ) : null}
+          {state.created.length > 0 ? <p className="text-muted">Added: {state.created.join(", ")}</p> : null}
+          {state.skipped.length > 0 ? <p className="text-muted">Already on the desk: {state.skipped.join(", ")}</p> : null}
+          {state.attached.length > 0 ? <p className="text-muted">Photos: {state.attached.join("; ")}</p> : null}
+          {state.unmatched.length > 0 ? <p className="text-accent">No SKU match: {state.unmatched.join(", ")}</p> : null}
           {state.errors.length > 0 ? (
             <ul className="space-y-1 text-accent">
               {state.errors.map((error) => (

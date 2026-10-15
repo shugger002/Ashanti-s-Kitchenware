@@ -1,11 +1,23 @@
 "use client";
 
-import { useActionState } from "react";
-import { importInventoryCsv, type InventoryCsvState } from "@/app/admin/inventory/actions";
+import { useState } from "react";
+import { type InventoryCsvResult } from "@/lib/desk-import";
+import { downloadDeskFile, postDeskForm } from "@/components/admin/desk-file";
 import { adminButton } from "@/components/admin/ui";
 
+const failed: InventoryCsvResult = {
+  ok: false,
+  message: "Could not import that file.",
+  updated: [],
+  skipped: [],
+  errors: [],
+};
+
 export function InventoryCsvForm() {
-  const [state, action, pending] = useActionState(importInventoryCsv, null as InventoryCsvState);
+  const [state, setState] = useState<InventoryCsvResult | null>(null);
+  const [pending, setPending] = useState(false);
+  const [downloadError, setDownloadError] = useState("");
+
   return (
     <div className="rounded-xl border border-border bg-white p-5">
       <h2 className="text-lg font-medium">Upload restock file</h2>
@@ -19,13 +31,28 @@ export function InventoryCsvForm() {
           type="button"
           className="text-sm text-accent underline-offset-2 hover:underline"
           onClick={() => {
-            window.location.assign("/admin/inventory/template");
+            setDownloadError("");
+            void downloadDeskFile("/api/admin/inventory-template", "inventory-restock.csv").catch((error: unknown) => {
+              setDownloadError(error instanceof Error ? error.message : "Could not download the template.");
+            });
           }}
         >
           Download template
         </button>
+        {downloadError ? <p className="w-full text-sm text-accent">{downloadError}</p> : null}
       </div>
-      <form action={action} encType="multipart/form-data" className="mt-4 flex flex-wrap items-end gap-3">
+      <form
+        encType="multipart/form-data"
+        className="mt-4 flex flex-wrap items-end gap-3"
+        onSubmit={(event) => {
+          event.preventDefault();
+          const form = event.currentTarget;
+          setPending(true);
+          void postDeskForm("/api/admin/inventory-import", form, failed)
+            .then((result) => setState(result))
+            .finally(() => setPending(false));
+        }}
+      >
         <label className="block min-w-0 flex-1 text-sm">
           CSV or PDF
           <input
@@ -51,9 +78,7 @@ export function InventoryCsvForm() {
               ))}
             </ul>
           ) : null}
-          {state.skipped.length > 0 ? (
-            <p className="text-accent">Unknown SKU: {state.skipped.join(", ")}</p>
-          ) : null}
+          {state.skipped.length > 0 ? <p className="text-accent">Unknown SKU: {state.skipped.join(", ")}</p> : null}
           {state.errors.filter((error) => error !== state.message).length > 0 ? (
             <ul className="space-y-1 text-accent">
               {state.errors

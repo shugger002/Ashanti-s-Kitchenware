@@ -3,6 +3,7 @@ import { likeContains, sql, sqlAnd } from "@/server/db/sql";
 import type { Category, ProductCard, ProductColorOption, ProductDetail, ProductImage, ProductVariant } from "@/server/catalog/types";
 import { filterDemoProducts, getDemoProduct } from "@/content/demo-catalog";
 import { colorsFromVariants, normalizeHex } from "@/lib/product-color";
+import { isUuid } from "@/lib/utils";
 
 const DEMO_CATEGORIES: Category[] = [
   { id: "demo-cat-cookware", slug: "cookware", name: "Cookware", description: "Pots, pans, and cooking sets.", imageUrl: "/demo/pot-set.jpg", sortOrder: 10, isActive: true, parentId: null },
@@ -456,6 +457,7 @@ export async function relatedProducts(
 }
 
 export async function getProductById(id: string): Promise<ProductDetail | null> {
+  if (!isUuid(id)) return null;
   const slug = await query<{ slug: string }>(sql`SELECT slug FROM products WHERE id = ${id}`);
   if (!slug.rows[0]) return null;
   return getProductBySlug(slug.rows[0].slug, { includeInactive: true });

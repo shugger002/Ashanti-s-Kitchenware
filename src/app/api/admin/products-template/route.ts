@@ -1,9 +1,14 @@
-import { requirePermission } from "@/server/auth/authorize";
+import { NextResponse } from "next/server";
+import { readSessionUser } from "@/server/auth/session";
+import { hasPermission } from "@/server/auth/types";
 import { listCategories } from "@/server/catalog/queries";
 import { csvCell } from "@/lib/csv";
 
 export async function GET() {
-  await requirePermission("products.write");
+  const user = await readSessionUser();
+  if (!user || !hasPermission(user.roles, "products.write")) {
+    return NextResponse.json({ ok: false, error: "Forbidden" }, { status: 403 });
+  }
   const categories = await listCategories(false);
   const exampleCategory = categories[0]?.name ?? "Cookware";
   const lines = [

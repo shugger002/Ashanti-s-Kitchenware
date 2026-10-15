@@ -62,7 +62,12 @@ export async function extractSpreadsheetText(file: File): Promise<string> {
   const { PDFParse } = await import("pdf-parse");
   const parser = new PDFParse({ data: bytes.slice() });
   try {
-    const tables = await parser.getTable();
+    let tables: { mergedTables?: string[][][]; pages?: { tables: string[][][] }[] } = {};
+    try {
+      tables = await parser.getTable();
+    } catch {
+      tables = {};
+    }
     const text = await parser.getText();
     const candidates = [...(tables.mergedTables ?? []), ...(tables.pages ?? []).flatMap((page) => page.tables)].filter(
       (table) => table.length > 0,
@@ -74,9 +79,15 @@ export async function extractSpreadsheetText(file: File): Promise<string> {
     const chunks = ranked.map((table) => tableToCsv(table));
     chunks.push(tabularTextToCsv(text.text ?? ""));
     chunks.push(text.text ?? "");
-    return chunks.filter(Boolean).join("\n\n");
+    const extracted = chunks.filter(Boolean).join("\n\n").trim();
+    if (!extracted) throw new Error("Could not read a table from that PDF.");
+    return extracted;
   } finally {
-    await parser.destroy();
+    try {
+      await parser.destroy();
+    } catch {
+      /* ignore */
+    }
   }
 }
 
