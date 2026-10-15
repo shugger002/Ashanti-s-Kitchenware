@@ -145,7 +145,7 @@ function Nav({
                     <Link
                       key={link.href}
                       href={link.href}
-                      prefetch
+                      prefetch={false}
                       title={link.label}
                       onClick={onNavigate}
                       className={cn(
@@ -177,13 +177,6 @@ export function AdminShell({ user, children }: { user: AdminUser; children: Reac
   useEffect(() => {
     setCollapsed(window.localStorage.getItem("ak_admin_nav_collapsed") === "1");
   }, []);
-
-  useEffect(() => {
-    const hrefs = groups.flatMap((group) =>
-      group.items.filter((item) => hasPermission(user.roles, item.permission)).map((item) => item.href),
-    );
-    for (const href of hrefs) router.prefetch(href);
-  }, [router, user.roles]);
 
   if (AUTH_PATHS.some((path) => pathname === path || pathname.startsWith(`${path}/`))) {
     return children;
