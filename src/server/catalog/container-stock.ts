@@ -1,5 +1,6 @@
+import { ASANTE_CONTAINER_PHOTOS } from "@/content/asante-container-photos";
 import { ASANTE_CONTAINER_STOCK } from "@/content/asante-container-stock";
-import { importProductsFromCsv } from "@/server/catalog/admin";
+import { addProductImage, importProductsFromCsv } from "@/server/catalog/admin";
 import { query } from "@/server/db/pool";
 import { sql } from "@/server/db/sql";
 import type { ProductCsvResult } from "@/lib/desk-import";
@@ -42,19 +43,73 @@ export async function importAsanteContainerStock(actorId: string): Promise<Produ
        SET archived_at = now(), is_active = FALSE
      WHERE archived_at IS NULL AND (sku ILIKE 'DEMO-%' OR slug ILIKE 'demo-%')
   `);
+  const photos = await attachAsanteContainerPhotos();
   const created = result.created.length;
+  const listed = photos.listed.length;
+  const remainder = ASANTE_CONTAINER_STOCK.length - listed;
   return {
-    ok: created > 0 || result.skipped.length > 0,
+    ok: created > 0 || result.skipped.length > 0 || listed > 0,
     message:
-      created > 0
-        ? `Loaded ${created} piece${created === 1 ? "" : "s"} from the container list. They stay hidden on the shop until you add a photograph and list them.`
-        : result.skipped.length > 0
-          ? "The container list is already on the desk."
-          : result.errors[0] ?? "Could not load the container list.",
+      listed > 0
+        ? `Loaded the container list. ${listed} piece${listed === 1 ? "" : "s"} have exact-model photos and are listed. ${remainder} stay hidden until Accra Mall stock is photographed.`
+        : created > 0
+          ? `Loaded ${created} piece${created === 1 ? "" : "s"} from the container list. They stay hidden on the shop until you add a photograph and list them.`
+          : result.skipped.length > 0
+            ? "The container list is already on the desk."
+            : result.errors[0] ?? "Could not load the container list.",
     created: result.created,
     skipped: result.skipped,
-    attached: [],
+    attached: photos.attached,
     unmatched: [],
-    errors: result.errors,
+    errors: [...result.errors, ...photos.errors],
   };
+}
+
+export async function attachAsanteContainerPhotos(): Promise<{
+  attached: string[];
+  listed: string[];
+  errors: string[];
+}> {
+  const attached: string[] = [];
+  const listed: string[] = [];
+  const errors: string[] = [];
+
+  for (const [sku, photo] of Object.entries(ASANTE_CONTAINER_PHOTOS)) {
+    const product = await query<{ id: string; name: string }>(
+      sql`SELECT id, name FROM products WHERE lower(sku) = lower(${sku}) AND archived_at IS NULL LIMIT 1`,
+    );
+    const row = product.rows[0];
+    if (!row) {
+      errors.push(`${sku}: not on the desk yet.`);
+      continue;
+    }
+    const existing = await query<{ url: string }>(
+      sql`SELECT url FROM product_images WHERE product_id = ${row.id}`,
+    );
+    const have = new Set(existing.rows.map((image) => image.url));
+    let hasPrimary = existing.rows.length > 0;
+    for (const file of photo.files) {
+      if (have.has(file)) continue;
+      try {
+        await addProductImage({
+          productId: row.id,
+          url: file,
+          storageKey: `public:${file.replace(/^\//, "")}`,
+          alt: row.name,
+          isPrimary: !hasPrimary,
+        });
+        hasPrimary = true;
+        have.add(file);
+        attached.push(`${sku} ← ${file}`);
+      } catch (error) {
+        errors.push(`${sku}: ${error instanceof Error ? error.message : "Could not attach photograph."}`);
+      }
+    }
+    if (have.size > 0) {
+      await query(sql`UPDATE products SET is_active = TRUE, updated_at = now() WHERE id = ${row.id}`);
+      listed.push(sku);
+    }
+  }
+
+  return { attached, listed, errors };
 }
