@@ -53,4 +53,24 @@ export const ASANTE_CONTAINER_PHOTOS: Record<
     source: "W.K 21-piece cookware retailer listing",
     files: ["/products/WK-21PCS/01.jpg", "/products/WK-21PCS/02.jpg"],
   },
+  "GREE-AC-2P": {
+    source: "Pinterest Gree floor-standing air conditioner pin",
+    files: ["/products/GREE-AC-2P/01.jpg"],
+  },
+  "GREE-AC-4P": {
+    source: "Pinterest Gree floor-standing air conditioner pin",
+    files: ["/products/GREE-AC-4P/01.jpg"],
+  },
+  "178-7": {
+    source: "Pinterest 3x3 gazebo / sunshade pins",
+    files: ["/products/178-7/01.jpg", "/products/178-7/02.jpg", "/products/178-7/03.jpg"],
+  },
+  "SOAP-SENSOR-5": {
+    source: "Pinterest automatic sensor soap dispenser pin",
+    files: ["/products/SOAP-SENSOR-5/01.jpg"],
+  },
+  "CFXB-80": {
+    source: "Pinterest commercial drum rice cooker pin",
+    files: ["/products/CFXB-80/01.jpg"],
+  },
 };
