@@ -89,8 +89,8 @@ function Wordmark({ id, label }: { id: string; label: string }) {
 export function LogoMarquee() {
   const loop = [...marks, ...marks];
   return (
-    <section className="overflow-hidden bg-accent py-10 text-white md:py-12" aria-label="Brands in stock">
-      <p className="text-center font-serif text-2xl md:text-3xl">Brands in stock</p>
+    <section className="overflow-hidden bg-accent py-10 text-white md:py-12" aria-label="Brands">
+      <p className="text-center font-serif text-2xl md:text-3xl">BRANDS</p>
       <p className="mx-auto mt-2 max-w-xl px-5 text-center text-xs leading-relaxed text-white/75">
         Names of lines carried at the Accra Mall shop. These are typeset labels, not official logos or press mentions.
       </p>
