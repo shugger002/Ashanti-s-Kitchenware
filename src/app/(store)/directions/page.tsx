@@ -59,10 +59,15 @@ export default async function DirectionsPage() {
           {[contact.city, contact.region, contact.country].filter(Boolean).join(", ")}
         </p>
         <div className="flex flex-wrap gap-3">
-          <a href={shopMap.directionsUrl} rel="noreferrer" className={buttonClass("primary")}>
+          <a
+            href={shopMap.directionsUrl}
+            rel="noreferrer"
+            target="_blank"
+            className={buttonClass("primary")}
+          >
             Get directions in Google Maps
           </a>
-          <a href={mapsUrl} rel="noreferrer" className={buttonClass("secondary")}>
+          <a href={mapsUrl} rel="noreferrer" target="_blank" className={buttonClass("secondary")}>
             Open the pin
           </a>
         </div>
