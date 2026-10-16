@@ -28,7 +28,7 @@ export async function createSession(input: {
   const days = getSessionTtlDays();
   await query(sql`
     INSERT INTO sessions (user_id, token_hash, expires_at, ip, user_agent)
-     VALUES (${input.userId}, ${tokenHash}, now() + (${String(days)} || ' days')::interval, ${input.ip}, ${input.userAgent})
+     VALUES (${input.userId}, ${tokenHash}, now() + make_interval(days => ${days}), ${input.ip}, ${input.userAgent})
   `);
   return token;
 }

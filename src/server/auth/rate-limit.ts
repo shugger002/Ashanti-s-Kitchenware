@@ -25,7 +25,7 @@ export async function tooManyAttempts(
      FROM login_attempts
      WHERE identifier = ${identifier.toLowerCase()}
        AND success = FALSE
-       AND attempted_at > now() - (${windowMinutes} * interval '1 minute')
+       AND attempted_at > now() - make_interval(mins => ${windowMinutes})
   `);
   return Number(result.rows[0]?.count ?? 0) >= max;
 }

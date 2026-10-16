@@ -27,7 +27,7 @@ function LoginForm() {
         <input type="hidden" name="next" value={nextPath} />
         <label className="block text-sm">
           Email
-          <input name="email" type="email" required autoComplete="email" className="input mt-1" />
+          <input name="email" type="email" required autoComplete="email" defaultValue={state?.email} className="input mt-1" />
         </label>
         <PasswordField name="password" label="Password" required autoComplete="current-password" />
         {state?.error ? <p className="text-sm text-red-800">{state.error}</p> : null}

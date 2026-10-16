@@ -23,11 +23,15 @@ export async function registerCustomer(input: {
     return { ok: false, error: `Password must be at least ${MIN_PASSWORD} characters.` };
   }
 
-  if (await hitRateLimit(`register:${email}`, 5, input.ip)) {
-    return { ok: false, error: "Too many attempts. Try again in 15 minutes." };
-  }
-  if (input.ip && (await hitRateLimit(`register-ip:${input.ip}`, 8, input.ip))) {
-    return { ok: false, error: "Too many attempts. Try again in 15 minutes." };
+  try {
+    if (await hitRateLimit(`register:${email}`, 5, input.ip)) {
+      return { ok: false, error: "Too many attempts. Try again in 15 minutes." };
+    }
+    if (input.ip && (await hitRateLimit(`register-ip:${input.ip}`, 8, input.ip))) {
+      return { ok: false, error: "Too many attempts. Try again in 15 minutes." };
+    }
+  } catch (error) {
+    console.error("register rate limit skipped", error);
   }
 
   const passwordHash = await hashPassword(input.password);
@@ -71,8 +75,12 @@ export async function authenticateCustomer(input: {
 }): Promise<{ ok: true; token: string } | { ok: false; error: string }> {
   const email = input.email.trim().toLowerCase();
   const key = `customer:${email}`;
-  if (await isLoginBlocked(key, input.ip)) {
-    return { ok: false, error: "Too many failed attempts. Try again in 15 minutes." };
+  try {
+    if (await isLoginBlocked(key, input.ip)) {
+      return { ok: false, error: "Too many failed attempts. Try again in 15 minutes." };
+    }
+  } catch (error) {
+    console.error("login rate limit skipped", error);
   }
   const result = await query<{ id: string; password_hash: string | null }>(
     sql`SELECT id, password_hash FROM customers WHERE lower(email) = ${email} AND password_hash IS NOT NULL`,

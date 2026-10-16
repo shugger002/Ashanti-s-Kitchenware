@@ -22,7 +22,7 @@ export async function createCustomerSession(input: {
   const days = getSessionTtlDays();
   await query(sql`
     INSERT INTO customer_sessions (customer_id, token_hash, expires_at, ip, user_agent)
-     VALUES (${input.customerId}, ${hashToken(token)}, now() + (${String(days)} || ' days')::interval, ${input.ip}, ${input.userAgent})
+     VALUES (${input.customerId}, ${hashToken(token)}, now() + make_interval(days => ${days}), ${input.ip}, ${input.userAgent})
   `);
   return token;
 }

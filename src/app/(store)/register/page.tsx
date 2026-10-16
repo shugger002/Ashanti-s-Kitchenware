@@ -15,15 +15,15 @@ export default function RegisterPage() {
       <form className="mt-8 space-y-4" action={action}>
         <label className="block text-sm">
           Full name
-          <input name="fullName" required autoComplete="name" className="input mt-1" />
+          <input name="fullName" required autoComplete="name" defaultValue={state?.fullName} className="input mt-1" />
         </label>
         <label className="block text-sm">
           Email
-          <input name="email" type="email" required autoComplete="email" className="input mt-1" />
+          <input name="email" type="email" required autoComplete="email" defaultValue={state?.email} className="input mt-1" />
         </label>
         <label className="block text-sm">
           Phone
-          <input name="phone" type="tel" required autoComplete="tel" className="input mt-1" />
+          <input name="phone" type="tel" required autoComplete="tel" defaultValue={state?.phone} className="input mt-1" />
         </label>
         <PasswordField name="password" label="Password" required minLength={10} autoComplete="new-password" />
         <PasswordField name="confirm" label="Confirm password" required minLength={10} autoComplete="new-password" />
