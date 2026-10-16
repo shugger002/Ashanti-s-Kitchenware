@@ -29,7 +29,7 @@ export function AdminPageHeader({
       )}
     >
       <div>
-        <h1 className="text-[1.75rem] leading-tight text-foreground">{title}</h1>
+        <h1 className="text-2xl leading-tight text-foreground sm:text-[1.75rem]">{title}</h1>
         {description ? (
           <p
             className={cn(

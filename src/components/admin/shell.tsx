@@ -7,6 +7,7 @@ import {
   Activity,
   BarChart3,
   ClipboardList,
+  FolderTree,
   Home,
   Menu,
   Package,
@@ -15,9 +16,12 @@ import {
   Plus,
   Settings,
   TicketPercent,
+  Truck,
   UserPlus,
   Users,
+  Warehouse,
   X,
+  Contact,
 } from "lucide-react";
 import { logoutAdmin } from "@/app/admin/logout/action";
 import { brand } from "@/config/brand";
@@ -35,28 +39,39 @@ type NavItem = {
 
 const groups: { label: string; items: NavItem[] }[] = [
   {
-    label: "Overview",
+    label: "Desk",
     items: [
       { href: "/admin", label: "Home", permission: "orders.read", icon: Home, exact: true },
+      { href: "/admin/orders", label: "Orders", permission: "orders.read", icon: ClipboardList },
       { href: "/admin/products", label: "Products", permission: "products.read", icon: Package },
-      { href: "/admin/products/new", label: "Add Product", permission: "products.write", icon: Plus, exact: true },
+      { href: "/admin/products/new", label: "Add product", permission: "products.write", icon: Plus, exact: true },
+      { href: "/admin/inventory", label: "Inventory", permission: "inventory.write", icon: Warehouse },
+      { href: "/admin/categories", label: "Categories", permission: "products.write", icon: FolderTree },
+    ],
+  },
+  {
+    label: "Selling",
+    items: [
       { href: "/admin/promotions", label: "Discounts", permission: "products.write", icon: Percent },
       { href: "/admin/coupons", label: "Coupons", permission: "products.write", icon: TicketPercent },
-      { href: "/admin/orders", label: "Orders", permission: "orders.read", icon: ClipboardList },
-      { href: "/admin/analytics", label: "Analytics", permission: "reports.read", icon: BarChart3 },
-      { href: "/admin/services", label: "Service Health", permission: "settings.write", icon: Activity },
+      { href: "/admin/customers", label: "Customers", permission: "customers.read", icon: Contact },
     ],
   },
   {
-    label: "User Management",
+    label: "Shop",
+    items: [
+      { href: "/admin/analytics", label: "Analytics", permission: "reports.read", icon: BarChart3 },
+      { href: "/admin/delivery", label: "Delivery", permission: "settings.write", icon: Truck },
+      { href: "/admin/services", label: "Service health", permission: "settings.write", icon: Activity },
+      { href: "/admin/settings", label: "Settings", permission: "settings.write", icon: Settings },
+    ],
+  },
+  {
+    label: "Staff",
     items: [
       { href: "/admin/users", label: "Users", permission: "users.write", icon: Users },
-      { href: "/admin/users/new", label: "Add Users", permission: "users.write", icon: UserPlus, exact: true },
+      { href: "/admin/users/new", label: "Add users", permission: "users.write", icon: UserPlus, exact: true },
     ],
-  },
-  {
-    label: "Settings",
-    items: [{ href: "/admin/settings", label: "Settings", permission: "settings.write", icon: Settings }],
   },
 ];
 
@@ -105,14 +120,10 @@ function Nav({
   const pathname = usePathname();
   return (
     <>
-      <a
+      <Link
         href="/admin"
         className={cn("flex items-center gap-3 px-4 py-5", collapsed && "justify-center px-2")}
-        onClick={(event) => {
-          event.preventDefault();
-          onNavigate?.();
-          window.location.assign("/admin");
-        }}
+        onClick={() => onNavigate?.()}
       >
         <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-white text-xs font-semibold text-accent">
           AK
@@ -120,17 +131,17 @@ function Nav({
         {collapsed ? null : (
           <span className="min-w-0">
             <span className="block truncate text-sm font-medium text-white">{brand.name}</span>
-            <span className="block text-[11px] text-white/70">Admin Portal</span>
+            <span className="block text-[11px] text-white/70">Shop desk</span>
           </span>
         )}
-      </a>
+      </Link>
       {!collapsed && showLogoCard ? (
         <div className="mx-4 mb-4 rounded-sm bg-white px-3 py-2">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={brand.logoSrc} alt="" className="h-7 w-auto max-w-[9rem] object-contain brightness-0" />
         </div>
       ) : null}
-      <nav className="flex flex-1 flex-col gap-6 overflow-y-auto px-3 pb-4" aria-label="Admin">
+      <nav className="flex flex-1 flex-col gap-5 overflow-y-auto px-3 pb-4" aria-label="Admin">
         {groups.map((group) => {
           const items = group.items.filter((item) => hasPermission(user.roles, item.permission));
           if (items.length === 0) return null;
@@ -146,24 +157,20 @@ function Nav({
                   const Icon = link.icon;
                   const active = isActive(pathname, link);
                   return (
-                    <a
+                    <Link
                       key={link.href}
                       href={link.href}
                       title={link.label}
-                      onClick={(event) => {
-                        event.preventDefault();
-                        onNavigate?.();
-                        window.location.assign(link.href);
-                      }}
+                      onClick={() => onNavigate?.()}
                       className={cn(
-                        "flex items-center gap-2.5 rounded-lg px-3 py-2",
-                        collapsed && "size-10 justify-center px-0",
+                        "flex min-h-11 items-center gap-2.5 rounded-lg px-3 py-2",
+                        collapsed && "size-10 min-h-10 justify-center px-0",
                         active ? "bg-white text-accent" : "text-white/85 hover:bg-white/15 hover:text-white",
                       )}
                     >
                       <Icon className={cn("shrink-0", collapsed ? "h-5 w-5" : "h-4 w-4")} strokeWidth={1.5} />
                       {collapsed ? <span className="sr-only">{link.label}</span> : link.label}
-                    </a>
+                    </Link>
                   );
                 })}
               </div>
@@ -184,6 +191,10 @@ export function AdminShell({ user, children }: { user: AdminUser; children: Reac
   useEffect(() => {
     setCollapsed(window.localStorage.getItem("ak_admin_nav_collapsed") === "1");
   }, []);
+
+  useEffect(() => {
+    setMenuOpen(false);
+  }, [pathname]);
 
   if (AUTH_PATHS.some((path) => pathname === path || pathname.startsWith(`${path}/`))) {
     return children;
@@ -207,7 +218,7 @@ export function AdminShell({ user, children }: { user: AdminUser; children: Reac
       {menuOpen ? (
         <button
           type="button"
-          className="fixed inset-0 z-20 bg-foreground/40 lg:hidden"
+          className="fixed inset-0 z-40 bg-foreground/40 lg:hidden"
           aria-label="Close menu"
           onClick={() => setMenuOpen(false)}
         />
@@ -215,45 +226,40 @@ export function AdminShell({ user, children }: { user: AdminUser; children: Reac
 
       <aside
         className={cn(
-          "sticky top-0 z-30 flex h-dvh shrink-0 flex-col bg-accent text-white lg:hidden",
-          menuOpen ? "w-60" : "w-[3.75rem]",
+          "fixed inset-y-0 left-0 z-50 flex w-[min(18rem,88vw)] flex-col bg-accent text-white transition-transform duration-200 lg:hidden",
+          menuOpen ? "translate-x-0" : "-translate-x-full",
         )}
       >
-        <button
-          type="button"
-          className={cn(
-            "mt-2 inline-flex size-10 items-center justify-center rounded-lg text-white hover:bg-white/15",
-            menuOpen ? "ml-3" : "mx-auto",
-          )}
-          aria-label={menuOpen ? "Close menu" : "Open menu"}
-          aria-expanded={menuOpen}
-          onClick={() => setMenuOpen((open) => !open)}
-        >
-          {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-        </button>
-        <Nav
-          user={user}
-          collapsed={!menuOpen}
-          showLogoCard={false}
-          onNavigate={() => setMenuOpen(false)}
-        />
-        <div className={cn("border-t border-white/20 py-4 text-sm", menuOpen ? "px-4" : "px-2")}>
-          <div className={cn("flex items-center gap-3", !menuOpen && "justify-center")}>
+        <div className="flex items-center justify-between px-3 pt-2">
+          <p className="px-1 text-sm font-medium text-white">Menu</p>
+          <button
+            type="button"
+            className="inline-flex size-11 items-center justify-center rounded-lg text-white hover:bg-white/15"
+            aria-label="Close menu"
+            onClick={() => setMenuOpen(false)}
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+        <Nav user={user} collapsed={false} showLogoCard={false} onNavigate={() => setMenuOpen(false)} />
+        <div className="border-t border-white/20 px-4 py-4 text-sm">
+          <div className="flex items-center gap-3">
             <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-white/20 text-[11px] font-medium">
               {initials(user)}
             </span>
-            {menuOpen ? (
-              <span className="min-w-0">
-                <p className="truncate">{user.fullName || user.email}</p>
-                <p className="truncate text-xs text-white/70">{user.email}</p>
-              </span>
-            ) : null}
+            <span className="min-w-0">
+              <p className="truncate">{user.fullName || user.email}</p>
+              <p className="truncate text-xs text-white/70">{user.email}</p>
+            </span>
           </div>
-          {menuOpen ? (
-            <button type="button" className="mt-3 text-xs text-white/80" onClick={signOut}>
+          <div className="mt-3 flex flex-col items-start gap-1">
+            <Link href="/" className="inline-flex min-h-11 items-center text-white/80 hover:text-white">
+              View store
+            </Link>
+            <button type="button" className="inline-flex min-h-11 items-center text-white/80 hover:text-white" onClick={signOut}>
               Sign out
             </button>
-          ) : null}
+          </div>
         </div>
       </aside>
 
@@ -296,10 +302,19 @@ export function AdminShell({ user, children }: { user: AdminUser; children: Reac
           className="pointer-events-none absolute inset-0 h-full w-full object-cover object-center"
         />
         <div className="pointer-events-none absolute inset-0 bg-white/60" />
-        <header className="sticky top-0 z-40 flex items-center gap-3 border-b border-border bg-white px-4 py-3 lg:hidden">
+        <header className="sticky top-0 z-30 flex h-14 items-center gap-2 border-b border-border bg-white px-3 lg:hidden">
+          <button
+            type="button"
+            className="inline-flex size-11 shrink-0 items-center justify-center"
+            aria-label="Open menu"
+            aria-expanded={menuOpen}
+            onClick={() => setMenuOpen(true)}
+          >
+            <Menu className="h-5 w-5" />
+          </button>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={brand.logoSrc} alt={brand.name} className="h-8 w-auto max-w-[9rem] object-contain brightness-0" />
-          <Link href="/" className="ml-auto text-sm text-accent">
+          <img src={brand.logoSrc} alt={brand.name} className="h-7 w-auto max-w-[8.5rem] object-contain brightness-0" />
+          <Link href="/" className="ml-auto inline-flex min-h-11 items-center text-sm text-accent">
             Store
           </Link>
         </header>
@@ -313,7 +328,7 @@ export function AdminShell({ user, children }: { user: AdminUser; children: Reac
             <PanelLeft className="h-4 w-4" />
           </button>
         </div>
-        <div className="relative z-10 mx-auto max-w-6xl px-5 py-7 sm:px-8 sm:py-9">{children}</div>
+        <div className="relative z-10 mx-auto max-w-6xl px-4 py-5 sm:px-8 sm:py-9">{children}</div>
       </div>
     </div>
   );
