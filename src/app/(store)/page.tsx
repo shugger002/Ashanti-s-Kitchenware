@@ -52,8 +52,7 @@ export default async function HomePage() {
 
       <section className="border-y border-border py-8 md:py-16">
         <div className="mx-auto max-w-6xl px-4 text-center lg:px-8">
-          <p className="text-xs uppercase tracking-[0.22em] text-accent">The Accra shop</p>
-          <h2 className="mt-3 text-2xl text-pretty md:text-5xl">{config.hero.title}</h2>
+          <h2 className="text-2xl text-pretty md:text-5xl">{config.hero.title}</h2>
           {config.hero.subtitle ? (
             <p className="mx-auto mt-3 max-w-xl text-sm leading-relaxed text-muted md:text-base">{config.hero.subtitle}</p>
           ) : null}
