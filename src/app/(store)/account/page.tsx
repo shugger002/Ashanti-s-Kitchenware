@@ -31,7 +31,7 @@ export default async function AccountPage() {
   const phoneHref = `tel:${customer.phone.replace(/\s+/g, "")}`;
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-8 pb-24 lg:px-8 lg:py-16">
+    <div className="mx-auto max-w-3xl px-4 py-8 pb-[calc(var(--store-dock)+2rem)] lg:px-8 lg:py-16 lg:pb-16">
       <p className="text-xs font-medium uppercase text-muted">Signed in</p>
       <h1 className="mt-2 text-3xl md:text-4xl">Your account</h1>
       <p className="mt-3 max-w-xl text-pretty text-sm text-muted">
@@ -72,22 +72,19 @@ export default async function AccountPage() {
         </form>
       </section>
 
-      <ul className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
+      <ul className="mt-4 grid grid-cols-3 gap-2 sm:gap-3">
         {[
-          { href: "/wishlist", label: "Wishlist", hint: "Saved on this phone", icon: Heart },
-          { href: "/orders/track", label: "Track an order", hint: "Reference and phone", icon: PackageSearch },
-          { href: "/shop", label: "Browse the shop", hint: "Current Accra stock", icon: Store },
+          { href: "/wishlist", label: "Wishlist", icon: Heart },
+          { href: "/orders/track", label: "Track order", icon: PackageSearch },
+          { href: "/shop", label: "Shop", icon: Store },
         ].map((item) => (
           <li key={item.href}>
             <Link
               href={item.href}
-              className="flex h-full items-start gap-3 rounded-2xl border border-border bg-surface p-4 text-foreground transition-colors hover:border-accent/40"
+              className="flex h-full min-h-24 flex-col items-center justify-center gap-2 rounded-2xl border border-border bg-surface px-2 py-4 text-center text-foreground transition-colors hover:border-accent/40"
             >
-              <item.icon className="mt-0.5 size-5 shrink-0 text-accent" strokeWidth={1.5} />
-              <span>
-                <span className="block text-sm font-medium">{item.label}</span>
-                <span className="mt-1 block text-xs text-muted">{item.hint}</span>
-              </span>
+              <item.icon className="size-5 text-accent" strokeWidth={1.5} />
+              <span className="text-xs font-medium sm:text-sm">{item.label}</span>
             </Link>
           </li>
         ))}
