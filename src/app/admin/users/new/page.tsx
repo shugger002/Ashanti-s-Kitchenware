@@ -9,7 +9,7 @@ export default async function AddUsersPage() {
       <BackLink href="/admin/users">All users</BackLink>
       <AdminPageHeader
         title="Add users"
-        description="Create a staff account that can open this desk. Super administrators only."
+        description="Give a staff member a login for this desk."
       />
       <div className="mt-8">
         <InviteStaffForm />

@@ -18,11 +18,9 @@ export function InventoryCsvForm() {
   const [pending, setPending] = useState(false);
   return (
     <div className="rounded-xl border border-border bg-white p-5">
-      <h2 className="text-lg font-medium">Upload restock file</h2>
+      <h2 className="text-lg font-medium">Restock from a file</h2>
       <p className="mt-1 text-sm leading-relaxed text-muted">
-        CSV or a spreadsheet saved as PDF from Chrome. Use a <span className="text-foreground">sku</span> or product
-        name column, plus <span className="text-foreground">restock</span> (pieces arriving) or{" "}
-        <span className="text-foreground">on_hand</span> (new shelf count).
+        Upload a spreadsheet. Need a code or product name column, plus how many arrived, or the new shelf count.
       </p>
       <div className="mt-4 flex flex-wrap items-center gap-3">
         <button
@@ -70,7 +68,9 @@ export function InventoryCsvForm() {
               ))}
             </ul>
           ) : null}
-          {state.skipped.length > 0 ? <p className="text-accent">Unknown SKU: {state.skipped.join(", ")}</p> : null}
+          {state.skipped.length > 0 ? (
+            <p className="text-accent">These codes were not found: {state.skipped.join(", ")}</p>
+          ) : null}
           {state.errors.filter((error) => error !== state.message).length > 0 ? (
             <ul className="space-y-1 text-accent">
               {state.errors

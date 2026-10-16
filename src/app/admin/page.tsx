@@ -85,7 +85,7 @@ export default async function AdminHomePage() {
     <div>
       <AdminPageHeader
         title={`${greeting}, Accra desk`}
-        description="What needs a hand now: unpaid tickets, packing, stock, and demo SKUs still on the shop."
+        description="Orders to pack, stock that is low, and anything still waiting."
       />
 
       <section className="mt-6">

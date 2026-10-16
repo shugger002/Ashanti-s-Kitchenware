@@ -62,7 +62,7 @@ const groups: { label: string; items: NavItem[] }[] = [
     items: [
       { href: "/admin/analytics", label: "Analytics", permission: "reports.read", icon: BarChart3 },
       { href: "/admin/delivery", label: "Delivery", permission: "settings.write", icon: Truck },
-      { href: "/admin/services", label: "Service health", permission: "settings.write", icon: Activity },
+      { href: "/admin/services", label: "Connections", permission: "settings.write", icon: Activity },
       { href: "/admin/settings", label: "Settings", permission: "settings.write", icon: Settings },
     ],
   },

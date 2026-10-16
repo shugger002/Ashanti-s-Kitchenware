@@ -18,7 +18,7 @@ export default async function AnalyticsPage() {
     <div>
       <AdminPageHeader
         title="Analytics"
-        description="Paid revenue, discount coverage, and stock risk from this shop’s own orders, not a live event pipeline."
+        description="Money in, how many pieces are on promo, and what is running low. From this shop’s own orders."
       />
       <dl className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <div className="rounded-xl border border-border bg-surface p-5">

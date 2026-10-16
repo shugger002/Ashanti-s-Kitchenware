@@ -18,29 +18,25 @@ async function pingDatabase() {
 export default async function ServiceHealthPage() {
   const [, databaseOk] = await Promise.all([requirePermission("settings.write"), pingDatabase()]);
   const smtpReady = Boolean(process.env.SMTP_HOST && process.env.SMTP_FROM);
-  const objectStorage =
-    process.env.S3_BUCKET && process.env.S3_ACCESS_KEY_ID
-      ? process.env.S3_ENDPOINT?.includes("supabase")
-        ? "Supabase Storage"
-        : "S3"
-      : isProduction()
-        ? "Missing (required in production)"
-        : "Local uploads (development)";
+  const photosOk = Boolean(process.env.S3_BUCKET && process.env.S3_ACCESS_KEY_ID) || !isProduction();
+  const objectStorage = photosOk
+    ? "Ready"
+    : "Not set up yet";
 
   const rows = [
-    { label: "Database", value: databaseOk ? "Reachable" : "Unreachable", ok: databaseOk },
-    { label: "Staff email (SMTP)", value: smtpReady ? "Configured" : "Not configured", ok: smtpReady },
-    { label: "Product images", value: objectStorage, ok: Boolean(process.env.S3_BUCKET && process.env.S3_ACCESS_KEY_ID) || !isProduction() },
-    { label: "Hubtel keys", value: isHubtelConfigured() ? "Present" : "Not set", ok: isHubtelConfigured() },
-    { label: "Moolre keys", value: isMoolreConfigured() ? "Present" : "Not set", ok: isMoolreConfigured() },
-    { label: "Paystack key", value: process.env.PAYSTACK_SECRET_KEY ? "Present" : "Not set", ok: Boolean(process.env.PAYSTACK_SECRET_KEY) },
+    { label: "Database", value: databaseOk ? "Working" : "Down", ok: databaseOk },
+    { label: "Staff email", value: smtpReady ? "Ready" : "Not set up yet", ok: smtpReady },
+    { label: "Product photos", value: objectStorage, ok: photosOk },
+    { label: "Hubtel", value: isHubtelConfigured() ? "Ready" : "Not set up yet", ok: isHubtelConfigured() },
+    { label: "Moolre", value: isMoolreConfigured() ? "Ready" : "Not set up yet", ok: isMoolreConfigured() },
+    { label: "Paystack", value: process.env.PAYSTACK_SECRET_KEY ? "Ready" : "Not set up yet", ok: Boolean(process.env.PAYSTACK_SECRET_KEY) },
   ];
 
   return (
     <div>
       <AdminPageHeader
-        title="Service health"
-        description="Whether this host can talk to the database, send mail, store photos, and see payment keys. Keys are not shown. Payment APIs are not called from here."
+        title="Connections"
+        description="Can this shop talk to the database, send mail, store photos, and take payment. Keys are not shown here."
       />
       <ul className="mt-8 divide-y divide-border overflow-hidden rounded-2xl border border-border bg-background">
         {rows.map((row) => (

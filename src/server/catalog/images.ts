@@ -23,6 +23,11 @@ export async function saveProductPhoto(input: {
   const type = mimeFromFile(input.file);
   assertImageUpload({ type, size: input.file.size });
   const bytes = Buffer.from(await input.file.arrayBuffer());
+  let alt = input.alt.trim();
+  if (!alt) {
+    const named = await query<{ name: string }>(sql`SELECT name FROM products WHERE id = ${input.productId} LIMIT 1`);
+    alt = named.rows[0]?.name?.trim() || "Product photo";
+  }
   const stored = await getStorage().put({
     bytes,
     contentType: type,
@@ -32,7 +37,7 @@ export async function saveProductPhoto(input: {
     productId: input.productId,
     url: stored.url,
     storageKey: stored.key,
-    alt: input.alt,
+    alt,
     isPrimary: input.isPrimary,
   });
 }

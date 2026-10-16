@@ -10,7 +10,7 @@ export default async function NewProductPage() {
   return (
     <div>
       <BackLink href="/admin/products">All products</BackLink>
-      <AdminPageHeader title="Add Product" description="Add one photographed piece, or upload a CSV of the catalogue." />
+      <AdminPageHeader title="Add a product" description="Add one piece, or load the whole container list at once." />
       <div className="mt-6">
         <ProductCsvForm />
       </div>

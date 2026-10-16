@@ -13,12 +13,12 @@ export const metadata = pageMeta({
 export default function ForgotPasswordPage() {
   const enabled = isPasswordResetEnabled();
   return (
-    <AdminAuthFrame title="Reset password" description="We will email a link only if this address belongs to staff.">
+    <AdminAuthFrame title="Reset password" description="If this email is a staff login, we will send a reset link.">
       {enabled ? (
         <ForgotForm />
       ) : (
         <p className="mt-8 text-sm leading-relaxed text-muted">
-          Password reset is unavailable until an SMTP service is configured.
+          Email reset is not set up yet. Ask the store owner to send you a new password.
         </p>
       )}
       <p className="mt-6 text-sm">

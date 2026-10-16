@@ -43,7 +43,7 @@ export default async function InventoryPage() {
     <div>
       <AdminPageHeader
         title="Inventory"
-        description="Upload a CSV to restock many SKUs at once, or add pieces one row at a time. Available is on hand minus reserved."
+        description="How many pieces you have. Upload a spreadsheet to restock many items, or change one row at a time."
       />
       <div className="mt-6">
         <InventoryCsvForm />
@@ -51,7 +51,7 @@ export default async function InventoryPage() {
       {rows.length > 0 ? (
         <ul className="mt-6 grid gap-3 sm:grid-cols-3">
           <li className="rounded-2xl border border-border bg-background px-4 py-3">
-            <p className="text-xs text-muted">SKUs</p>
+            <p className="text-xs text-muted">Items</p>
             <p className="mt-1 font-serif text-2xl tabular-nums">{rows.length}</p>
           </li>
           <li className={`rounded-2xl border bg-background px-4 py-3 ${low > 0 ? "border-accent" : "border-border"}`}>
@@ -68,7 +68,7 @@ export default async function InventoryPage() {
         <div className="mt-6">
           <EmptyState
             title="Nothing to count"
-            body="Inventory rows appear when products are created. Add a product first."
+            body="Stock rows appear after you add a product."
             action={
               <Link href="/admin/products/new" className={adminButton()}>
                 New product
@@ -115,7 +115,7 @@ export default async function InventoryPage() {
                   </span>
                 </Link>
                 <p className={cn("mt-3 text-sm tabular-nums", tight && "font-medium text-accent")}>
-                  {row.available} available · {row.onHand} on hand · {row.reserved} reserved
+                  {row.available} to sell · {row.onHand} on the shelf · {row.reserved} in unpaid orders
                 </p>
                 <form action={restock} className="mt-3 flex flex-col gap-2">
                   <input type="hidden" name="inventoryId" value={row.id} />
@@ -124,7 +124,7 @@ export default async function InventoryPage() {
                     type="number"
                     min={1}
                     required
-                    placeholder="Qty to add"
+                    placeholder="How many arrived"
                     aria-label={`Restock ${row.productName}`}
                     className="input"
                   />
@@ -161,10 +161,10 @@ export default async function InventoryPage() {
           <thead>
             <tr className="border-b border-border bg-surface text-xs text-muted">
               <th className="px-4 py-3 font-medium">Product</th>
-              <th className="px-4 py-3 font-medium">SKU</th>
-              <th className="px-4 py-3 font-medium">On hand</th>
-              <th className="px-4 py-3 font-medium">Reserved</th>
-              <th className="px-4 py-3 font-medium">Available</th>
+              <th className="px-4 py-3 font-medium">Code</th>
+              <th className="px-4 py-3 font-medium">On the shelf</th>
+              <th className="px-4 py-3 font-medium">In orders</th>
+              <th className="px-4 py-3 font-medium">To sell</th>
               <th className="px-4 py-3 font-medium">Restock</th>
               <th className="px-4 py-3 font-medium">Adjust</th>
             </tr>

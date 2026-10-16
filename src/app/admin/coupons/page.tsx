@@ -41,7 +41,7 @@ export default async function CouponsPage() {
     <div>
       <AdminPageHeader
         title="Coupons"
-        description="Create and monitor checkout codes. Delivery is still quoted on WhatsApp. These codes do not invent free shipping."
+        description="Checkout codes that take money off the basket. They do not make delivery free. Delivery stays on WhatsApp."
       />
 
       <ul className="mt-8 grid gap-3 sm:grid-cols-3">
@@ -50,18 +50,21 @@ export default async function CouponsPage() {
           <p className="mt-2 text-3xl font-medium tabular-nums">{coupons.length}</p>
         </li>
         <li className="rounded-xl border border-border bg-surface p-5">
-          <p className="text-sm text-muted">Active Campaigns</p>
+          <p className="text-sm text-muted">Turned on</p>
           <p className="mt-2 text-3xl font-medium tabular-nums">{active}</p>
         </li>
         <li className="rounded-xl border border-border bg-surface p-5">
-          <p className="text-sm text-muted">Total Usages</p>
+          <p className="text-sm text-muted">Times used</p>
           <p className="mt-2 text-3xl font-medium tabular-nums">{uses}</p>
         </li>
       </ul>
 
       {coupons.length === 0 ? (
         <div className="mt-6">
-          <EmptyState title="No coupons yet" body="Add a percent or Ghana Cedi off the basket. Do not create a shipping coupon. Delivery stays on WhatsApp." />
+          <EmptyState
+            title="No coupons yet"
+            body="Add a percent or Cedis off the basket. Do not make a free-delivery code. Delivery stays on WhatsApp."
+          />
         </div>
       ) : (
         <>
@@ -136,40 +139,41 @@ export default async function CouponsPage() {
       )}
 
       <form action={addCoupon} className="mt-8 max-w-xl space-y-3 rounded-xl border border-border bg-surface p-5">
-        <h2 className="text-lg font-medium">Create Coupon</h2>
+        <h2 className="text-lg font-medium">New coupon</h2>
         <label className="block text-sm">
-          Code
+          Code customers type
           <input name="code" required minLength={3} className="input mt-1" placeholder="WELCOME10" />
         </label>
         <label className="block text-sm">
-          Description
+          Note for you
           <input name="description" className="input mt-1" />
         </label>
         <label className="block text-sm">
-          Type
+          Kind of discount
           <select name="discountType" className="input mt-1">
-            <option value="percent">Percent off basket</option>
-            <option value="fixed">Ghana Cedi off basket</option>
+            <option value="percent">Percent off the basket</option>
+            <option value="fixed">Cedis off the basket</option>
           </select>
         </label>
         <label className="block text-sm">
-          Value
+          How much off
           <input name="discountValue" type="number" step="0.01" min="0.01" required className="input mt-1" />
         </label>
         <label className="block text-sm">
-          Max discount (GHS, optional for percent)
+          Cap in Cedis (optional)
           <input name="maxDiscount" type="number" step="0.01" min="0" className="input mt-1" />
         </label>
         <label className="block text-sm">
-          Minimum spend (GHS)
+          Customer must spend at least (GH₵)
           <input name="minSpend" type="number" step="0.01" min="0" defaultValue="0" className="input mt-1" />
         </label>
         <label className="block text-sm">
-          Max uses (blank = unlimited)
+          How many times it can be used
+          <span className="mt-0.5 block text-xs text-muted">Leave blank for no limit.</span>
           <input name="maxUses" type="number" min="1" className="input mt-1" />
         </label>
         <button className={adminButton()} type="submit">
-          Create Coupon
+          Save coupon
         </button>
       </form>
     </div>

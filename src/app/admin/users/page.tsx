@@ -9,7 +9,7 @@ export default async function UsersPage() {
     <div>
       <AdminPageHeader
         title="Users"
-        description="Accounts that can open this desk. Super administrators only."
+        description="People who can open this desk. Only the store owner can add or change them."
         action={
           <Link href="/admin/users/new" className={adminButton()}>
             Add users

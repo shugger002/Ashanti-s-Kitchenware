@@ -22,8 +22,8 @@ function ColorOptionsEditor({ product }: { product?: ProductDetail }) {
     <section className="space-y-4 rounded-2xl border border-border bg-background p-5">
       <h2 className="font-serif text-xl">Colours</h2>
       <p className="text-sm text-muted">
-        Add a row for each colour on the shelf. The hex is the swatch customers see. One photograph still stands for the
-        listing until you upload a shot per colour.
+        Add each colour you have in stock. The colour box is what shoppers tap. One photo is enough until you add a
+        picture per colour.
       </p>
       <input type="hidden" name="colorsPresent" value="1" />
       <ul className="space-y-3">
@@ -110,18 +110,20 @@ export function ProductForm({
     <form action={saveProduct} className="mt-8 max-w-2xl space-y-8">
       {product ? <input type="hidden" name="id" value={product.id} /> : null}
       <section className="space-y-4 rounded-2xl border border-border bg-background p-5">
-        <h2 className="font-serif text-xl">Listing</h2>
+        <h2 className="font-serif text-xl">What is this piece?</h2>
         <label className="block text-sm">
           Name
           <input required name="name" defaultValue={product?.name} className="input mt-1" />
         </label>
         <div className="grid gap-3 sm:grid-cols-2">
           <label className="block text-sm">
-            SKU
+            Code (PIC)
+            <span className="mt-0.5 block text-xs text-muted">The number on your container sheet.</span>
             <input required name="sku" defaultValue={product?.sku} className="input mt-1" />
           </label>
           <label className="block text-sm">
-            Slug
+            Shop page address
+            <span className="mt-0.5 block text-xs text-muted">Leave blank. We will make one from the name.</span>
             <input name="slug" defaultValue={product?.slug} className="input mt-1" />
           </label>
         </div>
@@ -138,6 +140,7 @@ export function ProductForm({
         </label>
         <label className="block text-sm">
           Description
+          <span className="mt-0.5 block text-xs text-muted">What you would tell a customer in the shop.</span>
           <textarea name="description" defaultValue={product?.description} rows={6} className="input mt-1" />
         </label>
       </section>
@@ -145,59 +148,57 @@ export function ProductForm({
         <h2 className="font-serif text-xl">Price and stock</h2>
         <div className="grid grid-cols-2 gap-3">
           <label className="block text-sm">
-            Price (GHS)
+            Price (GH₵)
             <input required name="price" type="number" step="0.01" defaultValue={product?.price} className="input mt-1" />
           </label>
           <label className="block text-sm">
-            Sale price (optional)
+            Sale price
+            <span className="mt-0.5 block text-xs text-muted">Leave empty if it is not on promo.</span>
             <input name="salePrice" type="number" step="0.01" defaultValue={product?.salePrice ?? ""} className="input mt-1" />
           </label>
         </div>
-        <p className="text-xs text-muted">
-          A sale price below the regular price puts the piece on the homepage promo and the On promo list. Leave blank
-          when it is not discounted.
-        </p>
         {!product ? (
           <label className="block text-sm">
-            Initial stock
+            How many on the shelf
             <input name="initialStock" type="number" defaultValue={0} className="input mt-1" />
           </label>
         ) : null}
         <label className="block text-sm">
-          Specifications (one per line, Name: value)
+          Extra details
+          <span className="mt-0.5 block text-xs text-muted">One per line, like Size: 32cm</span>
           <textarea name="specifications" defaultValue={specText} rows={4} className="input mt-1" />
         </label>
       </section>
       {!product ? (
         <section className="space-y-4 rounded-2xl border border-border bg-background p-5">
-          <h2 className="font-serif text-xl">Photographs</h2>
-          <p className="text-sm text-muted">
-            JPEG, PNG, or WebP, 6 MB each. The first file becomes the primary photograph. You can add more after saving.
-          </p>
+          <h2 className="font-serif text-xl">Photos</h2>
+          <p className="text-sm text-muted">The first picture is the main one. You can add more after you save.</p>
           <label className="block text-sm">
-            Upload photos
+            Choose photos
             <input name="images" type="file" accept="image/jpeg,image/png,image/webp" multiple className="input mt-1" />
           </label>
         </section>
       ) : null}
       <ColorOptionsEditor product={product} />
       <section className="space-y-4 rounded-2xl border border-border bg-background p-5">
-        <h2 className="font-serif text-xl">Visibility</h2>
+        <h2 className="font-serif text-xl">On the shop</h2>
         <label className="flex gap-2 text-sm">
-          <input type="checkbox" name="isActive" defaultChecked={product ? product.isActive : true} /> Visible in shop
+          <input type="checkbox" name="isActive" defaultChecked={product ? product.isActive : true} /> Show on the shop
         </label>
         <label className="flex gap-2 text-sm">
-          <input type="checkbox" name="isFeatured" defaultChecked={product?.isFeatured} /> Featured
+          <input type="checkbox" name="isFeatured" defaultChecked={product?.isFeatured} /> Show on the homepage
         </label>
         <label className="flex gap-2 text-sm">
-          <input type="checkbox" name="isNew" defaultChecked={product?.isNew} /> New arrival
+          <input type="checkbox" name="isNew" defaultChecked={product?.isNew} /> Mark as new
         </label>
         <label className="block text-sm">
-          SEO title
+          Google title
+          <span className="mt-0.5 block text-xs text-muted">Optional. Leave blank to use the product name.</span>
           <input name="seoTitle" defaultValue={product?.seoTitle ?? ""} className="input mt-1" />
         </label>
         <label className="block text-sm">
-          SEO description
+          Google description
+          <span className="mt-0.5 block text-xs text-muted">Optional. A short line Google can show.</span>
           <textarea name="seoDescription" defaultValue={product?.seoDescription ?? ""} className="input mt-1" />
         </label>
       </section>

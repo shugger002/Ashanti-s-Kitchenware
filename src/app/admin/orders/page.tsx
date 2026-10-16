@@ -34,7 +34,7 @@ export default async function AdminOrdersPage({
     <div>
       <AdminPageHeader
         title="Orders"
-        description="Same steps the customer tracker uses: Order Received, Packaging order, Order Out for Delivery, Order Delivered. Quote delivery on WhatsApp. Checkout does not add a fee."
+        description="When a customer pays, pack it, quote delivery on WhatsApp, then mark it sent. Checkout does not add a delivery fee."
       />
       <Toolbar>
         <form className="flex w-full flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center" method="get">

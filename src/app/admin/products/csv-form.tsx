@@ -21,11 +21,10 @@ export function ProductCsvForm() {
   const [pending, setPending] = useState(false);
   return (
     <div className="rounded-xl border border-border bg-white p-5">
-      <h2 className="text-lg font-medium">Upload products CSV or PDF</h2>
+      <h2 className="text-lg font-medium">Add many products at once</h2>
       <p className="mt-1 text-sm leading-relaxed text-muted">
-        Load the current container list (PIC, description, price in Cedis, qty), or upload a CSV. Pieces appear on the
-        shop even without a photograph. Name photographs after the SKU (
-        <span className="text-foreground">APA-126.jpg</span>).
+        Load the container list, or upload a spreadsheet. Photos can wait. If you add photos now, name the files with the
+        code, like <span className="text-foreground">APA-126.jpg</span>.
       </p>
       <div className="mt-4 flex flex-wrap gap-3">
         <button
@@ -39,7 +38,7 @@ export function ProductCsvForm() {
               .finally(() => setPending(false));
           }}
         >
-          {pending ? "Loading list…" : "Load container stock"}
+          {pending ? "Loading list…" : "Load container list"}
         </button>
         <button
           type="button"
@@ -71,7 +70,7 @@ export function ProductCsvForm() {
             />
           </label>
           <label className="block min-w-0 flex-1 text-sm">
-            Photographs
+            Photos
             <input
               name="images"
               type="file"
@@ -82,7 +81,7 @@ export function ProductCsvForm() {
           </label>
         </div>
         <button className={adminButton()} type="submit" disabled={pending}>
-          {pending ? "Reading spreadsheet…" : "Add products"}
+          {pending ? "Reading file…" : "Add from file"}
         </button>
       </form>
       {state ? (
@@ -91,7 +90,9 @@ export function ProductCsvForm() {
           {state.created.length > 0 ? <p className="text-muted">Added: {state.created.join(", ")}</p> : null}
           {state.skipped.length > 0 ? <p className="text-muted">Already on the desk: {state.skipped.join(", ")}</p> : null}
           {state.attached.length > 0 ? <p className="text-muted">Photos: {state.attached.join("; ")}</p> : null}
-          {state.unmatched.length > 0 ? <p className="text-accent">No SKU match: {state.unmatched.join(", ")}</p> : null}
+          {state.unmatched.length > 0 ? (
+            <p className="text-accent">These photo names did not match a code: {state.unmatched.join(", ")}</p>
+          ) : null}
           {state.errors.filter((error) => error !== state.message).length > 0 ? (
             <ul className="space-y-1 text-accent">
               {state.errors

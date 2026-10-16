@@ -41,10 +41,10 @@ export default async function PromotionsPage() {
 
   return (
     <div>
-      <AdminPageHeader title="Discounts" description="Set a percent off a piece. That writes a Ghana Cedi sale price, not a store-wide coupon." />
+      <AdminPageHeader title="Discounts" description="Knock a percent off one piece. That is a sale price in Cedis, not a coupon code." />
       {items.length === 0 ? (
         <div className="mt-6">
-          <EmptyState title="Catalogue is empty" body="Add a product before applying a discount." />
+          <EmptyState title="No products yet" body="Add a product first, then you can put it on sale." />
         </div>
       ) : (
         <>

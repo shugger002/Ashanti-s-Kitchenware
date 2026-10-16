@@ -69,16 +69,16 @@ export default async function SettingsPage() {
     <div className="space-y-6">
       <AdminPageHeader
         title="Settings"
-        description="Legal name Ashanti's Kitchenware. The homepage photo is the utensils wall; it is not uploaded here. Delivery is quoted on WhatsApp, not charged at checkout."
+        description="Shop name, phone, address, and the words on the homepage. Delivery is still quoted on WhatsApp."
       />
       <form action={saveContact} className="max-w-xl space-y-4 rounded-xl border border-border bg-surface p-5">
         <h2 className="font-serif text-xl">Contact</h2>
         <Field name="legalName" label="Legal name" defaultValue={config.contact.legalName} />
         <Field name="tradingName" label="Trading name" defaultValue={config.contact.tradingName} />
         <Field name="email" label="Email" defaultValue={config.contact.email} />
-        <Field name="phoneDisplay" label="Phone (display)" defaultValue={config.contact.phoneDisplay} />
-        <Field name="phoneE164" label="Phone (E.164)" defaultValue={config.contact.phoneE164} />
-        <Field name="whatsappE164" label="WhatsApp (E.164)" defaultValue={config.contact.whatsappE164} />
+        <Field name="phoneDisplay" label="Phone as customers see it" defaultValue={config.contact.phoneDisplay} />
+        <Field name="phoneE164" label="Phone for calling (with country code)" defaultValue={config.contact.phoneE164} />
+        <Field name="whatsappE164" label="WhatsApp number (with country code)" defaultValue={config.contact.whatsappE164} />
         <Field name="addressLine1" label="Address" defaultValue={config.contact.addressLine1} />
         <div className="grid gap-3 sm:grid-cols-3">
           <Field name="city" label="City" defaultValue={config.contact.city} />
@@ -90,9 +90,9 @@ export default async function SettingsPage() {
         </button>
       </form>
       <form action={saveHero} className="max-w-xl space-y-4 rounded-xl border border-border bg-surface p-5">
-        <h2 className="font-serif text-xl">Homepage copy</h2>
+        <h2 className="font-serif text-xl">Homepage words</h2>
         <p className="text-sm leading-relaxed text-muted">
-          These lines sit under the utensils photo. The announcement bar is the strip at the very top of the shop.
+          These sit under the utensils photo. The announcement is the thin strip at the very top of the shop.
         </p>
         <Field name="title" label="Intro title" defaultValue={config.hero.title} />
         <Field name="subtitle" label="Intro text" defaultValue={config.hero.subtitle} as="textarea" />
@@ -108,11 +108,8 @@ export default async function SettingsPage() {
         </button>
       </form>
       <section className="max-w-xl rounded-xl border border-border bg-surface p-5">
-        <h2 className="text-xl">Shop extras</h2>
-        <p className="mt-2 text-sm leading-relaxed text-muted">
-          Categories, customers, inventory counts, and WhatsApp delivery sit here so the main rail matches the live
-          admin.
-        </p>
+        <h2 className="text-xl">Other desk pages</h2>
+        <p className="mt-2 text-sm leading-relaxed text-muted">Stock, categories, customers, and delivery are on their own pages.</p>
         <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
           <a href="/admin/inventory" className={adminButton()}>
             Inventory

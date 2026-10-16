@@ -24,11 +24,11 @@ export default async function CategoriesPage() {
     <div>
       <AdminPageHeader
         title="Categories"
-        description="These tiles feed the shop grid and the hamburger Categories list. Hidden categories do not appear on the storefront."
+        description="Shop aisles such as Cookware. Turn one off and it disappears from the shop menu."
       />
       {categories.length === 0 ? (
         <div className="mt-6">
-          <EmptyState title="No categories" body="Add a shop aisle below. Hidden categories stay off the storefront." />
+          <EmptyState title="No categories yet" body="Add an aisle below, like Cookware. You can hide it from the shop later." />
         </div>
       ) : (
         <>
@@ -43,7 +43,7 @@ export default async function CategoriesPage() {
                   <input name="name" required defaultValue={c.name} className="input mt-1" />
                 </label>
                 <label className="block text-sm">
-                  Slug
+                  Page address
                   <input name="slug" defaultValue={c.slug} className="input mt-1" />
                 </label>
                 <label className="flex min-h-11 items-center gap-2 text-sm">
@@ -76,7 +76,7 @@ export default async function CategoriesPage() {
                       <input name="name" required defaultValue={c.name} className="input mt-1" />
                     </label>
                     <label className="block min-w-32 flex-1 text-xs">
-                      Slug
+                      Page address
                       <input name="slug" defaultValue={c.slug} className="input mt-1" />
                     </label>
                     <label className="flex items-center gap-2 pb-2 text-sm">
@@ -100,7 +100,8 @@ export default async function CategoriesPage() {
           <input name="name" required className="input mt-1" />
         </label>
         <label className="block text-sm">
-          Slug
+          Page address
+          <span className="mt-0.5 block text-xs text-muted">Leave blank. We will make one from the name.</span>
           <input name="slug" className="input mt-1" />
         </label>
         <label className="block text-sm">
@@ -108,7 +109,7 @@ export default async function CategoriesPage() {
           <textarea name="description" className="input mt-1" />
         </label>
         <label className="flex gap-2 text-sm">
-          <input type="checkbox" name="isActive" defaultChecked /> Visible on the store
+          <input type="checkbox" name="isActive" defaultChecked /> Show on the shop
         </label>
         <button className={adminButton()} type="submit">
           Save

@@ -56,7 +56,7 @@ export default async function DeliveryPage() {
     <div className="space-y-8">
       <AdminPageHeader
         title="Delivery"
-        description="Checkout does not add a delivery fee. Quote on WhatsApp, then move the ticket: Order Received → Packaging order → Order Out for Delivery → Order Delivered. Collection uses Ready at the shop → Collected."
+        description="Do not charge delivery at checkout. Agree the fee on WhatsApp, then move the order: received, packing, out, delivered. Shop pickup is Ready at the shop, then Collected."
       />
 
       <form action={saveFulfillment} className="max-w-xl space-y-4 rounded-2xl border border-border bg-background p-5">

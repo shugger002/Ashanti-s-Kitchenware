@@ -27,7 +27,7 @@ export default async function AdminProductsPage({
       {low.length > 0 ? (
         <div className="mb-6 rounded-xl border border-accent/30 bg-accent/5 p-4">
           <h2 className="text-sm font-medium">
-            Low stock: {low.length} piece{low.length === 1 ? "" : "s"} at or below {LOW_STOCK_ALERT}
+            Running low: {low.length} piece{low.length === 1 ? "" : "s"} with {LOW_STOCK_ALERT} or fewer left
           </h2>
           <ul className="mt-3 space-y-2 text-sm">
             {low.map((p) => (
@@ -47,7 +47,7 @@ export default async function AdminProductsPage({
 
       <AdminPageHeader
         title="Products"
-        description="The desk list should match the container sheet: description, PIC, Ghana Cedi price, and quantity."
+        description="Names, codes, prices in Cedis, and how many you have. Same as the container sheet."
         action={
           canWrite ? (
             <Link href="/admin/products/new" className={adminButton()}>
@@ -70,7 +70,7 @@ export default async function AdminProductsPage({
             id="product-q"
             name="q"
             defaultValue={q}
-            placeholder="Search name or SKU"
+            placeholder="Search name or code"
             className="input w-full sm:max-w-sm"
           />
           <button className={adminButton()} type="submit">
@@ -81,8 +81,8 @@ export default async function AdminProductsPage({
       {items.length === 0 ? (
         <div className="mt-6">
           <EmptyState
-            title={q ? "No matches" : "Catalogue is empty"}
-            body={q ? "Try another name or SKU." : "Add a photographed piece with a Ghana Cedi price."}
+            title={q ? "Nothing matched" : "No products yet"}
+            body={q ? "Try another name or code." : "Add a piece with a Ghana Cedi price. A photo can come later."}
             action={
               canWrite ? (
                 <Link href="/admin/products/new" className={adminButton()}>
@@ -119,7 +119,7 @@ export default async function AdminProductsPage({
                   <form action={archiveProductAction}>
                     <input type="hidden" name="id" value={p.id} />
                     <button type="submit" className="inline-flex h-12 w-full items-center justify-center text-sm text-accent">
-                      Archive
+                      Remove
                     </button>
                   </form>
                 </div>
@@ -164,7 +164,7 @@ export default async function AdminProductsPage({
                       <form action={archiveProductAction}>
                         <input type="hidden" name="id" value={p.id} />
                         <button type="submit" className="inline-flex min-h-11 items-center text-accent">
-                          Archive
+                          Remove
                         </button>
                       </form>
                     ) : null}

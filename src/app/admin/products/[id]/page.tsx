@@ -21,7 +21,7 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
       <BackLink href="/admin/products">All products</BackLink>
       <AdminPageHeader
         title={product.name}
-        description={`SKU ${product.sku}`}
+        description={`Code ${product.sku}`}
         action={
           <span className="flex flex-wrap gap-1">
             <StatusPill value={product.isActive ? "Listed" : "Hidden"} tone={product.isActive ? "ok" : "muted"} />
@@ -31,9 +31,9 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
       />
       <ProductForm categories={categories} product={product} />
       <section className="mt-8 max-w-2xl rounded-2xl border border-border bg-background p-5">
-        <h2 className="font-serif text-xl">Photographs</h2>
+        <h2 className="font-serif text-xl">Photos</h2>
         {product.images.length === 0 ? (
-          <p className="mt-3 text-sm text-muted">No photographs yet. Upload what is on the shelf.</p>
+          <p className="mt-3 text-sm text-muted">No photos yet. Add a picture of the piece on the shelf.</p>
         ) : (
           <ul className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
             {product.images.map((image) => (
@@ -41,14 +41,14 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={image.url} alt={image.alt} className="aspect-square w-full object-cover" />
                 <p className="truncate px-2 py-1.5 text-[11px] text-muted">
-                  {image.isPrimary ? "Primary · " : ""}
+                  {image.isPrimary ? "Main photo · " : ""}
                   {image.alt || "Untitled"}
                 </p>
               </li>
             ))}
           </ul>
         )}
-        <ImageUpload productId={product.id} />
+        <ImageUpload productId={product.id} productName={product.name} />
       </section>
       <section className="mt-8 max-w-2xl rounded-2xl border border-border bg-background p-5">
         <h2 className="font-serif text-xl">Reviews</h2>
@@ -79,7 +79,7 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
       <form action={archiveProductAction} className="mt-10 max-w-2xl">
         <input type="hidden" name="id" value={product.id} />
         <button type="submit" className="text-sm text-accent">
-          Archive product
+          Remove from the shop
         </button>
       </form>
     </div>

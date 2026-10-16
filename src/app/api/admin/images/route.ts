@@ -14,7 +14,7 @@ export async function POST(request: Request) {
   const alt = String(form.get("alt") ?? "");
   const isPrimary = form.get("isPrimary") === "on";
   if (!(file instanceof File) || !productId) {
-    return NextResponse.json({ ok: false, error: "Missing file" }, { status: 400 });
+    return NextResponse.json({ ok: false, error: "Choose a photo first." }, { status: 400 });
   }
   try {
     await saveProductPhoto({ productId, file, alt, isPrimary });

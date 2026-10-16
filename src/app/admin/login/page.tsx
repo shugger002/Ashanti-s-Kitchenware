@@ -10,7 +10,7 @@ export const metadata = pageMeta({
 
 export default function AdminLoginPage() {
   return (
-    <AdminAuthFrame title="Welcome back" description="Login with your email and password">
+    <AdminAuthFrame title="Shop desk" description="Sign in with your email and password.">
       <AdminLoginForm />
     </AdminAuthFrame>
   );

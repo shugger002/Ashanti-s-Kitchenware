@@ -23,7 +23,7 @@ export function AdminLoginForm() {
       <PasswordField name="password" label="Password" required autoComplete="current-password" />
       {state?.error ? <p className="text-sm text-accent">{state.error}</p> : null}
       <Button type="submit" disabled={pending} className="h-12 w-full">
-        {pending ? "Signing in…" : "Log In"}
+        {pending ? "Signing in…" : "Sign in"}
       </Button>
       <p className="text-sm">
         <a href="/admin/forgot-password">Forgot password</a>
