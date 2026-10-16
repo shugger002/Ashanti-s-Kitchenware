@@ -46,7 +46,7 @@ export default async function CouponsPage() {
 
       <ul className="mt-8 grid gap-3 sm:grid-cols-3">
         <li className="rounded-xl border border-border bg-surface p-5">
-          <p className="text-sm text-muted">Total Coupons</p>
+          <p className="text-sm text-muted">Coupons</p>
           <p className="mt-2 text-3xl font-medium tabular-nums">{coupons.length}</p>
         </li>
         <li className="rounded-xl border border-border bg-surface p-5">
@@ -73,7 +73,7 @@ export default async function CouponsPage() {
             <li key={c.id} className="rounded-xl border border-border bg-white/95 p-4 shadow-sm">
               <div className="flex items-start justify-between gap-3">
                 <p className="font-medium">{c.code}</p>
-                <StatusPill value={c.is_active ? "Active" : "Off"} tone={c.is_active ? "ok" : "muted"} />
+                <StatusPill value={c.is_active ? "On" : "Off"} tone={c.is_active ? "ok" : "muted"} />
               </div>
               {c.description ? <p className="mt-1 text-sm text-muted">{c.description}</p> : null}
               <p className="mt-2 text-sm">
@@ -88,7 +88,7 @@ export default async function CouponsPage() {
                 <input type="hidden" name="id" value={c.id} />
                 <input type="hidden" name="active" value={c.is_active ? "0" : "1"} />
                 <button type="submit" className={adminButton()}>
-                  {c.is_active ? "Deactivate" : "Activate"}
+                  {c.is_active ? "Turn off" : "Turn on"}
                 </button>
               </form>
             </li>
@@ -97,13 +97,13 @@ export default async function CouponsPage() {
         <AdminTable className="mt-6">
           <thead>
             <tr className="border-b border-border bg-surface text-xs text-muted">
-              <th className="px-4 py-3 font-medium">Coupon Code</th>
-              <th className="px-4 py-3 font-medium">Description</th>
-              <th className="px-4 py-3 font-medium">Discount</th>
-              <th className="px-4 py-3 font-medium">Min Spend</th>
-              <th className="px-4 py-3 font-medium">Uses</th>
-              <th className="px-4 py-3 font-medium">Status</th>
-              <th className="px-4 py-3 font-medium">Actions</th>
+              <th className="px-4 py-3 font-medium">Code</th>
+              <th className="px-4 py-3 font-medium">Note</th>
+              <th className="px-4 py-3 font-medium">Off</th>
+              <th className="px-4 py-3 font-medium">Min basket</th>
+              <th className="px-4 py-3 font-medium">Used</th>
+              <th className="px-4 py-3 font-medium">On or off</th>
+              <th className="px-4 py-3 font-medium"> </th>
             </tr>
           </thead>
           <tbody>
@@ -120,14 +120,14 @@ export default async function CouponsPage() {
                   {c.uses} ({c.max_uses == null ? "unlimited" : c.max_uses})
                 </td>
                 <td className="px-4 py-3">
-                  <StatusPill value={c.is_active ? "Active" : "Off"} tone={c.is_active ? "ok" : "muted"} />
+                  <StatusPill value={c.is_active ? "On" : "Off"} tone={c.is_active ? "ok" : "muted"} />
                 </td>
                 <td className="px-4 py-3">
                   <form action={toggleCoupon}>
                     <input type="hidden" name="id" value={c.id} />
                     <input type="hidden" name="active" value={c.is_active ? "0" : "1"} />
                     <button type="submit" className="inline-flex min-h-11 items-center text-sm text-muted hover:text-foreground">
-                      {c.is_active ? "Deactivate" : "Activate"}
+                      {c.is_active ? "Turn off" : "Turn on"}
                     </button>
                   </form>
                 </td>

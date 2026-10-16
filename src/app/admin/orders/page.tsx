@@ -41,9 +41,9 @@ export default async function AdminOrdersPage({
           <label htmlFor="order-q" className="sr-only">
             Search orders
           </label>
-          <input id="order-q" name="q" defaultValue={params.q} placeholder="Reference, name, or phone" className="input w-full sm:max-w-xs" />
-          <select name="status" defaultValue={params.status ?? ""} className="input w-full sm:max-w-48" aria-label="Fulfillment">
-            <option value="">All fulfillment</option>
+          <input id="order-q" name="q" defaultValue={params.q} placeholder="Order no., name, or phone" className="input w-full sm:max-w-xs" />
+          <select name="status" defaultValue={params.status ?? ""} className="input w-full sm:max-w-48" aria-label="Order stage">
+            <option value="">All stages</option>
             <option value="pending_payment">Order Received (unpaid)</option>
             <option value="paid">Order Received (paid)</option>
             <option value="packing">Packaging order</option>
@@ -69,11 +69,11 @@ export default async function AdminOrdersPage({
       {orders.length === 0 ? (
         <div className="mt-4">
           <EmptyState
-            title={filtered ? "No matching tickets" : "No orders yet"}
+            title={filtered ? "No matching orders" : "No orders yet"}
             body={
               filtered
-                ? "Clear a filter or search another reference."
-                : "When a customer completes checkout, the order lands here with a packing reference."
+                ? "Clear a filter or try another name, phone, or order number."
+                : "When a customer finishes checkout, the order shows here."
             }
           />
         </div>
@@ -116,12 +116,12 @@ export default async function AdminOrdersPage({
         <AdminTable className="mt-4">
           <thead>
             <tr className="border-b border-border bg-surface text-xs text-muted">
-              <th className="px-4 py-3 font-medium">Reference</th>
+              <th className="px-4 py-3 font-medium">Order no.</th>
               <th className="px-4 py-3 font-medium">When</th>
               <th className="px-4 py-3 font-medium">Customer</th>
               <th className="px-4 py-3 font-medium">How</th>
               <th className="px-4 py-3 font-medium">Total</th>
-              <th className="px-4 py-3 font-medium">Fulfillment</th>
+              <th className="px-4 py-3 font-medium">Stage</th>
               <th className="px-4 py-3 font-medium">Payment</th>
             </tr>
           </thead>

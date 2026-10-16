@@ -6,9 +6,9 @@ export default async function AddUsersPage() {
   await requirePermission("users.write");
   return (
     <div>
-      <BackLink href="/admin/users">All users</BackLink>
+      <BackLink href="/admin/users">All staff</BackLink>
       <AdminPageHeader
-        title="Add users"
+        title="Add staff"
         description="Give a staff member a login for this desk."
       />
       <div className="mt-8">

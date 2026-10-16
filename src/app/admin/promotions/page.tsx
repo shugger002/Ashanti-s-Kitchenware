@@ -58,7 +58,7 @@ export default async function PromotionsPage() {
                 <input type="hidden" name="productId" value={p.id} />
                 <input type="hidden" name="price" value={p.price} />
                 <label className="block text-sm">
-                  Discount %
+                  Percent off
                   <input
                     name="discountPercent"
                     type="number"
@@ -71,11 +71,11 @@ export default async function PromotionsPage() {
                   />
                 </label>
                 <button className={adminButton()} type="submit">
-                  Apply
+                  Save sale
                 </button>
                 {p.salePrice ? (
                   <button name="clear" value="1" className="inline-flex h-12 items-center justify-center text-sm text-muted" type="submit">
-                    Clear
+                    Take off sale
                   </button>
                 ) : null}
               </form>
@@ -89,8 +89,8 @@ export default async function PromotionsPage() {
               <th className="px-4 py-3 font-medium">Name</th>
               <th className="px-4 py-3 font-medium">Category</th>
               <th className="px-4 py-3 font-medium">Price</th>
-              <th className="px-4 py-3 font-medium">Discount %</th>
-              <th className="px-4 py-3 font-medium">Action</th>
+              <th className="px-4 py-3 font-medium">Percent off</th>
+              <th className="px-4 py-3 font-medium"> </th>
             </tr>
           </thead>
           <tbody>
@@ -119,11 +119,11 @@ export default async function PromotionsPage() {
                 <td className="px-4 py-3">
                   <div className="flex flex-wrap items-center gap-2">
                     <button form={`discount-${p.id}`} className={adminButton("px-3 py-2")} type="submit">
-                      Apply
+                      Save sale
                     </button>
                     {p.salePrice ? (
                       <button form={`discount-${p.id}`} name="clear" value="1" className="inline-flex min-h-11 items-center text-sm text-muted" type="submit">
-                        Clear
+                        Take off sale
                       </button>
                     ) : null}
                   </div>

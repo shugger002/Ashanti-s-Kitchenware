@@ -1,7 +1,7 @@
 import { requirePermission } from "@/server/auth/authorize";
 import { dashboardMetrics, listAuditLogs } from "@/server/reporting/service";
 import { formatGhs } from "@/lib/money";
-import { AdminPageHeader, AdminTable, EmptyState, MobileCards } from "@/components/admin/ui";
+import { AdminPageHeader, AdminTable, deskActionLabel, EmptyState, MobileCards } from "@/components/admin/ui";
 
 export default async function AnalyticsPage() {
   const [, metrics, logs] = await Promise.all([
@@ -22,34 +22,34 @@ export default async function AnalyticsPage() {
       />
       <dl className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <div className="rounded-xl border border-border bg-surface p-5">
-          <dt className="text-sm text-muted">Total Orders</dt>
+          <dt className="text-sm text-muted">Orders</dt>
           <dd className="mt-2 text-3xl font-medium tabular-nums">{metrics.total_orders}</dd>
-          <p className="mt-2 text-xs text-muted">Pending: {metrics.pending_orders}</p>
+          <p className="mt-2 text-xs text-muted">Waiting for payment: {metrics.pending_orders}</p>
         </div>
         <div className="rounded-xl border border-border bg-surface p-5">
-          <dt className="text-sm text-muted">Paid Revenue</dt>
+          <dt className="text-sm text-muted">Paid sales</dt>
           <dd className="mt-2 text-3xl font-medium tabular-nums">{formatGhs(Number(metrics.revenue))}</dd>
-          <p className="mt-2 text-xs text-muted">Paid, not cancelled</p>
+          <p className="mt-2 text-xs text-muted">Paid orders only</p>
         </div>
         <div className="rounded-xl border border-border bg-surface p-5">
-          <dt className="text-sm text-muted">Discount Coverage</dt>
+          <dt className="text-sm text-muted">On sale</dt>
           <dd className="mt-2 text-3xl font-medium tabular-nums">{coverage}%</dd>
           <p className="mt-2 text-xs text-muted">
-            {promo}/{totalProducts} products discounted
+            {promo} of {totalProducts} products
           </p>
         </div>
         <div className="rounded-xl border border-border bg-surface p-5">
-          <dt className="text-sm text-muted">Stock Risk</dt>
+          <dt className="text-sm text-muted">Need restock</dt>
           <dd className="mt-2 text-3xl font-medium tabular-nums">{stockRisk}</dd>
           <p className="mt-2 text-xs text-muted">
-            Low: {metrics.lowStock} · Out: {metrics.outOfStock}
+            Low: {metrics.lowStock} · Finished: {metrics.outOfStock}
           </p>
         </div>
       </dl>
-      <h2 className="mt-10 text-lg font-medium">Desk activity</h2>
+      <h2 className="mt-10 text-lg font-medium">What staff did</h2>
       {logs.length === 0 ? (
         <div className="mt-4">
-          <EmptyState title="Quiet desk" body="Staff actions (product edits, stock counts, order moves) appear here." />
+          <EmptyState title="Nothing logged yet" body="When someone edits a product, counts stock, or moves an order, it shows here." />
         </div>
       ) : (
         <>
@@ -57,12 +57,8 @@ export default async function AnalyticsPage() {
           {logs.map((log) => (
             <li key={log.id} className="rounded-xl border border-border bg-white/95 p-4 shadow-sm">
               <p className="text-xs text-muted">{new Date(log.created_at).toLocaleString("en-GH")}</p>
-              <p className="mt-1 font-medium">{log.action}</p>
-              <p className="mt-1 text-sm text-muted">{log.actor_email ?? "system"}</p>
-              <p className="mt-1 text-xs text-muted">
-                {log.entity_type}
-                {log.entity_id ? ` · ${log.entity_id.slice(0, 8)}` : ""}
-              </p>
+              <p className="mt-1 font-medium">{deskActionLabel(log.action)}</p>
+              <p className="mt-1 text-sm text-muted">{log.actor_email ?? "System"}</p>
             </li>
           ))}
         </MobileCards>
@@ -72,19 +68,16 @@ export default async function AnalyticsPage() {
               <th className="px-4 py-3 font-medium">When</th>
               <th className="px-4 py-3 font-medium">Staff</th>
               <th className="px-4 py-3 font-medium">Action</th>
-              <th className="px-4 py-3 font-medium">Record</th>
+              <th className="px-4 py-3 font-medium">What</th>
             </tr>
           </thead>
           <tbody>
             {logs.map((log) => (
               <tr key={log.id} className="border-b border-border last:border-0 hover:bg-surface">
                 <td className="px-4 py-3 text-muted">{new Date(log.created_at).toLocaleString("en-GH")}</td>
-                <td className="px-4 py-3">{log.actor_email ?? "system"}</td>
-                <td className="px-4 py-3">{log.action}</td>
-                <td className="px-4 py-3 text-muted">
-                  {log.entity_type}
-                  {log.entity_id ? ` · ${log.entity_id.slice(0, 8)}` : ""}
-                </td>
+                <td className="px-4 py-3">{log.actor_email ?? "System"}</td>
+                <td className="px-4 py-3">{deskActionLabel(log.action)}</td>
+                <td className="px-4 py-3 text-muted capitalize">{log.entity_type.replaceAll("_", " ")}</td>
               </tr>
             ))}
           </tbody>

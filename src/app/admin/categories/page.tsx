@@ -47,7 +47,7 @@ export default async function CategoriesPage() {
                   <input name="slug" defaultValue={c.slug} className="input mt-1" />
                 </label>
                 <label className="flex min-h-11 items-center gap-2 text-sm">
-                  <input type="checkbox" name="isActive" defaultChecked={c.isActive} /> Visible
+                  <input type="checkbox" name="isActive" defaultChecked={c.isActive} /> Show on the shop
                 </label>
                 <button className={adminButton()} type="submit">
                   Save
@@ -80,7 +80,7 @@ export default async function CategoriesPage() {
                       <input name="slug" defaultValue={c.slug} className="input mt-1" />
                     </label>
                     <label className="flex items-center gap-2 pb-2 text-sm">
-                      <input type="checkbox" name="isActive" defaultChecked={c.isActive} /> Visible
+                      <input type="checkbox" name="isActive" defaultChecked={c.isActive} /> Show on the shop
                     </label>
                     <button className={adminButton("px-3 py-2")} type="submit">
                       Save

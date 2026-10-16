@@ -42,7 +42,7 @@ export default async function InventoryPage() {
   return (
     <div>
       <AdminPageHeader
-        title="Inventory"
+        title="Stock"
         description="How many pieces you have. Upload a spreadsheet to restock many items, or change one row at a time."
       />
       <div className="mt-6">
@@ -138,19 +138,19 @@ export default async function InventoryPage() {
                     name="delta"
                     type="number"
                     required
-                    placeholder="+/-"
+                    placeholder="Fix the count (+ or −)"
                     aria-label={`Adjust ${row.productName}`}
                     className="input"
                   />
                   <input
                     name="reason"
                     required
-                    placeholder="Reason"
+                    placeholder="Why, like breakage or recount"
                     aria-label={`Reason for ${row.productName}`}
                     className="input"
                   />
                   <button className={adminButton()} type="submit">
-                    Apply count
+                    Save count
                   </button>
                 </form>
               </li>
@@ -215,7 +215,7 @@ export default async function InventoryPage() {
                         type="number"
                         min={1}
                         required
-                        placeholder="Qty"
+                        placeholder="Arrived"
                         aria-label={`Restock ${row.productName}`}
                         className="input w-20"
                       />
@@ -231,19 +231,19 @@ export default async function InventoryPage() {
                         name="delta"
                         type="number"
                         required
-                        placeholder="+/-"
-                        aria-label={`Adjust ${row.productName}`}
-                        className="input w-20"
-                      />
-                      <input
-                        name="reason"
-                        required
-                        placeholder="Reason"
+                    placeholder="Fix count"
+                    aria-label={`Adjust ${row.productName}`}
+                    className="input w-24"
+                  />
+                  <input
+                    name="reason"
+                    required
+                    placeholder="Why"
                         aria-label={`Reason for ${row.productName}`}
                         className="input min-w-40 flex-1"
                       />
                       <button className={adminButton("px-3 py-2")} type="submit">
-                        Apply
+                        Save
                       </button>
                     </form>
                   </td>

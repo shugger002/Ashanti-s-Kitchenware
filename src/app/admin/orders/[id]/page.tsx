@@ -27,14 +27,14 @@ function money(value: unknown) {
 }
 
 const STAFF_NEXT: Record<string, string> = {
-  paid: "Order Received: paid, start packaging",
-  packing: "Packaging order",
-  shipped: "Order Out for Delivery",
+  paid: "Start packing",
+  packing: "Mark as packing",
+  shipped: "Send out for delivery",
   ready_for_collection: "Ready at the shop",
-  delivered: "Order Delivered",
-  collected: "Collected",
+  delivered: "Mark as delivered",
+  collected: "Customer collected it",
   cancelled: "Cancel this order",
-  refunded: "Refunded",
+  refunded: "Mark as refunded",
 };
 
 export default async function AdminOrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -138,7 +138,7 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
       <div className="grid gap-5 lg:grid-cols-[1.15fr_0.85fr]">
         <div className="space-y-5">
           <section className="rounded-2xl border border-border bg-background p-5">
-            <h2 className="font-serif text-xl">Pack list</h2>
+            <h2 className="font-serif text-xl">What to pack</h2>
             <ul className="mt-4 divide-y divide-border text-sm">
               {data.items.map((item) => (
                 <li key={item.id} className="flex justify-between gap-3 py-3">
@@ -192,7 +192,7 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
             <p className="mt-4 text-xs uppercase tracking-[0.14em] text-muted">
               {text(order.delivery_method) === "collection" ? "Collection" : "Delivery"}
             </p>
-            {address ? <p className="mt-1 leading-relaxed">{address}</p> : <p className="mt-1 text-muted">No street address on this ticket.</p>}
+            {address ? <p className="mt-1 leading-relaxed">{address}</p> : <p className="mt-1 text-muted">No street address on this order.</p>}
             {text(order.delivery_instructions) ? (
               <p className="mt-3 text-muted">{text(order.delivery_instructions)}</p>
             ) : null}
@@ -215,10 +215,10 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
           {canWrite ? (
             allowed.length > 0 ? (
               <form action={changeStatus} className="space-y-3 rounded-2xl border border-border bg-background p-5">
-                <h2 className="font-serif text-xl">Move the ticket</h2>
+                <h2 className="font-serif text-xl">Next step</h2>
                 <input type="hidden" name="orderId" value={id} />
                 <label className="block text-sm">
-                  Next status
+                  What happens now
                   <select name="toStatus" className="input mt-1">
                     {allowed.map((value) => (
                       <option key={value} value={value}>
@@ -228,30 +228,30 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
                   </select>
                 </label>
                 <label className="block text-sm">
-                  Internal courier note
-                  <input name="trackingNumber" className="input mt-1" placeholder="Customers do not see this on the tracker" />
+                  Rider note (staff only)
+                  <input name="trackingNumber" className="input mt-1" placeholder="Customers do not see this" />
                 </label>
                 <button className={adminButton()} type="submit">
-                  Update status
+                  Save
                 </button>
               </form>
             ) : (
               <div className="rounded-2xl border border-border bg-background p-5">
-                <h2 className="font-serif text-xl">Fulfillment</h2>
-                <p className="mt-2 text-sm text-muted">This ticket has no further moves.</p>
+                <h2 className="font-serif text-xl">This order</h2>
+                <p className="mt-2 text-sm text-muted">Nothing left to move. It is finished, cancelled, or refunded.</p>
               </div>
             )
           ) : null}
 
           {canCapture && paymentStatus !== "paid" ? (
             <form action={capture} className="space-y-3 rounded-2xl border border-accent bg-background p-5">
-              <h2 className="font-serif text-xl">Record verified payment</h2>
+              <h2 className="font-serif text-xl">Mark as paid</h2>
               <p className="text-xs leading-relaxed text-muted">
-                Use only with an auditable provider reference. This does not invent a payment.
+                Use this only if you can see the real payment on Hubtel, Moolre, or the bank. Type the payment number from there.
               </p>
               <input type="hidden" name="orderId" value={id} />
               <label className="block text-sm">
-                Payment reference
+                Payment number
                 <input name="providerRef" required className="input mt-1" />
               </label>
               <label className="block text-sm">
@@ -288,13 +288,13 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
 
           {data.shipments.length > 0 ? (
             <section className="rounded-2xl border border-border bg-background p-5 text-sm">
-              <h2 className="font-serif text-xl">Shipments</h2>
+              <h2 className="font-serif text-xl">Delivery notes</h2>
               <ul className="mt-3 space-y-2">
                 {data.shipments.map((shipment) => {
                   const row = shipment as Record<string, unknown>;
                   return (
                     <li key={text(row.id)}>
-                      {text(row.carrier) || "Carrier unset"}
+                      {text(row.carrier) || "Rider not named"}
                       {text(row.tracking_number) ? ` · ${text(row.tracking_number)}` : ""}
                       <span className="block text-xs text-muted">{text(row.status)}</span>
                     </li>
@@ -305,7 +305,7 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
           ) : null}
 
           <form action={note} className="space-y-3 rounded-2xl border border-border bg-background p-5">
-            <h2 className="font-serif text-xl">Desk notes</h2>
+            <h2 className="font-serif text-xl">Staff notes</h2>
             {canWrite ? (
               <>
                 <input type="hidden" name="orderId" value={id} />

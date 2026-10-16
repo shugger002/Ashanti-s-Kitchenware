@@ -28,25 +28,25 @@ export default async function AdminHomePage() {
       href: "/admin/orders?status=pending_payment",
       label: "Waiting on payment",
       value: count(metrics.pending_orders),
-      hint: "Order received, unpaid",
+      hint: "Not paid yet",
     },
     {
       href: "/admin/orders?status=paid",
       label: "Ready to pack",
       value: count(metrics.ready_to_pack),
-      hint: "Paid, still on the desk",
+      hint: "Paid, not packed yet",
     },
     {
       href: "/admin/orders?status=packing",
       label: "Packing",
       value: count(metrics.packing_orders),
-      hint: "In the bag",
+      hint: "Being packed",
     },
     {
       href: "/admin/orders?status=shipped",
       label: "Out for delivery",
       value: count(metrics.out_for_delivery),
-      hint: "Quoted on WhatsApp",
+      hint: "On the way",
     },
   ];
 
@@ -58,7 +58,7 @@ export default async function AdminHomePage() {
       ? { href: "/admin/inventory", label: "Out of stock", value: count(metrics.outOfStock), warn: count(metrics.outOfStock) > 0 }
       : null,
     canProducts
-      ? { href: "/admin/products", label: "Demo listings", value: count(metrics.demoListings), warn: count(metrics.demoListings) > 0 }
+      ? { href: "/admin/products", label: "Sample products", value: count(metrics.demoListings), warn: count(metrics.demoListings) > 0 }
       : null,
     canProducts
       ? { href: "/admin/promotions", label: "On promo", value: count(metrics.promoListings), warn: false }
@@ -73,7 +73,7 @@ export default async function AdminHomePage() {
       label: "Paid today",
       value: formatGhs(Number(metrics.today_revenue)),
     },
-    { href: "/admin/orders", label: "Fulfilled today", value: String(count(metrics.fulfilled_today)) },
+    { href: "/admin/orders", label: "Delivered today", value: String(count(metrics.fulfilled_today)) },
     {
       href: canCustomers ? "/admin/customers" : "/admin",
       label: "New customers",
@@ -113,7 +113,7 @@ export default async function AdminHomePage() {
 
       {stock.length > 0 ? (
         <section className="mt-6">
-          <h2 className="text-sm font-medium text-muted">Catalogue</h2>
+          <h2 className="text-sm font-medium text-muted">Products</h2>
           <ul className="mt-3 grid grid-cols-2 gap-2 lg:grid-cols-4 lg:gap-3">
             {stock.map((item) => (
               <li key={item.label}>
@@ -156,7 +156,7 @@ export default async function AdminHomePage() {
         </div>
         {metrics.recent.length === 0 ? (
           <div className="mt-4">
-            <EmptyState title="No tickets yet" body="When a customer completes checkout, the order appears here." />
+            <EmptyState title="No orders yet" body="When a customer finishes checkout, the order shows here." />
           </div>
         ) : (
           <ul className="mt-3 divide-y divide-border">
@@ -183,7 +183,7 @@ export default async function AdminHomePage() {
 
       {metrics.bestSellers.length > 0 ? (
         <section className="mt-6 rounded-xl border border-border bg-white/95 p-4 shadow-sm sm:p-5">
-          <h2 className="text-lg font-medium">Selling (paid)</h2>
+          <h2 className="text-lg font-medium">Best sellers</h2>
           <ul className="mt-3 space-y-2">
             {metrics.bestSellers.map((row) => (
               <li key={row.product_name} className="flex items-baseline justify-between gap-3 text-sm">

@@ -24,7 +24,7 @@ export default async function ServiceHealthPage() {
     : "Not set up yet";
 
   const rows = [
-    { label: "Database", value: databaseOk ? "Working" : "Down", ok: databaseOk },
+    { label: "Shop data", value: databaseOk ? "Working" : "Down", ok: databaseOk },
     { label: "Staff email", value: smtpReady ? "Ready" : "Not set up yet", ok: smtpReady },
     { label: "Product photos", value: objectStorage, ok: photosOk },
     { label: "Hubtel", value: isHubtelConfigured() ? "Ready" : "Not set up yet", ok: isHubtelConfigured() },

@@ -45,7 +45,7 @@ function ColorOptionsEditor({ product }: { product?: ProductDetail }) {
               />
             </label>
             <label className="block text-sm">
-              {index === 0 ? "Swatch" : <span className="sr-only">Swatch</span>}
+              {index === 0 ? "Colour" : <span className="sr-only">Colour</span>}
               <input
                 name="colorHex"
                 type="color"
@@ -117,8 +117,8 @@ export function ProductForm({
         </label>
         <div className="grid gap-3 sm:grid-cols-2">
           <label className="block text-sm">
-            Code (PIC)
-            <span className="mt-0.5 block text-xs text-muted">The number on your container sheet.</span>
+            Sheet code
+            <span className="mt-0.5 block text-xs text-muted">The code on your container list, like APA-126.</span>
             <input required name="sku" defaultValue={product?.sku} className="input mt-1" />
           </label>
           <label className="block text-sm">

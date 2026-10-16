@@ -45,7 +45,7 @@ export function ProductCsvForm() {
           className="text-sm text-accent underline-offset-2 hover:underline"
           onClick={() => downloadDeskFile("/api/admin/products-template")}
         >
-          Download CSV template
+          Download a sample spreadsheet
         </button>
       </div>
       <form
@@ -62,7 +62,7 @@ export function ProductCsvForm() {
       >
         <div className="flex flex-wrap items-end gap-3">
           <label className="block min-w-0 flex-1 text-sm">
-            CSV or PDF
+            Spreadsheet (CSV or PDF)
             <input
               name="file"
               type="file"

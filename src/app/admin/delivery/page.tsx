@@ -60,7 +60,7 @@ export default async function DeliveryPage() {
       />
 
       <form action={saveFulfillment} className="max-w-xl space-y-4 rounded-2xl border border-border bg-background p-5">
-        <h2 className="font-serif text-xl">Coverage</h2>
+        <h2 className="font-serif text-xl">Where we deliver</h2>
         <fieldset className="space-y-2 text-sm">
           <legend className="font-medium">Where we send</legend>
           <label className="flex gap-2">
@@ -79,31 +79,31 @@ export default async function DeliveryPage() {
         </fieldset>
         <label className="flex gap-2 text-sm">
           <input type="checkbox" name="collectionEnabled" defaultChecked={fulfillment.collectionEnabled} />
-          Store pickup / collection
+          Customers can collect at the shop
         </label>
         <label className="flex gap-2 text-sm">
           <input type="checkbox" name="deliveryEnabled" defaultChecked={fulfillment.deliveryEnabled} />
-          Offer delivery (quoted on WhatsApp, not charged at checkout)
+          Offer delivery (price on WhatsApp, not at checkout)
         </label>
         <label className="block text-sm">
-          Note shown at checkout
+          Note customers see at checkout
           <textarea name="coverageNote" defaultValue={fulfillment.coverageNote} rows={3} className="input mt-1" />
         </label>
         <button className={adminButton()} type="submit">
-          Save coverage
+          Save
         </button>
       </form>
 
       <section>
-        <h2 className="font-serif text-xl">Rates</h2>
+        <h2 className="font-serif text-xl">Staff price notes (optional)</h2>
         <p className="mt-1 text-sm text-muted">
-          Optional internal rates. Customer checkout does not charge them. Delivery is confirmed on WhatsApp.
+          These are for you. The customer is not charged this at checkout. You still quote on WhatsApp.
         </p>
         {rates.length === 0 ? (
           <div className="mt-4">
             <EmptyState
-              title="No delivery rates"
-              body="Checkout still offers delivery when coverage is enabled; the charge is confirmed on WhatsApp."
+              title="No staff price notes"
+              body="That is fine. Delivery is still offered, and you quote the charge on WhatsApp."
             />
           </div>
         ) : (
@@ -136,8 +136,8 @@ export default async function DeliveryPage() {
           <AdminTable className="mt-4">
             <thead>
               <tr className="border-b border-border bg-surface text-xs text-muted">
-                <th className="px-4 py-3 font-medium">Zone</th>
-                <th className="px-4 py-3 font-medium">Rate</th>
+                <th className="px-4 py-3 font-medium">Area</th>
+                <th className="px-4 py-3 font-medium">Name</th>
                 <th className="px-4 py-3 font-medium">Amount</th>
                 <th className="px-4 py-3 font-medium">Status</th>
                 <th className="px-4 py-3 font-medium"> </th>
@@ -178,30 +178,30 @@ export default async function DeliveryPage() {
       </section>
 
       <form action={addRate} className="max-w-xl space-y-3 rounded-2xl border border-border bg-background p-5">
-        <h2 className="font-serif text-xl">Add a rate</h2>
+        <h2 className="font-serif text-xl">Add a staff price note</h2>
         <label className="block text-sm">
-          Zone name
+          Area
           <input name="zoneName" required placeholder="Accra" className="input mt-1" />
         </label>
         <label className="block text-sm">
-          Region match (optional)
+          Region (optional)
           <input name="regionMatch" placeholder="Greater Accra" className="input mt-1" />
         </label>
         <label className="block text-sm">
-          Rate name
+          Name
           <input name="rateName" required placeholder="Standard delivery" className="input mt-1" />
         </label>
         <label className="block text-sm">
-          Amount (GHS)
+          Amount (GH₵)
           <input name="amount" type="number" step="0.01" min="0" required className="input mt-1" />
         </label>
         <button className={adminButton()} type="submit">
-          Add rate
+          Save note
         </button>
       </form>
 
       <p className="text-sm text-muted">
-        Packing, shipped, delivered, ready for collection, and collected are set on each{" "}
+        Change packing and delivery steps on each{" "}
         <Link href="/admin/orders" className="text-accent">
           order
         </Link>

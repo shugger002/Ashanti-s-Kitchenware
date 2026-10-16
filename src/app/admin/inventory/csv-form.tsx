@@ -44,7 +44,7 @@ export function InventoryCsvForm() {
         }}
       >
         <label className="block min-w-0 flex-1 text-sm">
-          CSV or PDF
+          Spreadsheet (CSV or PDF)
           <input
             name="file"
             type="file"

@@ -47,9 +47,41 @@ export function AdminPageHeader({
 }
 
 export function liveOrderBadge(paymentStatus: string, status: string) {
-  if (status === "delivered" || status === "collected") return "FULFILLED";
-  if (paymentStatus === "paid") return "PAID";
-  return "PENDING";
+  if (status === "delivered" || status === "collected") return "Delivered";
+  if (paymentStatus === "paid") return "Paid";
+  return "Waiting";
+}
+
+export function staffJobLabel(role: string) {
+  const labels: Record<string, string> = {
+    super_admin: "Store owner",
+    store_admin: "Shop desk",
+    inventory_manager: "Stock",
+    order_manager: "Orders",
+  };
+  return labels[role] ?? role.replaceAll("_", " ");
+}
+
+export function deskActionLabel(action: string) {
+  const labels: Record<string, string> = {
+    "auth.login": "Signed in",
+    "auth.password_reset_requested": "Asked for a new password",
+    "auth.password_reset_completed": "Changed password",
+    "product.create": "Added a product",
+    "product.update": "Edited a product",
+    "product.archive": "Removed a product",
+    "product.sale_price": "Changed a sale price",
+    "inventory.adjust": "Changed stock",
+    "inventory.csv": "Updated stock from a file",
+    "order.transition": "Moved an order",
+    "payments.capture": "Marked an order paid",
+    "coupon.create": "Added a coupon",
+    "coupon.activate": "Turned a coupon on",
+    "coupon.deactivate": "Turned a coupon off",
+    "review.publish": "Published a review",
+    "review.unpublish": "Hid a review",
+  };
+  return labels[action] ?? action.replaceAll(".", " · ");
 }
 
 export function statusLabel(value: string) {

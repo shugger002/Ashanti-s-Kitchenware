@@ -45,7 +45,7 @@ const groups: { label: string; items: NavItem[] }[] = [
       { href: "/admin/orders", label: "Orders", permission: "orders.read", icon: ClipboardList },
       { href: "/admin/products", label: "Products", permission: "products.read", icon: Package },
       { href: "/admin/products/new", label: "Add product", permission: "products.write", icon: Plus, exact: true },
-      { href: "/admin/inventory", label: "Inventory", permission: "inventory.write", icon: Warehouse },
+      { href: "/admin/inventory", label: "Stock", permission: "inventory.write", icon: Warehouse },
       { href: "/admin/categories", label: "Categories", permission: "products.write", icon: FolderTree },
     ],
   },
@@ -69,8 +69,8 @@ const groups: { label: string; items: NavItem[] }[] = [
   {
     label: "Staff",
     items: [
-      { href: "/admin/users", label: "Users", permission: "users.write", icon: Users },
-      { href: "/admin/users/new", label: "Add users", permission: "users.write", icon: UserPlus, exact: true },
+      { href: "/admin/users", label: "Staff", permission: "users.write", icon: Users },
+      { href: "/admin/users/new", label: "Add staff", permission: "users.write", icon: UserPlus, exact: true },
     ],
   },
 ];

@@ -21,11 +21,11 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
       <BackLink href="/admin/products">All products</BackLink>
       <AdminPageHeader
         title={product.name}
-        description={`Code ${product.sku}`}
+        description={`Sheet code ${product.sku}`}
         action={
           <span className="flex flex-wrap gap-1">
-            <StatusPill value={product.isActive ? "Listed" : "Hidden"} tone={product.isActive ? "ok" : "muted"} />
-            {product.isFeatured ? <StatusPill value="Featured" tone="attention" /> : null}
+            <StatusPill value={product.isActive ? "On the shop" : "Hidden"} tone={product.isActive ? "ok" : "muted"} />
+            {product.isFeatured ? <StatusPill value="On homepage" tone="attention" /> : null}
           </span>
         }
       />

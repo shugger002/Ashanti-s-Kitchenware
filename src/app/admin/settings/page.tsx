@@ -112,7 +112,7 @@ export default async function SettingsPage() {
         <p className="mt-2 text-sm leading-relaxed text-muted">Stock, categories, customers, and delivery are on their own pages.</p>
         <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
           <a href="/admin/inventory" className={adminButton()}>
-            Inventory
+            Stock
           </a>
           <a href="/admin/categories" className="inline-flex h-12 items-center justify-center text-sm text-muted hover:text-foreground sm:px-3">
             Categories

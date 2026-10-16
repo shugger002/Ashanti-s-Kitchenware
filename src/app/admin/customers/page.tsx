@@ -9,7 +9,7 @@ export default async function CustomersPage() {
   const customers = await listCustomers();
   return (
     <div>
-      <AdminPageHeader title="Customers" description="People who have placed an order or created an account." />
+      <AdminPageHeader title="Customers" description="People who ordered or created an account." />
       {customers.length === 0 ? (
         <div className="mt-6">
           <EmptyState
@@ -51,7 +51,7 @@ export default async function CustomersPage() {
               <th className="px-4 py-3 font-medium">Phone</th>
               <th className="px-4 py-3 font-medium">Email</th>
               <th className="px-4 py-3 font-medium">Orders</th>
-              <th className="px-4 py-3 font-medium">Paid total</th>
+              <th className="px-4 py-3 font-medium">Spent</th>
             </tr>
           </thead>
           <tbody>
