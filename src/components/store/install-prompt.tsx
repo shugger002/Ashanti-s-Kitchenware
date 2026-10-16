@@ -5,7 +5,7 @@ import { Download, MessageCircle, Share, WifiOff, Zap } from "lucide-react";
 import { brand } from "@/config/brand";
 import { buttonClass } from "@/components/ui/button";
 
-const HIDE_KEY = "ak_a2hs_hide";
+const NEVER_KEY = "ak_a2hs_never";
 const LATER_KEY = "ak_a2hs_later";
 
 type BeforeInstallPromptEvent = Event & {
@@ -24,7 +24,7 @@ function isStandalone() {
   return Boolean((window.navigator as Navigator & { standalone?: boolean }).standalone);
 }
 
-function isIos() {
+function isIosSafari() {
   const ua = window.navigator.userAgent;
   const ios = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
   return ios && !/CriOS|FxiOS|OPiOS|EdgiOS/.test(ua);
@@ -41,20 +41,24 @@ export function InstallPrompt() {
   const addRef = useRef<HTMLButtonElement>(null);
   const [open, setOpen] = useState(false);
   const [host, setHost] = useState("");
+  const [ios, setIos] = useState(false);
   const [help, setHelp] = useState<"ios" | "menu" | null>(null);
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
     setHost(window.location.host);
+    const safari = isIosSafari();
+    setIos(safari);
     if ("serviceWorker" in navigator) {
       void navigator.serviceWorker.register("/sw.js");
     }
     if (isStandalone()) return;
     try {
-      if (localStorage.getItem(HIDE_KEY) === "1") return;
+      localStorage.removeItem("ak_a2hs_hide");
+      if (localStorage.getItem(NEVER_KEY) === "1") return;
       if (sessionStorage.getItem(LATER_KEY) === "1") return;
     } catch {
-      return;
+      /* still show */
     }
 
     function onPrompt(event: Event) {
@@ -62,35 +66,21 @@ export function InstallPrompt() {
       window.__akDeferredPrompt = event as BeforeInstallPromptEvent;
     }
     function onInstalled() {
-      try {
-        localStorage.setItem(HIDE_KEY, "1");
-      } catch {
-        /* ignore */
-      }
       setOpen(false);
     }
     window.addEventListener("beforeinstallprompt", onPrompt);
     window.addEventListener("appinstalled", onInstalled);
 
     let cancelled = false;
-    let readyTimer = 0;
-    function show() {
-      if (cancelled) return;
-      cancelled = true;
+    const timer = window.setTimeout(() => {
+      if (cancelled || isStandalone()) return;
+      if (safari) setHelp("ios");
       setOpen(true);
-    }
-    const fallback = window.setTimeout(show, 2500);
-    if (navigator.serviceWorker) {
-      void navigator.serviceWorker.ready.then(() => {
-        if (cancelled) return;
-        readyTimer = window.setTimeout(show, 400);
-      });
-    }
+    }, 800);
 
     return () => {
       cancelled = true;
-      window.clearTimeout(fallback);
-      window.clearTimeout(readyTimer);
+      window.clearTimeout(timer);
       window.removeEventListener("beforeinstallprompt", onPrompt);
       window.removeEventListener("appinstalled", onInstalled);
     };
@@ -122,7 +112,7 @@ export function InstallPrompt() {
 
   function never() {
     try {
-      localStorage.setItem(HIDE_KEY, "1");
+      localStorage.setItem(NEVER_KEY, "1");
     } catch {
       /* ignore */
     }
@@ -136,22 +126,15 @@ export function InstallPrompt() {
       try {
         await event.prompt();
         const { outcome } = await event.userChoice;
-        if (outcome === "accepted") {
-          try {
-            localStorage.setItem(HIDE_KEY, "1");
-          } catch {
-            /* ignore */
-          }
-          setOpen(false);
-        }
+        if (outcome === "accepted") setOpen(false);
       } catch {
-        setHelp(isIos() ? "ios" : "menu");
+        setHelp(ios ? "ios" : "menu");
       } finally {
         setBusy(false);
       }
       return;
     }
-    setHelp(isIos() ? "ios" : "menu");
+    setHelp(ios ? "ios" : "menu");
   }
 
   if (!open) return null;
@@ -171,7 +154,7 @@ export function InstallPrompt() {
             alt=""
             width={56}
             height={56}
-            className="size-14 shrink-0 rounded-2xl border border-border bg-[#f6f1ea] object-cover"
+            className="size-14 shrink-0 rounded-2xl border border-border bg-accent object-cover"
           />
           <div className="min-w-0">
             <h2 id={titleId} className="text-lg font-semibold leading-tight text-foreground">
@@ -206,19 +189,19 @@ export function InstallPrompt() {
               <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-[#f6f1ea] text-accent">
                 <Share className="size-4" aria-hidden />
               </span>
-              <span>Tap the Share button in Safari (square with an arrow).</span>
+              <span>Tap Share in Safari — the square with an arrow, in the bar at the bottom of the screen (not the shop menu).</span>
             </li>
             <li className="flex gap-3">
               <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-[#f6f1ea] text-sm font-medium">
                 2
               </span>
-              <span>Scroll and tap Add to Home Screen.</span>
+              <span>Scroll the list and tap Add to Home Screen.</span>
             </li>
             <li className="flex gap-3">
               <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-[#f6f1ea] text-sm font-medium">
                 3
               </span>
-              <span>Tap Add.</span>
+              <span>Tap Add. The red Ashanti&apos;s icon appears on your phone.</span>
             </li>
           </ol>
         ) : help === "menu" ? (
@@ -229,16 +212,18 @@ export function InstallPrompt() {
           </ol>
         ) : null}
 
-        <button
-          ref={addRef}
-          type="button"
-          disabled={busy}
-          className={buttonClass("primary", "mt-5 h-12 w-full gap-2 rounded-full text-base")}
-          onClick={() => void addToHome()}
-        >
-          <Download className="size-4" aria-hidden />
-          {busy ? "Adding…" : "Add to Home Screen"}
-        </button>
+        {ios && help === "ios" ? null : (
+          <button
+            ref={addRef}
+            type="button"
+            disabled={busy}
+            className={buttonClass("primary", "mt-5 h-12 w-full gap-2 rounded-full text-base")}
+            onClick={() => void addToHome()}
+          >
+            <Download className="size-4" aria-hidden />
+            {busy ? "Adding…" : "Add to Home Screen"}
+          </button>
+        )}
 
         <button type="button" className="mt-4 flex h-11 w-full items-center justify-center text-sm text-muted" onClick={later}>
           Maybe Later
