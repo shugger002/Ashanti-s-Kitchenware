@@ -6,6 +6,7 @@ export default function manifest(): MetadataRoute.Manifest {
     name: brand.name,
     short_name: "Ashanti's",
     description: "Kitchen appliances from the Accra shop, priced in Ghana Cedis.",
+    id: "/",
     start_url: "/",
     scope: "/",
     display: "standalone",
@@ -13,9 +14,10 @@ export default function manifest(): MetadataRoute.Manifest {
     theme_color: "#c8102e",
     lang: "en-GH",
     categories: ["shopping"],
+    prefer_related_applications: false,
     icons: [
-      { src: "/icons/icon-192.png", sizes: "192x192", type: "image/png", purpose: "any" },
-      { src: "/icons/icon-512.png", sizes: "512x512", type: "image/png", purpose: "any" },
+      { src: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },
+      { src: "/icons/icon-512.png", sizes: "512x512", type: "image/png" },
       { src: "/icons/icon-maskable-512.png", sizes: "512x512", type: "image/png", purpose: "maskable" },
     ],
   };

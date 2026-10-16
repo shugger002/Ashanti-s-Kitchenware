@@ -55,7 +55,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="min-h-full bg-background font-sans text-foreground">
         {/* THESIS: Accra kitchen-appliance shop. OWN-WORLD: cream paper, lacquer red CTAs. FIRST VIEWPORT: photograph, then a shop CTA. */}
         <Script id="ak-theme" strategy="beforeInteractive">
-          {`try{if(localStorage.getItem("ak_theme")==="dark")document.documentElement.classList.add("dark")}catch(e){}`}
+          {`try{if(localStorage.getItem("ak_theme")==="dark")document.documentElement.classList.add("dark")}catch(e){}
+window.__akDeferredPrompt=null;
+window.addEventListener("beforeinstallprompt",function(e){e.preventDefault();window.__akDeferredPrompt=e;});
+if("serviceWorker" in navigator){navigator.serviceWorker.register("/sw.js").catch(function(){})}`}
         </Script>
         <CartProvider>{children}</CartProvider>
       </body>

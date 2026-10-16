@@ -1,12 +1,13 @@
-const CACHE = "ak-shell-v1";
+const CACHE = "ak-shell-v2";
 const PRECACHE = ["/", "/logo.png", "/icons/icon-192.png", "/icons/icon-512.png"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches
-      .open(CACHE)
-      .then((cache) => cache.addAll(PRECACHE))
-      .then(() => self.skipWaiting()),
+    (async () => {
+      const cache = await caches.open(CACHE);
+      await Promise.all(PRECACHE.map((url) => cache.add(url).catch(() => undefined)));
+      await self.skipWaiting();
+    })(),
   );
 });
 

@@ -46,7 +46,17 @@ const nextConfig: NextConfig = {
   },
   async headers() {
     if (process.env.NODE_ENV !== "production") return [];
-    return [{ source: "/:path*", headers: securityHeaders }];
+    return [
+      {
+        source: "/sw.js",
+        headers: [
+          ...securityHeaders,
+          { key: "Cache-Control", value: "no-cache, no-store, must-revalidate" },
+          { key: "Service-Worker-Allowed", value: "/" },
+        ],
+      },
+      { source: "/:path*", headers: securityHeaders },
+    ];
   },
   async rewrites() {
     return {
