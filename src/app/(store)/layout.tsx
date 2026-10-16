@@ -5,6 +5,7 @@ import { StoreChrome } from "@/components/store/store-chrome";
 import { StoreFrame } from "@/components/store/store-frame";
 import { WhatsAppButton } from "@/components/store/whatsapp-button";
 import { CartDrawer } from "@/components/store/cart-drawer";
+import { InstallPrompt } from "@/components/store/install-prompt";
 import { PromoPopup } from "@/components/store/promo-popup";
 import { Toasts } from "@/components/store/toasts";
 import { StoreChromeSkeleton } from "@/components/ui/skeleton";
@@ -62,6 +63,7 @@ async function StoreShell({ children }: { children: React.ReactNode }) {
       extras={
         <>
           <WhatsAppButton phoneE164={config.contact.whatsappE164} />
+          <InstallPrompt />
           <PromoPopup products={promo.items} />
           <CartDrawer />
           <CookieBanner />

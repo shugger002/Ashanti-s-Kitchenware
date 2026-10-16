@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import Script from "next/script";
 import { Figtree, Newsreader } from "next/font/google";
 import { brand } from "@/config/brand";
@@ -16,6 +16,13 @@ const newsreader = Newsreader({
   subsets: ["latin"],
 });
 
+export const viewport: Viewport = {
+  themeColor: "#c8102e",
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+};
+
 export const metadata: Metadata = {
   title: {
     default: `${brand.name} | Kitchenware in Ghana`,
@@ -24,7 +31,18 @@ export const metadata: Metadata = {
   description:
     "Kitchen appliances from the Accra shop, priced in Ghana Cedis.",
   metadataBase: new URL(getAppUrl()),
-  icons: { icon: "/logo.png?v=official", apple: "/logo.png?v=official" },
+  appleWebApp: {
+    capable: true,
+    title: brand.name,
+    statusBarStyle: "default",
+  },
+  icons: {
+    icon: [
+      { url: "/icons/icon-192.png", sizes: "192x192" },
+      { url: "/icons/icon-512.png", sizes: "512x512" },
+    ],
+    apple: "/icons/apple-touch-icon.png",
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
