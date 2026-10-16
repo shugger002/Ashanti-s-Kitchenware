@@ -5,6 +5,7 @@ import { Suspense, useActionState } from "react";
 import { useSearchParams } from "next/navigation";
 import { customerLogin } from "@/app/(store)/login/actions";
 import { Button } from "@/components/ui/button";
+import { PasswordField } from "@/components/ui/password-field";
 
 function LoginForm() {
   const searchParams = useSearchParams();
@@ -28,10 +29,7 @@ function LoginForm() {
           Email
           <input name="email" type="email" required autoComplete="email" className="input mt-1" />
         </label>
-        <label className="block text-sm">
-          Password
-          <input name="password" type="password" required autoComplete="current-password" className="input mt-1" />
-        </label>
+        <PasswordField name="password" label="Password" required autoComplete="current-password" />
         {state?.error ? <p className="text-sm text-red-800">{state.error}</p> : null}
         <Button type="submit" disabled={pending} className="h-12 w-full">
           {pending ? "Signing in…" : "Sign in"}

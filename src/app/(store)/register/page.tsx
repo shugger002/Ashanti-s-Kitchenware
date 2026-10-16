@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useActionState } from "react";
 import { customerRegister } from "@/app/(store)/login/actions";
 import { Button } from "@/components/ui/button";
+import { PasswordField } from "@/components/ui/password-field";
 
 export default function RegisterPage() {
   const [state, action, pending] = useActionState(customerRegister, null);
@@ -24,14 +25,8 @@ export default function RegisterPage() {
           Phone
           <input name="phone" type="tel" required autoComplete="tel" className="input mt-1" />
         </label>
-        <label className="block text-sm">
-          Password
-          <input name="password" type="password" required minLength={10} autoComplete="new-password" className="input mt-1" />
-        </label>
-        <label className="block text-sm">
-          Confirm password
-          <input name="confirm" type="password" required minLength={10} autoComplete="new-password" className="input mt-1" />
-        </label>
+        <PasswordField name="password" label="Password" required minLength={10} autoComplete="new-password" />
+        <PasswordField name="confirm" label="Confirm password" required minLength={10} autoComplete="new-password" />
         {state?.error ? <p className="text-sm text-red-800">{state.error}</p> : null}
         <Button type="submit" disabled={pending} className="h-12 w-full">
           {pending ? "Creating account…" : "Create account"}
