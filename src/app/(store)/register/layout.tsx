@@ -1,8 +1,10 @@
 import { pageMeta } from "@/lib/seo";
 
+export const maxDuration = 30;
+
 export const metadata = pageMeta({
   title: "Create an account",
-  description: "Create an optional Ashanti's Kitchenware account to keep your orders.",
+  description: "Create an Ashanti's Kitchenware account to save orders. Guest checkout remains available.",
   path: "/register",
 });
 

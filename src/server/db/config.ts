@@ -44,9 +44,10 @@ export function createPgPool(kind: "runtime" | "migrate" = "runtime"): Pool {
     ssl: databaseSsl(connectionString),
     max: onVercel ? 3 : 10,
     idleTimeoutMillis: onVercel ? 5_000 : 10_000,
-    connectionTimeoutMillis: 8_000,
+    // Serverless + paused Postgres: first handshake often exceeds 8s.
+    connectionTimeoutMillis: onVercel ? 20_000 : 8_000,
     allowExitOnIdle: onVercel,
-    statement_timeout: 8_000,
-    idle_in_transaction_session_timeout: 10_000,
+    statement_timeout: onVercel ? 20_000 : 8_000,
+    idle_in_transaction_session_timeout: 15_000,
   });
 }
