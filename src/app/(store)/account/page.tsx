@@ -34,11 +34,9 @@ export default async function AccountPage() {
     <div className="mx-auto max-w-3xl px-4 py-8 pb-[calc(var(--store-dock)+2rem)] lg:px-8 lg:py-16 lg:pb-16">
       <p className="text-xs font-medium uppercase text-muted">Signed in</p>
       <h1 className="mt-2 text-3xl md:text-4xl">Your account</h1>
-      <p className="mt-3 max-w-xl text-pretty text-sm text-muted">
-        Saved orders stay with this email. Guest checkout remains available if you prefer not to sign in next time.
-      </p>
+      <p className="mt-2 max-w-xl text-pretty text-sm text-muted">Orders for this email stay on the account.</p>
 
-      <section className="mt-8 rounded-2xl border border-border bg-surface p-5 md:rounded-3xl md:p-6">
+      <section className="mt-6 rounded-2xl border border-border bg-surface p-4 md:p-6">
         <div className="flex items-start gap-4">
           <div
             aria-hidden
@@ -93,12 +91,12 @@ export default async function AccountPage() {
       <section className="mt-10">
         <h2 className="text-2xl">Orders</h2>
         {orders.length === 0 ? (
-          <div className="mt-4 rounded-2xl border border-dashed border-border bg-surface px-5 py-10 text-center md:rounded-3xl">
+          <div className="mt-4 rounded-2xl border border-dashed border-border bg-surface px-4 py-6 text-center">
             <p className="font-serif text-xl">No orders yet</p>
             <p className="mx-auto mt-2 max-w-sm text-pretty text-sm text-muted">
-              When you place an order with this account, the reference and Ghana Cedi total will show here.
+              Orders placed with this account will list here with the Ghana Cedi total.
             </p>
-            <Link href="/shop" className={buttonClass("primary", "mt-6 h-12")}>
+            <Link href="/shop" className={buttonClass("primary", "mt-4 h-11")}>
               Browse the shop
             </Link>
           </div>
