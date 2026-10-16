@@ -20,7 +20,7 @@ export function PromoPopup({ products }: { products: ProductCard[] }) {
 
   useEffect(() => {
     const path = window.location.pathname;
-    if (path === "/login" || path === "/register" || path.startsWith("/admin")) return;
+    if (path === "/login" || path === "/register" || path === "/account" || path.startsWith("/admin")) return;
     if (saleItems.length === 0 || open) return;
     const timer = window.setTimeout(() => setOpen(true), PROMO_POPUP_INTERVAL_MS);
     return () => window.clearTimeout(timer);
