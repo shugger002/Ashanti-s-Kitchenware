@@ -9,7 +9,9 @@ export type WishlistItem = {
 };
 
 const KEY = "ak_wishlist_v1";
-let memory: WishlistItem[] = [];
+const EMPTY_WISHLIST: WishlistItem[] = [];
+let memory: WishlistItem[] = EMPTY_WISHLIST;
+let hydrated = false;
 const listeners = new Set<() => void>();
 
 function emit() {
@@ -22,10 +24,8 @@ export function subscribeWishlist(listener: () => void) {
 }
 
 export function getWishlist(): WishlistItem[] {
-  return memory;
+  return hydrated ? memory : EMPTY_WISHLIST;
 }
-
-const EMPTY_WISHLIST: WishlistItem[] = [];
 
 export function getServerWishlist(): WishlistItem[] {
   return EMPTY_WISHLIST;
@@ -34,15 +34,17 @@ export function getServerWishlist(): WishlistItem[] {
 export function hydrateWishlist() {
   try {
     const raw = localStorage.getItem(KEY);
-    memory = raw ? (JSON.parse(raw) as WishlistItem[]) : [];
+    memory = raw ? (JSON.parse(raw) as WishlistItem[]) : EMPTY_WISHLIST;
   } catch {
-    memory = [];
+    memory = EMPTY_WISHLIST;
   }
+  hydrated = true;
   emit();
 }
 
 function write(next: WishlistItem[]) {
   memory = next;
+  hydrated = true;
   localStorage.setItem(KEY, JSON.stringify(next));
   emit();
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, useMemo, useSyncExternalStore } from "react";
+import { createContext, useContext, useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import {
   getCartSnapshot,
   getServerCartSnapshot,
@@ -28,6 +28,7 @@ type CartContextValue = {
 };
 
 const CartContext = createContext<CartContextValue | null>(null);
+const NO_ITEMS: CartLine[] = [];
 
 function sameLine(a: CartLine, productId: string, variantId: string | null) {
   return a.productId === productId && a.variantId === variantId;
@@ -36,16 +37,19 @@ function sameLine(a: CartLine, productId: string, variantId: string | null) {
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const items = useSyncExternalStore(subscribeCart, getCartSnapshot, getServerCartSnapshot);
   const drawerOpen = useSyncExternalStore(subscribeCart, isCartDrawerOpen, getServerCartDrawerSnapshot);
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
     hydrateCartFromStorage();
+    setReady(true);
   }, []);
 
+  const visibleItems = ready ? items : NO_ITEMS;
   const value = useMemo<CartContextValue>(
     () => ({
-      items,
-      count: items.reduce((sum, line) => sum + line.quantity, 0),
-      drawerOpen,
+      items: visibleItems,
+      count: visibleItems.reduce((sum, line) => sum + line.quantity, 0),
+      drawerOpen: ready ? drawerOpen : false,
       openDrawer: () => setCartDrawerOpen(true),
       closeDrawer: () => setCartDrawerOpen(false),
       add: (line, quantity) => {
@@ -73,7 +77,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       },
       clear: () => writeCart([]),
     }),
-    [items, drawerOpen],
+    [visibleItems, drawerOpen, ready],
   );
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;

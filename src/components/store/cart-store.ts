@@ -12,7 +12,9 @@ export type CartLine = {
 };
 
 const STORAGE_KEY = "ak_cart_v1";
-let memory: CartLine[] = [];
+const EMPTY_CART: CartLine[] = [];
+let memory: CartLine[] = EMPTY_CART;
+let hydrated = false;
 let drawerOpen = false;
 const listeners = new Set<() => void>();
 
@@ -26,10 +28,8 @@ export function subscribeCart(listener: () => void): () => void {
 }
 
 export function getCartSnapshot(): CartLine[] {
-  return memory;
+  return hydrated ? memory : EMPTY_CART;
 }
-
-const EMPTY_CART: CartLine[] = [];
 
 export function getServerCartSnapshot(): CartLine[] {
   return EMPTY_CART;
@@ -42,15 +42,17 @@ export function getServerCartDrawerSnapshot() {
 export function hydrateCartFromStorage(): void {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    memory = raw ? (JSON.parse(raw) as CartLine[]) : [];
+    memory = raw ? (JSON.parse(raw) as CartLine[]) : EMPTY_CART;
   } catch {
-    memory = [];
+    memory = EMPTY_CART;
   }
+  hydrated = true;
   emit();
 }
 
 export function writeCart(next: CartLine[]): void {
   memory = next;
+  hydrated = true;
   localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
   emit();
 }
