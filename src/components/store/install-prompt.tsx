@@ -43,6 +43,8 @@ export function InstallPrompt() {
     if ("serviceWorker" in navigator) {
       void navigator.serviceWorker.register("/sw.js");
     }
+    const path = window.location.pathname;
+    if (path === "/login" || path === "/register" || path.startsWith("/admin")) return;
     if (isStandalone()) return;
     try {
       if (localStorage.getItem(NEVER_KEY) === "1") return;

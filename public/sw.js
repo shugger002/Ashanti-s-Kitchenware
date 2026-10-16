@@ -1,4 +1,4 @@
-const CACHE = "ak-shell-v6";
+const CACHE = "ak-shell-v7";
 const PRECACHE = ["/", "/icons/app-192.png", "/icons/app-512.png"];
 
 self.addEventListener("install", (event) => {
@@ -27,5 +27,12 @@ self.addEventListener("fetch", (event) => {
   if (event.request.mode !== "navigate") return;
   const url = new URL(event.request.url);
   if (url.origin !== self.location.origin) return;
-  event.respondWith(fetch(event.request).catch(() => caches.match("/").then((hit) => hit || fetch(event.request))));
+  event.respondWith(
+    fetch(event.request).catch(async () => {
+      if (url.pathname === "/" || url.pathname === "") {
+        return (await caches.match("/")) || Response.error();
+      }
+      return Response.error();
+    }),
+  );
 });

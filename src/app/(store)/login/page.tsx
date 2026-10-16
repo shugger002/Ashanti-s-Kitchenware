@@ -1,15 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { Suspense, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useActionState } from "react";
+import { useSearchParams } from "next/navigation";
 import { customerLogin } from "@/app/(store)/login/actions";
 import { Button } from "@/components/ui/button";
 
 function LoginForm() {
-  const router = useRouter();
   const searchParams = useSearchParams();
-  const [error, setError] = useState<string | null>(null);
+  const [state, action, pending] = useActionState(customerLogin, null);
   const next = searchParams.get("next");
   const nextPath = next?.startsWith("/") && !next.startsWith("//") ? next : "/account";
 
@@ -23,19 +22,8 @@ function LoginForm() {
         </Link>
         .
       </p>
-      <form
-        className="mt-8 space-y-4"
-        onSubmit={async (event) => {
-          event.preventDefault();
-          const result = await customerLogin(new FormData(event.currentTarget));
-          if (!result.ok) {
-            setError(result.error);
-            return;
-          }
-          router.push(nextPath);
-          router.refresh();
-        }}
-      >
+      <form className="mt-8 space-y-4" action={action}>
+        <input type="hidden" name="next" value={nextPath} />
         <label className="block text-sm">
           Email
           <input name="email" type="email" required autoComplete="email" className="input mt-1" />
@@ -44,8 +32,10 @@ function LoginForm() {
           Password
           <input name="password" type="password" required autoComplete="current-password" className="input mt-1" />
         </label>
-        {error ? <p className="text-sm text-red-800">{error}</p> : null}
-        <Button type="submit" className="h-12 w-full">Sign in</Button>
+        {state?.error ? <p className="text-sm text-red-800">{state.error}</p> : null}
+        <Button type="submit" disabled={pending} className="h-12 w-full">
+          {pending ? "Signing in…" : "Sign in"}
+        </Button>
       </form>
       <p className="mt-6 text-sm">
         New here? <Link href="/register">Create an account</Link>

@@ -30,18 +30,25 @@ export async function registerCustomer(input: {
     return { ok: false, error: "Too many attempts. Try again in 15 minutes." };
   }
 
-  const taken = await query<{ id: string }>(
-    sql`SELECT id FROM customers WHERE password_hash IS NOT NULL AND lower(email) = ${email}`,
-  );
-  if ((taken.rowCount ?? 0) > 0) return { ok: false, error: "An account already exists for this email." };
-
   const passwordHash = await hashPassword(input.password);
   let customerId: string;
   try {
-    const inserted = await query<{ id: string }>(
-      sql`INSERT INTO customers (email, full_name, phone, password_hash) VALUES (${email}, ${fullName}, ${phone}, ${passwordHash}) RETURNING id`,
+    const existing = await query<{ id: string; password_hash: string | null }>(
+      sql`SELECT id, password_hash FROM customers WHERE lower(email) = ${email} ORDER BY password_hash NULLS LAST LIMIT 1`,
     );
-    customerId = inserted.rows[0].id;
+    const row = existing.rows[0];
+    if (row?.password_hash) return { ok: false, error: "An account already exists for this email." };
+    if (row) {
+      await query(
+        sql`UPDATE customers SET full_name = ${fullName}, phone = ${phone}, password_hash = ${passwordHash} WHERE id = ${row.id}`,
+      );
+      customerId = row.id;
+    } else {
+      const inserted = await query<{ id: string }>(
+        sql`INSERT INTO customers (email, full_name, phone, password_hash) VALUES (${email}, ${fullName}, ${phone}, ${passwordHash}) RETURNING id`,
+      );
+      customerId = inserted.rows[0].id;
+    }
   } catch (error) {
     const code = error && typeof error === "object" && "code" in error ? String(error.code) : "";
     if (code === "23505") return { ok: false, error: "An account already exists for this email." };
