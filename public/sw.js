@@ -1,4 +1,4 @@
-const CACHE = "ak-shell-v3";
+const CACHE = "ak-shell-v4";
 const PRECACHE = ["/", "/icons/icon-192.png", "/icons/icon-512.png"];
 
 self.addEventListener("install", (event) => {

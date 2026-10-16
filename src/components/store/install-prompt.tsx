@@ -167,7 +167,7 @@ export function InstallPrompt() {
         <div className="flex items-start gap-3">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src="/icons/icon-192.png"
+            src="/icons/icon-192.png?v=2"
             alt=""
             width={56}
             height={56}
