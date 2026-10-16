@@ -5,7 +5,7 @@ import { Download, MessageCircle, Share, WifiOff, Zap } from "lucide-react";
 import { brand } from "@/config/brand";
 import { buttonClass } from "@/components/ui/button";
 
-const NEVER_KEY = "ak_a2hs_never";
+const NEVER_KEY = "ak_a2hs_optout";
 const LATER_KEY = "ak_a2hs_later";
 
 type BeforeInstallPromptEvent = Event & {
@@ -24,16 +24,9 @@ function isStandalone() {
   return Boolean((window.navigator as Navigator & { standalone?: boolean }).standalone);
 }
 
-function isIosSafari() {
+function isIosDevice() {
   const ua = window.navigator.userAgent;
-  const ios = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
-  return ios && !/CriOS|FxiOS|OPiOS|EdgiOS/.test(ua);
-}
-
-function takeDeferredPrompt() {
-  const event = window.__akDeferredPrompt ?? null;
-  if (event) window.__akDeferredPrompt = null;
-  return event;
+  return /iPad|iPhone|iPod/.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
 }
 
 export function InstallPrompt() {
@@ -42,23 +35,20 @@ export function InstallPrompt() {
   const [open, setOpen] = useState(false);
   const [host, setHost] = useState("");
   const [ios, setIos] = useState(false);
-  const [help, setHelp] = useState<"ios" | "menu" | null>(null);
-  const [busy, setBusy] = useState(false);
+  const [help, setHelp] = useState(false);
 
   useEffect(() => {
     setHost(window.location.host);
-    const safari = isIosSafari();
-    setIos(safari);
+    setIos(isIosDevice());
     if ("serviceWorker" in navigator) {
       void navigator.serviceWorker.register("/sw.js");
     }
     if (isStandalone()) return;
     try {
-      localStorage.removeItem("ak_a2hs_hide");
       if (localStorage.getItem(NEVER_KEY) === "1") return;
       if (sessionStorage.getItem(LATER_KEY) === "1") return;
     } catch {
-      /* still show */
+      return;
     }
 
     function onPrompt(event: Event) {
@@ -71,15 +61,8 @@ export function InstallPrompt() {
     window.addEventListener("beforeinstallprompt", onPrompt);
     window.addEventListener("appinstalled", onInstalled);
 
-    let cancelled = false;
-    const timer = window.setTimeout(() => {
-      if (cancelled || isStandalone()) return;
-      if (safari) setHelp("ios");
-      setOpen(true);
-    }, 800);
-
+    const timer = window.setTimeout(() => setOpen(true), 800);
     return () => {
-      cancelled = true;
       window.clearTimeout(timer);
       window.removeEventListener("beforeinstallprompt", onPrompt);
       window.removeEventListener("appinstalled", onInstalled);
@@ -119,22 +102,22 @@ export function InstallPrompt() {
     setOpen(false);
   }
 
-  async function addToHome() {
-    const event = takeDeferredPrompt();
-    if (event) {
-      setBusy(true);
-      try {
-        await event.prompt();
-        const { outcome } = await event.userChoice;
-        if (outcome === "accepted") setOpen(false);
-      } catch {
-        setHelp(ios ? "ios" : "menu");
-      } finally {
-        setBusy(false);
-      }
+  function addToHome() {
+    if (isIosDevice()) {
+      setHelp(true);
       return;
     }
-    setHelp(ios ? "ios" : "menu");
+    const event = window.__akDeferredPrompt;
+    if (event?.prompt) {
+      window.__akDeferredPrompt = null;
+      setOpen(false);
+      void event.prompt().catch(() => {
+        setHelp(true);
+        setOpen(true);
+      });
+      return;
+    }
+    setHelp(true);
   }
 
   if (!open) return null;
@@ -150,11 +133,11 @@ export function InstallPrompt() {
         <div className="flex items-start gap-3">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src="/icons/icon-192.png?v=2"
+            src="/icons/app-192.png"
             alt=""
             width={56}
             height={56}
-            className="size-14 shrink-0 rounded-2xl border border-border bg-accent object-cover"
+            className="size-14 shrink-0 rounded-2xl border border-border object-cover"
           />
           <div className="min-w-0">
             <h2 id={titleId} className="text-lg font-semibold leading-tight text-foreground">
@@ -183,47 +166,44 @@ export function InstallPrompt() {
           ))}
         </ul>
 
-        {help === "ios" ? (
+        {help && ios ? (
           <ol className="mt-5 space-y-3 text-sm leading-relaxed text-foreground">
             <li className="flex gap-3">
               <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-[#f6f1ea] text-accent">
                 <Share className="size-4" aria-hidden />
               </span>
-              <span>Tap Share in Safari — the square with an arrow, in the bar at the bottom of the screen (not the shop menu).</span>
+              <span>Tap the Share button (square with an arrow).</span>
             </li>
             <li className="flex gap-3">
               <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-[#f6f1ea] text-sm font-medium">
                 2
               </span>
-              <span>Scroll the list and tap Add to Home Screen.</span>
+              <span>Scroll and tap Add to Home Screen.</span>
             </li>
             <li className="flex gap-3">
               <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-[#f6f1ea] text-sm font-medium">
                 3
               </span>
-              <span>Tap Add. The red Ashanti&apos;s icon appears on your phone.</span>
+              <span>Tap Add.</span>
             </li>
           </ol>
-        ) : help === "menu" ? (
+        ) : help ? (
           <ol className="mt-5 space-y-2 text-sm leading-relaxed text-foreground">
-            <li>1. Open the browser menu (⋮ or share icon).</li>
+            <li>1. Open the browser menu (⋮).</li>
             <li>2. Tap Install app or Add to Home Screen.</li>
             <li>3. Confirm Add.</li>
           </ol>
         ) : null}
 
-        {ios && help === "ios" ? null : (
-          <button
-            ref={addRef}
-            type="button"
-            disabled={busy}
-            className={buttonClass("primary", "mt-5 h-12 w-full gap-2 rounded-full text-base")}
-            onClick={() => void addToHome()}
-          >
-            <Download className="size-4" aria-hidden />
-            {busy ? "Adding…" : "Add to Home Screen"}
-          </button>
-        )}
+        <button
+          ref={addRef}
+          type="button"
+          className={buttonClass("primary", "mt-5 h-12 w-full gap-2 rounded-full text-base")}
+          onClick={addToHome}
+        >
+          <Download className="size-4" aria-hidden />
+          Add to Home Screen
+        </button>
 
         <button type="button" className="mt-4 flex h-11 w-full items-center justify-center text-sm text-muted" onClick={later}>
           Maybe Later
