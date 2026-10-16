@@ -70,7 +70,7 @@ export async function CatalogPage({
           : "Priced in Ghana Cedis. Demo listings are labelled and are not for sale. Filter by what you can use this week."}
       </p>
       <p className="mt-2 text-sm text-muted">{total} products</p>
-      <ul className="-mx-4 mt-6 flex flex-nowrap gap-2 overflow-x-auto px-4 text-sm [scrollbar-width:none] md:mx-0 md:flex-wrap md:overflow-visible md:px-0 [&::-webkit-scrollbar]:hidden">
+      <ul className="-mx-4 mt-6 flex flex-nowrap gap-2 overflow-x-auto px-4 text-sm touch-manipulation [scrollbar-width:none] md:mx-0 md:flex-wrap md:overflow-visible md:px-0 [&::-webkit-scrollbar]:hidden">
         {categories.map((c) => (
           <li key={c.id} id={c.slug}>
             {c.slug === "cookware" ? <span id="cooking-ware" className="sr-only" /> : null}

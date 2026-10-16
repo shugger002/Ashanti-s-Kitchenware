@@ -135,7 +135,7 @@ export default async function HomePage() {
         <p className="mx-auto mt-3 max-w-xl text-center text-sm text-muted">
           Editorial groupings, not discounted bundles. Add each piece on its own product page.
         </p>
-        <ul className="-mx-4 mt-6 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-2 md:mx-0 md:mt-10 md:grid md:grid-cols-3 md:gap-8 md:overflow-visible md:px-0 md:pb-0">
+        <ul className="-mx-4 mt-6 flex snap-x snap-proximity gap-4 overflow-x-auto px-4 pb-2 touch-manipulation md:mx-0 md:mt-10 md:grid md:grid-cols-3 md:gap-8 md:overflow-visible md:px-0 md:pb-0">
           {editorialCollections.map((collection) => (
             <li key={collection.title} className="w-[78%] shrink-0 snap-start md:w-auto">
               <Link href={collection.href} className="group block">
@@ -198,7 +198,7 @@ export default async function HomePage() {
             All guides
           </Link>
         </div>
-        <ul className="-mx-4 mt-6 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-2 md:mx-0 md:mt-10 md:grid md:grid-cols-3 md:gap-8 md:overflow-visible md:px-0 md:pb-0">
+        <ul className="-mx-4 mt-6 flex snap-x snap-proximity gap-4 overflow-x-auto px-4 pb-2 touch-manipulation md:mx-0 md:mt-10 md:grid md:grid-cols-3 md:gap-8 md:overflow-visible md:px-0 md:pb-0">
           {journalArticles.map((article) => (
             <li key={article.slug} className="w-[78%] shrink-0 snap-start md:w-auto">
               <Link href={`/journal/${article.slug}`} className="group block">

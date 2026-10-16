@@ -92,12 +92,12 @@ export function LogoMarquee() {
     <section className="overflow-hidden bg-accent py-6 text-white md:py-12" aria-label="Brands">
       <p className="text-center font-serif text-xl md:text-3xl">BRANDS</p>
       <div
-        className="ak-logo-marquee-wrap mt-5 overflow-hidden md:mt-8"
+        className="ak-logo-marquee-wrap mt-5 overflow-hidden touch-pan-y md:mt-8"
         style={{
           maskImage: "linear-gradient(to right, transparent, #000 8%, #000 92%, transparent)",
         }}
       >
-        <ul className="ak-logo-marquee">
+        <ul className="ak-logo-marquee pointer-events-none">
           {loop.map((mark, index) => (
             <li
               key={`${mark.id}-${index}`}

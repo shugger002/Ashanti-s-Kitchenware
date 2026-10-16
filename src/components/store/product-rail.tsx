@@ -73,7 +73,7 @@ export function ProductRail({
         ref={scroller}
         tabIndex={0}
         aria-label="Product list"
-        className="flex snap-x snap-mandatory gap-5 overflow-x-auto overscroll-x-contain pb-3 [-ms-overflow-style:none] [scrollbar-width:none] touch-pan-x [&::-webkit-scrollbar]:hidden"
+        className="flex snap-x snap-proximity gap-5 overflow-x-auto overscroll-x-contain overscroll-y-auto pb-3 [-ms-overflow-style:none] [scrollbar-width:none] touch-manipulation [&::-webkit-scrollbar]:hidden"
       >
         {products.map((product) => (
           <div

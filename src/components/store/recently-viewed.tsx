@@ -14,7 +14,7 @@ export function RecentlyViewed({ excludeSlug }: { excludeSlug?: string }) {
   return (
     <section className="mt-10 md:mt-16">
       <h2 className="text-xl md:text-2xl">Recently viewed</h2>
-      <ul className="-mx-4 mt-5 flex gap-3 overflow-x-auto px-4 pb-2 md:mx-0 md:mt-6 md:gap-4 md:px-0">
+      <ul className="-mx-4 mt-5 flex gap-3 overflow-x-auto px-4 pb-2 touch-manipulation md:mx-0 md:mt-6 md:gap-4 md:px-0">
         {list.map((item) => (
           <li key={item.slug} className="w-28 shrink-0 sm:w-36">
             <Link href={`/products/${item.slug}`}>

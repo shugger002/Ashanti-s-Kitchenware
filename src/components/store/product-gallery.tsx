@@ -26,7 +26,7 @@ export function ProductGallery({ images, name }: { images: ProductImage[]; name:
         <img src={current.url} alt={current.alt || name} className="h-full w-full object-cover" />
       </button>
       {images.length > 1 ? (
-        <ul className="mt-3 flex gap-2 overflow-x-auto px-4 pb-1 lg:px-0">
+        <ul className="mt-3 flex gap-2 overflow-x-auto px-4 pb-1 touch-manipulation lg:px-0">
           {images.map((image, index) => (
             <li key={image.id}>
               <button
