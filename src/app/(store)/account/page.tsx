@@ -91,14 +91,11 @@ export default async function AccountPage() {
       <section className="mt-10">
         <h2 className="text-2xl">Orders</h2>
         {orders.length === 0 ? (
-          <div className="mt-4 rounded-2xl border border-dashed border-border bg-surface px-4 py-6 text-center">
+          <div className="mt-4 rounded-2xl border border-dashed border-border bg-surface px-4 py-5 text-center">
             <p className="font-serif text-xl">No orders yet</p>
             <p className="mx-auto mt-2 max-w-sm text-pretty text-sm text-muted">
-              Orders placed with this account will list here with the Ghana Cedi total.
+              Orders placed with this account will list here with the Ghana Cedi total. Use Shop above to browse.
             </p>
-            <Link href="/shop" className={buttonClass("primary", "mt-4 h-11")}>
-              Browse the shop
-            </Link>
           </div>
         ) : (
           <ul className="mt-4 space-y-3">
