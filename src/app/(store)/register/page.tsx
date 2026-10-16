@@ -23,7 +23,16 @@ export default function RegisterPage() {
         </label>
         <label className="block text-sm">
           Phone
-          <input name="phone" type="tel" required autoComplete="tel" defaultValue={state?.phone} className="input mt-1" />
+          <input
+            name="phone"
+            type="tel"
+            required
+            inputMode="tel"
+            autoComplete="tel"
+            placeholder="020 194 4235"
+            defaultValue={state?.phone}
+            className="input mt-1"
+          />
         </label>
         <PasswordField name="password" label="Password" required minLength={10} autoComplete="new-password" />
         <PasswordField name="confirm" label="Confirm password" required minLength={10} autoComplete="new-password" />

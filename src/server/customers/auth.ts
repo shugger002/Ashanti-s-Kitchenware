@@ -18,7 +18,10 @@ export async function registerCustomer(input: {
   const phone = input.phone.trim();
   const fullName = input.fullName.trim();
   if (fullName.length < 2) return { ok: false, error: "Enter your name." };
-  if (phone.length < 9) return { ok: false, error: "Enter a valid phone number." };
+  const phoneDigits = phone.replace(/\D/g, "");
+  if (phone.includes("@") || phoneDigits.length < 9) {
+    return { ok: false, error: "Enter a Ghana phone number, not an email." };
+  }
   if (input.password.length < MIN_PASSWORD) {
     return { ok: false, error: `Password must be at least ${MIN_PASSWORD} characters.` };
   }

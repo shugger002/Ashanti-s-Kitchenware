@@ -39,6 +39,9 @@ const nextConfig: NextConfig = {
       bodySizeLimit: "40mb",
       allowedOrigins: [
         "ashantis-kitchenware.vercel.app",
+        "ashanti-s-kitchenware.vercel.app",
+        "ashantis-kitchenware-shugger001s-projects.vercel.app",
+        "*.vercel.app",
         "ashantiskitchenware.com",
         "www.ashantiskitchenware.com",
         "js-ashanti-web.onrender.com",
