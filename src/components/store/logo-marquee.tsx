@@ -9,7 +9,7 @@ const marks = [
 ] as const;
 
 function Wordmark({ id, label }: { id: string; label: string }) {
-  const className = "h-10 w-auto max-w-[12rem] text-white md:h-11";
+  const className = "h-6 w-auto max-w-[9rem] text-white md:h-7";
   switch (id) {
     case "hoffmans":
       return (
@@ -89,10 +89,10 @@ function Wordmark({ id, label }: { id: string; label: string }) {
 export function LogoMarquee() {
   const loop = [...marks, ...marks];
   return (
-    <section className="overflow-hidden bg-accent py-6 text-white md:py-12" aria-label="Brands">
-      <p className="text-center font-serif text-xl md:text-3xl">BRANDS</p>
+    <section className="overflow-hidden bg-accent py-3 text-white md:py-4" aria-label="Brands">
+      <p className="text-center font-serif text-sm tracking-[0.2em] md:text-base">BRANDS</p>
       <div
-        className="ak-logo-marquee-wrap mt-5 overflow-hidden touch-pan-y md:mt-8"
+        className="ak-logo-marquee-wrap mt-2 overflow-hidden touch-pan-y md:mt-3"
         style={{
           maskImage: "linear-gradient(to right, transparent, #000 8%, #000 92%, transparent)",
         }}
@@ -101,7 +101,7 @@ export function LogoMarquee() {
           {loop.map((mark, index) => (
             <li
               key={`${mark.id}-${index}`}
-              className="flex h-14 w-[12.5rem] shrink-0 items-center justify-center px-6 md:w-[14.5rem]"
+              className="flex h-8 w-[8.5rem] shrink-0 items-center justify-center px-3 md:h-9 md:w-[10rem]"
               aria-hidden={index >= marks.length}
             >
               {index < marks.length ? <span className="sr-only">{mark.label}</span> : null}
