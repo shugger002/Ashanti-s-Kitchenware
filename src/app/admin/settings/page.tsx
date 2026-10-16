@@ -85,7 +85,7 @@ export default async function SettingsPage() {
           <Field name="region" label="Region" defaultValue={config.contact.region} />
           <Field name="country" label="Country" defaultValue={config.contact.country} />
         </div>
-        <button className={adminButton("w-fit")} type="submit">
+        <button className={adminButton()} type="submit">
           Save contact
         </button>
       </form>
@@ -103,7 +103,7 @@ export default async function SettingsPage() {
           Show announcement bar
         </label>
         <Field name="announcementText" label="Announcement text" defaultValue={config.announcement.text} />
-        <button className={adminButton("w-fit")} type="submit">
+        <button className={adminButton()} type="submit">
           Save homepage
         </button>
       </form>
@@ -113,17 +113,17 @@ export default async function SettingsPage() {
           Categories, customers, inventory counts, and WhatsApp delivery sit here so the main rail matches the live
           admin.
         </p>
-        <div className="mt-4 flex flex-wrap gap-3 text-sm">
-          <a href="/admin/inventory" className={adminButton("inline-flex w-fit")}>
+        <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+          <a href="/admin/inventory" className={adminButton()}>
             Inventory
           </a>
-          <a href="/admin/categories" className="text-muted hover:text-foreground">
+          <a href="/admin/categories" className="inline-flex h-12 items-center justify-center text-sm text-muted hover:text-foreground sm:px-3">
             Categories
           </a>
-          <a href="/admin/customers" className="text-muted hover:text-foreground">
+          <a href="/admin/customers" className="inline-flex h-12 items-center justify-center text-sm text-muted hover:text-foreground sm:px-3">
             Customers
           </a>
-          <a href="/admin/delivery" className="text-muted hover:text-foreground">
+          <a href="/admin/delivery" className="inline-flex h-12 items-center justify-center text-sm text-muted hover:text-foreground sm:px-3">
             Delivery
           </a>
         </div>

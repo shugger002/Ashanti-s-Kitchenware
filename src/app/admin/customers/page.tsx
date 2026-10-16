@@ -1,7 +1,8 @@
 import { requirePermission } from "@/server/auth/authorize";
 import { listCustomers } from "@/server/reporting/service";
 import { formatGhs } from "@/lib/money";
-import { AdminPageHeader, AdminTable, EmptyState } from "@/components/admin/ui";
+import { ghanaInternationalMsisdn } from "@/lib/phone-gh";
+import { AdminPageHeader, AdminTable, EmptyState, MobileCards } from "@/components/admin/ui";
 
 export default async function CustomersPage() {
   await requirePermission("customers.read");
@@ -17,6 +18,32 @@ export default async function CustomersPage() {
           />
         </div>
       ) : (
+        <>
+        <MobileCards>
+          {customers.map((c) => {
+            const digits = ghanaInternationalMsisdn(String(c.phone ?? ""));
+            return (
+              <li key={c.id} className="rounded-xl border border-border bg-white/95 p-4 shadow-sm">
+                <p className="font-medium">{c.full_name}</p>
+                {digits.length >= 11 ? (
+                  <a href={`tel:+${digits}`} className="mt-2 block min-h-11 text-accent">
+                    {c.phone}
+                  </a>
+                ) : (
+                  <p className="mt-2 text-sm text-muted">{c.phone}</p>
+                )}
+                {c.email ? (
+                  <a href={`mailto:${c.email}`} className="block min-h-11 text-sm text-muted">
+                    {c.email}
+                  </a>
+                ) : null}
+                <p className="mt-2 text-sm tabular-nums">
+                  {c.order_count} orders · {formatGhs(Number(c.paid_total))}
+                </p>
+              </li>
+            );
+          })}
+        </MobileCards>
         <AdminTable className="mt-6">
           <thead>
             <tr className="border-b border-border bg-surface text-xs text-muted">
@@ -31,14 +58,31 @@ export default async function CustomersPage() {
             {customers.map((c) => (
               <tr key={c.id} className="border-b border-border last:border-0 hover:bg-surface">
                 <td className="px-4 py-3 font-medium">{c.full_name}</td>
-                <td className="px-4 py-3">{c.phone}</td>
-                <td className="px-4 py-3">{c.email ?? "-"}</td>
+                <td className="px-4 py-3">
+                  {ghanaInternationalMsisdn(String(c.phone ?? "")).length >= 11 ? (
+                    <a href={`tel:+${ghanaInternationalMsisdn(String(c.phone ?? ""))}`} className="text-accent">
+                      {c.phone}
+                    </a>
+                  ) : (
+                    c.phone
+                  )}
+                </td>
+                <td className="px-4 py-3">
+                  {c.email ? (
+                    <a href={`mailto:${c.email}`} className="text-muted">
+                      {c.email}
+                    </a>
+                  ) : (
+                    "-"
+                  )}
+                </td>
                 <td className="px-4 py-3 tabular-nums">{c.order_count}</td>
                 <td className="px-4 py-3 tabular-nums">{formatGhs(Number(c.paid_total))}</td>
               </tr>
             ))}
           </tbody>
         </AdminTable>
+        </>
       )}
     </div>
   );

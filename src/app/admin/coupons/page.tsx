@@ -2,7 +2,7 @@ import { requirePermission } from "@/server/auth/authorize";
 import { createCoupon, listCoupons, setCouponActive } from "@/server/coupons/service";
 import { formatGhs } from "@/lib/money";
 import { revalidatePath } from "next/cache";
-import { adminButton, AdminPageHeader, AdminTable, EmptyState, StatusPill } from "@/components/admin/ui";
+import { adminButton, AdminPageHeader, AdminTable, EmptyState, MobileCards, StatusPill } from "@/components/admin/ui";
 
 async function addCoupon(formData: FormData) {
   "use server";
@@ -40,7 +40,7 @@ export default async function CouponsPage() {
   return (
     <div>
       <AdminPageHeader
-        title="Promo & Coupon Management"
+        title="Coupons"
         description="Create and monitor checkout codes. Delivery is still quoted on WhatsApp. These codes do not invent free shipping."
       />
 
@@ -64,6 +64,33 @@ export default async function CouponsPage() {
           <EmptyState title="No coupons yet" body="Add a percent or Ghana Cedi off the basket. Do not create a shipping coupon. Delivery stays on WhatsApp." />
         </div>
       ) : (
+        <>
+        <MobileCards className="mt-6">
+          {coupons.map((c) => (
+            <li key={c.id} className="rounded-xl border border-border bg-white/95 p-4 shadow-sm">
+              <div className="flex items-start justify-between gap-3">
+                <p className="font-medium">{c.code}</p>
+                <StatusPill value={c.is_active ? "Active" : "Off"} tone={c.is_active ? "ok" : "muted"} />
+              </div>
+              {c.description ? <p className="mt-1 text-sm text-muted">{c.description}</p> : null}
+              <p className="mt-2 text-sm">
+                {c.discount_type === "percent" ? `${c.discount_value}%` : formatGhs(Number(c.discount_value))}
+                {c.max_discount ? ` · max ${formatGhs(Number(c.max_discount))}` : ""}
+              </p>
+              <p className="mt-1 text-xs text-muted">
+                Min {formatGhs(Number(c.min_spend))} · {c.uses} uses
+                {c.max_uses == null ? "" : ` / ${c.max_uses}`}
+              </p>
+              <form action={toggleCoupon} className="mt-3">
+                <input type="hidden" name="id" value={c.id} />
+                <input type="hidden" name="active" value={c.is_active ? "0" : "1"} />
+                <button type="submit" className={adminButton()}>
+                  {c.is_active ? "Deactivate" : "Activate"}
+                </button>
+              </form>
+            </li>
+          ))}
+        </MobileCards>
         <AdminTable className="mt-6">
           <thead>
             <tr className="border-b border-border bg-surface text-xs text-muted">
@@ -96,7 +123,7 @@ export default async function CouponsPage() {
                   <form action={toggleCoupon}>
                     <input type="hidden" name="id" value={c.id} />
                     <input type="hidden" name="active" value={c.is_active ? "0" : "1"} />
-                    <button type="submit" className="text-sm text-muted hover:text-foreground">
+                    <button type="submit" className="inline-flex min-h-11 items-center text-sm text-muted hover:text-foreground">
                       {c.is_active ? "Deactivate" : "Activate"}
                     </button>
                   </form>
@@ -105,6 +132,7 @@ export default async function CouponsPage() {
             ))}
           </tbody>
         </AdminTable>
+        </>
       )}
 
       <form action={addCoupon} className="mt-8 max-w-xl space-y-3 rounded-xl border border-border bg-surface p-5">

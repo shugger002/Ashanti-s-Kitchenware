@@ -35,7 +35,7 @@ export function InventoryCsvForm() {
       </div>
       <form
         encType="multipart/form-data"
-        className="mt-4 flex flex-wrap items-end gap-3"
+        className="mt-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end"
         onSubmit={(event) => {
           event.preventDefault();
           const form = event.currentTarget;

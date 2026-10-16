@@ -27,7 +27,9 @@ export function ResetForm({ token }: { token: string }) {
         <input name="password" type="password" required minLength={12} className="input mt-1" />
       </label>
       {error ? <p className="text-sm text-accent">{error}</p> : null}
-      <Button type="submit">Update password</Button>
+      <Button type="submit" className="h-12 w-full">
+        Update password
+      </Button>
     </form>
   );
 }

@@ -26,7 +26,9 @@ export function ForgotForm() {
         Email
         <input name="email" type="email" required className="input mt-1" />
       </label>
-      <Button type="submit">Send reset link</Button>
+      <Button type="submit" className="h-12 w-full">
+        Send reset link
+      </Button>
     </form>
   );
 }

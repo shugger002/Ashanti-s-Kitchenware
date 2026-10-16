@@ -201,7 +201,9 @@ export function ProductForm({
           <textarea name="seoDescription" defaultValue={product?.seoDescription ?? ""} className="input mt-1" />
         </label>
       </section>
-      <Button type="submit">Save product</Button>
+      <Button type="submit" className="h-12 w-full sm:w-auto">
+        Save product
+      </Button>
     </form>
   );
 }

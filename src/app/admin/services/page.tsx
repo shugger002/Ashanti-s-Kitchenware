@@ -44,7 +44,7 @@ export default async function ServiceHealthPage() {
       />
       <ul className="mt-8 divide-y divide-border overflow-hidden rounded-2xl border border-border bg-background">
         {rows.map((row) => (
-          <li key={row.label} className="flex items-center justify-between gap-4 px-5 py-4 text-sm">
+          <li key={row.label} className="flex min-h-14 items-center justify-between gap-4 px-5 py-4 text-sm">
             <span>{row.label}</span>
             <span className={row.ok ? "text-foreground" : "text-accent"}>{row.value}</span>
           </li>

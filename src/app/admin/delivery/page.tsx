@@ -11,6 +11,7 @@ import {
   AdminPageHeader,
   AdminTable,
   EmptyState,
+  MobileCards,
   StatusPill,
 } from "@/components/admin/ui";
 
@@ -88,7 +89,7 @@ export default async function DeliveryPage() {
           Note shown at checkout
           <textarea name="coverageNote" defaultValue={fulfillment.coverageNote} rows={3} className="input mt-1" />
         </label>
-        <button className={adminButton("w-fit")} type="submit">
+        <button className={adminButton()} type="submit">
           Save coverage
         </button>
       </form>
@@ -106,6 +107,32 @@ export default async function DeliveryPage() {
             />
           </div>
         ) : (
+          <>
+          <MobileCards>
+            {rates.map((rate) => (
+              <li key={rate.id} className="rounded-xl border border-border bg-white/95 p-4 shadow-sm">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="font-medium">{rate.zoneName}</p>
+                    <p className="mt-0.5 text-sm">{rate.name}</p>
+                    {rate.regionMatch ? <p className="text-xs text-muted">Match: {rate.regionMatch}</p> : null}
+                  </div>
+                  <StatusPill
+                    value={rate.isActive && rate.zoneActive ? "Active" : "Off"}
+                    tone={rate.isActive && rate.zoneActive ? "ok" : "muted"}
+                  />
+                </div>
+                <p className="mt-2 tabular-nums">{formatGhs(Number(rate.amount))}</p>
+                <form action={toggleRate} className="mt-3">
+                  <input type="hidden" name="rateId" value={rate.id} />
+                  <input type="hidden" name="active" value={rate.isActive ? "false" : "true"} />
+                  <button type="submit" className={adminButton()}>
+                    {rate.isActive ? "Turn off" : "Turn on"}
+                  </button>
+                </form>
+              </li>
+            ))}
+          </MobileCards>
           <AdminTable className="mt-4">
             <thead>
               <tr className="border-b border-border bg-surface text-xs text-muted">
@@ -146,6 +173,7 @@ export default async function DeliveryPage() {
               ))}
             </tbody>
           </AdminTable>
+          </>
         )}
       </section>
 
@@ -167,7 +195,7 @@ export default async function DeliveryPage() {
           Amount (GHS)
           <input name="amount" type="number" step="0.01" min="0" required className="input mt-1" />
         </label>
-        <button className={adminButton("w-fit")} type="submit">
+        <button className={adminButton()} type="submit">
           Add rate
         </button>
       </form>

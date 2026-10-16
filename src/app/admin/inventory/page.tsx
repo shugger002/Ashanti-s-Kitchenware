@@ -2,7 +2,7 @@ import Link from "next/link";
 import { requirePermission } from "@/server/auth/authorize";
 import { adjustStock, listInventory } from "@/server/inventory/service";
 import { revalidatePath } from "next/cache";
-import { adminButton, AdminPageHeader, AdminTable, EmptyState, StatusPill } from "@/components/admin/ui";
+import { adminButton, AdminPageHeader, AdminTable, EmptyState, MobileCards, StatusPill } from "@/components/admin/ui";
 import { InventoryCsvForm } from "@/app/admin/inventory/csv-form";
 import { cn } from "@/lib/utils";
 
@@ -77,6 +77,86 @@ export default async function InventoryPage() {
           />
         </div>
       ) : (
+        <>
+        <MobileCards>
+          {rows.map((row) => {
+            const outOfStock = row.available <= 0;
+            const tight = outOfStock || row.available <= row.lowStockThreshold;
+            return (
+              <li
+                key={row.id}
+                className={cn(
+                  "rounded-xl border bg-white/95 p-4 shadow-sm",
+                  tight ? "border-accent/40" : "border-border",
+                )}
+              >
+                <Link href={`/admin/products/${row.productId}`} className="flex items-start gap-3">
+                  {row.imageUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={row.imageUrl}
+                      alt={row.imageAlt || row.productName}
+                      className="h-14 w-14 shrink-0 rounded-lg object-cover"
+                    />
+                  ) : (
+                    <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg border border-border bg-white text-[10px] text-muted">
+                      No photo
+                    </span>
+                  )}
+                  <span className="min-w-0">
+                    <span className="font-medium">{row.productName}</span>
+                    {row.variantName ? <span className="mt-0.5 block text-xs text-muted">{row.variantName}</span> : null}
+                    <span className="mt-1 block text-xs text-muted">{row.sku}</span>
+                    {tight ? (
+                      <span className="mt-1 inline-block">
+                        <StatusPill value={outOfStock ? "Out" : "Low"} tone="attention" />
+                      </span>
+                    ) : null}
+                  </span>
+                </Link>
+                <p className={cn("mt-3 text-sm tabular-nums", tight && "font-medium text-accent")}>
+                  {row.available} available · {row.onHand} on hand · {row.reserved} reserved
+                </p>
+                <form action={restock} className="mt-3 flex flex-col gap-2">
+                  <input type="hidden" name="inventoryId" value={row.id} />
+                  <input
+                    name="qty"
+                    type="number"
+                    min={1}
+                    required
+                    placeholder="Qty to add"
+                    aria-label={`Restock ${row.productName}`}
+                    className="input"
+                  />
+                  <button className={adminButton()} type="submit">
+                    Restock
+                  </button>
+                </form>
+                <form action={adjust} className="mt-3 flex flex-col gap-2 border-t border-border pt-3">
+                  <input type="hidden" name="inventoryId" value={row.id} />
+                  <input
+                    name="delta"
+                    type="number"
+                    required
+                    placeholder="+/-"
+                    aria-label={`Adjust ${row.productName}`}
+                    className="input"
+                  />
+                  <input
+                    name="reason"
+                    required
+                    placeholder="Reason"
+                    aria-label={`Reason for ${row.productName}`}
+                    className="input"
+                  />
+                  <button className={adminButton()} type="submit">
+                    Apply count
+                  </button>
+                </form>
+              </li>
+            );
+          })}
+        </MobileCards>
         <AdminTable className="mt-4">
           <thead>
             <tr className="border-b border-border bg-surface text-xs text-muted">
@@ -172,6 +252,7 @@ export default async function InventoryPage() {
             })}
           </tbody>
         </AdminTable>
+        </>
       )}
     </div>
   );

@@ -3,7 +3,7 @@ import { listAdminProducts } from "@/server/catalog/queries";
 import { setProductSalePrice } from "@/server/catalog/admin";
 import { formatGhs, parseMoney } from "@/lib/money";
 import { revalidatePath } from "next/cache";
-import { adminButton, AdminPageHeader, AdminTable, EmptyState } from "@/components/admin/ui";
+import { adminButton, AdminPageHeader, AdminTable, EmptyState, MobileCards } from "@/components/admin/ui";
 
 async function applyDiscount(formData: FormData) {
   "use server";
@@ -41,12 +41,47 @@ export default async function PromotionsPage() {
 
   return (
     <div>
-      <AdminPageHeader title="Product Discounts" description="Set a percent off a piece. That writes a Ghana Cedi sale price, not a store-wide coupon." />
+      <AdminPageHeader title="Discounts" description="Set a percent off a piece. That writes a Ghana Cedi sale price, not a store-wide coupon." />
       {items.length === 0 ? (
         <div className="mt-6">
           <EmptyState title="Catalogue is empty" body="Add a product before applying a discount." />
         </div>
       ) : (
+        <>
+        <MobileCards className="mt-6">
+          {items.map((p) => (
+            <li key={p.id} className="rounded-xl border border-border bg-white/95 p-4 shadow-sm">
+              <p className="font-medium">{p.name}</p>
+              <p className="mt-0.5 text-xs uppercase text-muted">{p.categoryName ?? "-"}</p>
+              <p className="mt-2 tabular-nums">{formatGhs(Number(p.price))}</p>
+              <form action={applyDiscount} className="mt-3 flex flex-col gap-2">
+                <input type="hidden" name="productId" value={p.id} />
+                <input type="hidden" name="price" value={p.price} />
+                <label className="block text-sm">
+                  Discount %
+                  <input
+                    name="discountPercent"
+                    type="number"
+                    min="0"
+                    max="99"
+                    step="1"
+                    defaultValue={discountPercent(p.price, p.salePrice)}
+                    aria-label={`Discount percent for ${p.name}`}
+                    className="input mt-1"
+                  />
+                </label>
+                <button className={adminButton()} type="submit">
+                  Apply
+                </button>
+                {p.salePrice ? (
+                  <button name="clear" value="1" className="inline-flex h-12 items-center justify-center text-sm text-muted" type="submit">
+                    Clear
+                  </button>
+                ) : null}
+              </form>
+            </li>
+          ))}
+        </MobileCards>
         <AdminTable className="mt-6">
           <thead>
             <tr className="border-b border-border bg-surface text-xs text-muted">
@@ -87,7 +122,7 @@ export default async function PromotionsPage() {
                       Apply
                     </button>
                     {p.salePrice ? (
-                      <button form={`discount-${p.id}`} name="clear" value="1" className="text-sm text-muted" type="submit">
+                      <button form={`discount-${p.id}`} name="clear" value="1" className="inline-flex min-h-11 items-center text-sm text-muted" type="submit">
                         Clear
                       </button>
                     ) : null}
@@ -97,6 +132,7 @@ export default async function PromotionsPage() {
             ))}
           </tbody>
         </AdminTable>
+        </>
       )}
     </div>
   );

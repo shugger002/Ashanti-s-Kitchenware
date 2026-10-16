@@ -328,7 +328,7 @@ export function AdminShell({ user, children }: { user: AdminUser; children: Reac
             <PanelLeft className="h-4 w-4" />
           </button>
         </div>
-        <div className="relative z-10 mx-auto max-w-6xl px-4 py-5 sm:px-8 sm:py-9">{children}</div>
+        <div className="relative z-10 mx-auto max-w-6xl px-4 py-5 pb-10 sm:px-8 sm:py-9">{children}</div>
       </div>
     </div>
   );

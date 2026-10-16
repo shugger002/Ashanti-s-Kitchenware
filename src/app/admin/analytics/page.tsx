@@ -1,7 +1,7 @@
 import { requirePermission } from "@/server/auth/authorize";
 import { dashboardMetrics, listAuditLogs } from "@/server/reporting/service";
 import { formatGhs } from "@/lib/money";
-import { AdminPageHeader, AdminTable, EmptyState } from "@/components/admin/ui";
+import { AdminPageHeader, AdminTable, EmptyState, MobileCards } from "@/components/admin/ui";
 
 export default async function AnalyticsPage() {
   const [, metrics, logs] = await Promise.all([
@@ -17,7 +17,7 @@ export default async function AnalyticsPage() {
   return (
     <div>
       <AdminPageHeader
-        title="Analytics Dashboard"
+        title="Analytics"
         description="Paid revenue, discount coverage, and stock risk from this shop’s own orders, not a live event pipeline."
       />
       <dl className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -52,6 +52,20 @@ export default async function AnalyticsPage() {
           <EmptyState title="Quiet desk" body="Staff actions (product edits, stock counts, order moves) appear here." />
         </div>
       ) : (
+        <>
+        <MobileCards>
+          {logs.map((log) => (
+            <li key={log.id} className="rounded-xl border border-border bg-white/95 p-4 shadow-sm">
+              <p className="text-xs text-muted">{new Date(log.created_at).toLocaleString("en-GH")}</p>
+              <p className="mt-1 font-medium">{log.action}</p>
+              <p className="mt-1 text-sm text-muted">{log.actor_email ?? "system"}</p>
+              <p className="mt-1 text-xs text-muted">
+                {log.entity_type}
+                {log.entity_id ? ` · ${log.entity_id.slice(0, 8)}` : ""}
+              </p>
+            </li>
+          ))}
+        </MobileCards>
         <AdminTable className="mt-4">
           <thead>
             <tr className="border-b border-border bg-surface text-xs text-muted">
@@ -75,6 +89,7 @@ export default async function AnalyticsPage() {
             ))}
           </tbody>
         </AdminTable>
+        </>
       )}
     </div>
   );

@@ -32,7 +32,7 @@ export function AdminLoginForm() {
         <input name="password" type="password" required className="input mt-1" />
       </label>
       {error ? <p className="text-sm text-accent">{error}</p> : null}
-      <Button type="submit" disabled={pending}>
+      <Button type="submit" disabled={pending} className="h-12 w-full">
         {pending ? "Signing in…" : "Log In"}
       </Button>
       <p className="text-sm">

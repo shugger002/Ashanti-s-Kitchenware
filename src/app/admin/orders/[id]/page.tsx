@@ -1,11 +1,13 @@
 import { notFound } from "next/navigation";
 import { requirePermission } from "@/server/auth/authorize";
+import { hasPermission } from "@/server/auth/types";
 import { addOrderNote, getOrderById, ORDER_TRANSITIONS, transitionOrder } from "@/server/orders/service";
 import { recordManualPayment } from "@/server/checkout/service";
 import { formatGhs } from "@/lib/money";
 import { ghanaInternationalMsisdn } from "@/lib/phone-gh";
 import { CUSTOMER_TRACK_STEPS, customerTrackIndex, ORDER_STATUS_LABEL } from "@/lib/order-status";
 import { revalidatePath } from "next/cache";
+import { buttonClass } from "@/components/ui/button";
 import {
   adminButton,
   AdminPageHeader,
@@ -36,7 +38,9 @@ const STAFF_NEXT: Record<string, string> = {
 };
 
 export default async function AdminOrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const user = await requirePermission("orders.write");
+  const user = await requirePermission("orders.read");
+  const canWrite = hasPermission(user.roles, "orders.write");
+  const canCapture = hasPermission(user.roles, "payments.capture");
   const { id } = await params;
   const data = await getOrderById(id);
   if (!data) notFound();
@@ -173,8 +177,18 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
           <section className="rounded-2xl border border-border bg-background p-5 text-sm">
             <h2 className="font-serif text-xl">Customer</h2>
             <p className="mt-3">{text(order.full_name)}</p>
-            <p className="text-muted">{text(order.phone)}</p>
-            {text(order.email) ? <p className="text-muted">{text(order.email)}</p> : null}
+            {waDigits.length >= 11 ? (
+              <a href={`tel:+${waDigits}`} className="mt-1 block min-h-11 text-accent">
+                {text(order.phone)}
+              </a>
+            ) : (
+              <p className="mt-1 text-muted">{text(order.phone)}</p>
+            )}
+            {text(order.email) ? (
+              <a href={`mailto:${text(order.email)}`} className="block min-h-11 text-muted">
+                {text(order.email)}
+              </a>
+            ) : null}
             <p className="mt-4 text-xs uppercase tracking-[0.14em] text-muted">
               {text(order.delivery_method) === "collection" ? "Collection" : "Delivery"}
             </p>
@@ -182,45 +196,54 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
             {text(order.delivery_instructions) ? (
               <p className="mt-3 text-muted">{text(order.delivery_instructions)}</p>
             ) : null}
-            {method === "delivery" && quoteHref ? (
-              <a href={quoteHref} className="mt-4 inline-block text-sm text-accent" target="_blank" rel="noreferrer">
-                Quote delivery on WhatsApp
-              </a>
-            ) : null}
+            <div className="mt-4 flex flex-col gap-2">
+              {waDigits.length >= 11 ? (
+                <a href={`tel:+${waDigits}`} className={adminButton()}>
+                  Call customer
+                </a>
+              ) : null}
+              {method === "delivery" && quoteHref ? (
+                <a href={quoteHref} className={buttonClass("secondary", "h-12 w-full sm:w-auto")} target="_blank" rel="noreferrer">
+                  Quote delivery on WhatsApp
+                </a>
+              ) : null}
+            </div>
           </section>
         </div>
 
         <div className="space-y-5">
-          {allowed.length > 0 ? (
-            <form action={changeStatus} className="space-y-3 rounded-2xl border border-border bg-background p-5">
-              <h2 className="font-serif text-xl">Move the ticket</h2>
-              <input type="hidden" name="orderId" value={id} />
-              <label className="block text-sm">
-                Next status
-                <select name="toStatus" className="input mt-1">
-                  {allowed.map((value) => (
-                    <option key={value} value={value}>
-                      {STAFF_NEXT[value] ?? ORDER_STATUS_LABEL[value] ?? value.replaceAll("_", " ")}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label className="block text-sm">
-                Internal courier note
-                <input name="trackingNumber" className="input mt-1" placeholder="Customers do not see this on the tracker" />
-              </label>
-              <button className={adminButton()} type="submit">
-                Update status
-              </button>
-            </form>
-          ) : (
-            <div className="rounded-2xl border border-border bg-background p-5">
-              <h2 className="font-serif text-xl">Fulfillment</h2>
-              <p className="mt-2 text-sm text-muted">This ticket has no further moves.</p>
-            </div>
-          )}
+          {canWrite ? (
+            allowed.length > 0 ? (
+              <form action={changeStatus} className="space-y-3 rounded-2xl border border-border bg-background p-5">
+                <h2 className="font-serif text-xl">Move the ticket</h2>
+                <input type="hidden" name="orderId" value={id} />
+                <label className="block text-sm">
+                  Next status
+                  <select name="toStatus" className="input mt-1">
+                    {allowed.map((value) => (
+                      <option key={value} value={value}>
+                        {STAFF_NEXT[value] ?? ORDER_STATUS_LABEL[value] ?? value.replaceAll("_", " ")}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label className="block text-sm">
+                  Internal courier note
+                  <input name="trackingNumber" className="input mt-1" placeholder="Customers do not see this on the tracker" />
+                </label>
+                <button className={adminButton()} type="submit">
+                  Update status
+                </button>
+              </form>
+            ) : (
+              <div className="rounded-2xl border border-border bg-background p-5">
+                <h2 className="font-serif text-xl">Fulfillment</h2>
+                <p className="mt-2 text-sm text-muted">This ticket has no further moves.</p>
+              </div>
+            )
+          ) : null}
 
-          {paymentStatus !== "paid" ? (
+          {canCapture && paymentStatus !== "paid" ? (
             <form action={capture} className="space-y-3 rounded-2xl border border-accent bg-background p-5">
               <h2 className="font-serif text-xl">Record verified payment</h2>
               <p className="text-xs leading-relaxed text-muted">
@@ -239,7 +262,7 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
                 Mark paid
               </button>
             </form>
-          ) : (
+          ) : paymentStatus === "paid" ? (
             <div className="rounded-2xl border border-border bg-background p-5 text-sm">
               <h2 className="font-serif text-xl">Payment</h2>
               <p className="mt-2 text-muted">Marked paid.</p>
@@ -261,7 +284,7 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
                 </ul>
               ) : null}
             </div>
-          )}
+          ) : null}
 
           {data.shipments.length > 0 ? (
             <section className="rounded-2xl border border-border bg-background p-5 text-sm">
@@ -283,14 +306,18 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
 
           <form action={note} className="space-y-3 rounded-2xl border border-border bg-background p-5">
             <h2 className="font-serif text-xl">Desk notes</h2>
-            <input type="hidden" name="orderId" value={id} />
-            <label className="block text-sm">
-              Note
-              <textarea name="note" required placeholder={`From ${user.email}`} className="input mt-1" rows={3} />
-            </label>
-            <button className={adminButton()} type="submit">
-              Add note
-            </button>
+            {canWrite ? (
+              <>
+                <input type="hidden" name="orderId" value={id} />
+                <label className="block text-sm">
+                  Note
+                  <textarea name="note" required placeholder={`From ${user.email}`} className="input mt-1" rows={3} />
+                </label>
+                <button className={adminButton()} type="submit">
+                  Add note
+                </button>
+              </>
+            ) : null}
             {data.history.length > 0 ? (
               <ol className="mt-2 divide-y divide-border text-sm">
                 {data.history.map((entry) => {

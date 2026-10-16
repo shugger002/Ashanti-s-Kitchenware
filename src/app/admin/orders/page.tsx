@@ -7,6 +7,7 @@ import {
   AdminPageHeader,
   AdminTable,
   EmptyState,
+  MobileCards,
   orderTone,
   paymentLabel,
   paymentTone,
@@ -36,12 +37,12 @@ export default async function AdminOrdersPage({
         description="Same steps the customer tracker uses: Order Received, Packaging order, Order Out for Delivery, Order Delivered. Quote delivery on WhatsApp. Checkout does not add a fee."
       />
       <Toolbar>
-        <form className="flex flex-wrap items-center gap-2" method="get">
+        <form className="flex w-full flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center" method="get">
           <label htmlFor="order-q" className="sr-only">
             Search orders
           </label>
-          <input id="order-q" name="q" defaultValue={params.q} placeholder="Reference, name, or phone" className="input max-w-xs" />
-          <select name="status" defaultValue={params.status ?? ""} className="input max-w-48" aria-label="Fulfillment">
+          <input id="order-q" name="q" defaultValue={params.q} placeholder="Reference, name, or phone" className="input w-full sm:max-w-xs" />
+          <select name="status" defaultValue={params.status ?? ""} className="input w-full sm:max-w-48" aria-label="Fulfillment">
             <option value="">All fulfillment</option>
             <option value="pending_payment">Order Received (unpaid)</option>
             <option value="paid">Order Received (paid)</option>
@@ -53,7 +54,7 @@ export default async function AdminOrdersPage({
             <option value="cancelled">Cancelled</option>
             <option value="refunded">Refunded</option>
           </select>
-          <select name="payment" defaultValue={params.payment ?? ""} className="input max-w-48" aria-label="Payment">
+          <select name="payment" defaultValue={params.payment ?? ""} className="input w-full sm:max-w-48" aria-label="Payment">
             <option value="">All payments</option>
             <option value="pending">Pending</option>
             <option value="unpaid">Unpaid</option>
@@ -77,6 +78,41 @@ export default async function AdminOrdersPage({
           />
         </div>
       ) : (
+        <>
+        <MobileCards>
+          {orders.map((order) => (
+            <li key={order.id}>
+              <Link
+                href={`/admin/orders/${order.id}`}
+                className="block min-h-11 rounded-xl border border-border bg-white/95 p-4 shadow-sm"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <p className="font-medium">{order.publicRef}</p>
+                  <p className="shrink-0 tabular-nums">{formatGhs(Number(order.total))}</p>
+                </div>
+                <p className="mt-1 text-sm">{order.fullName}</p>
+                <p className="mt-0.5 text-xs text-muted">
+                  {new Date(order.createdAt).toLocaleString("en-GH", {
+                    day: "numeric",
+                    month: "short",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                  {" · "}
+                  {order.deliveryMethod === "collection" ? "Collection" : "Delivery"}
+                </p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <StatusPill value={order.status} tone={orderTone(order.status)} />
+                  <StatusPill
+                    value={order.paymentStatus}
+                    tone={paymentTone(order.paymentStatus)}
+                    label={paymentLabel(order.paymentStatus)}
+                  />
+                </div>
+              </Link>
+            </li>
+          ))}
+        </MobileCards>
         <AdminTable className="mt-4">
           <thead>
             <tr className="border-b border-border bg-surface text-xs text-muted">
@@ -119,6 +155,7 @@ export default async function AdminOrdersPage({
             ))}
           </tbody>
         </AdminTable>
+        </>
       )}
     </div>
   );

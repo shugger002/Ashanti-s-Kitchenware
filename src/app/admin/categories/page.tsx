@@ -2,7 +2,7 @@ import { requirePermission } from "@/server/auth/authorize";
 import { listCategories } from "@/server/catalog/queries";
 import { upsertCategory } from "@/server/catalog/admin";
 import { revalidatePath } from "next/cache";
-import { adminButton, AdminPageHeader, AdminTable, EmptyState } from "@/components/admin/ui";
+import { adminButton, AdminPageHeader, AdminTable, EmptyState, MobileCards } from "@/components/admin/ui";
 
 async function saveCategory(formData: FormData) {
   "use server";
@@ -31,6 +31,31 @@ export default async function CategoriesPage() {
           <EmptyState title="No categories" body="Add a shop aisle below. Hidden categories stay off the storefront." />
         </div>
       ) : (
+        <>
+        <MobileCards>
+          {categories.map((c) => (
+            <li key={c.id} className="rounded-xl border border-border bg-white/95 p-4 shadow-sm">
+              <form action={saveCategory} className="flex flex-col gap-3">
+                <input type="hidden" name="id" value={c.id} />
+                <input type="hidden" name="description" value={c.description ?? ""} />
+                <label className="block text-sm">
+                  Name
+                  <input name="name" required defaultValue={c.name} className="input mt-1" />
+                </label>
+                <label className="block text-sm">
+                  Slug
+                  <input name="slug" defaultValue={c.slug} className="input mt-1" />
+                </label>
+                <label className="flex min-h-11 items-center gap-2 text-sm">
+                  <input type="checkbox" name="isActive" defaultChecked={c.isActive} /> Visible
+                </label>
+                <button className={adminButton()} type="submit">
+                  Save
+                </button>
+              </form>
+            </li>
+          ))}
+        </MobileCards>
         <AdminTable className="mt-6">
           <thead>
             <tr className="border-b border-border bg-surface text-xs text-muted">
@@ -66,6 +91,7 @@ export default async function CategoriesPage() {
             ))}
           </tbody>
         </AdminTable>
+        </>
       )}
       <form action={saveCategory} className="mt-8 max-w-md space-y-3 rounded-2xl border border-border bg-background p-5">
         <h2 className="font-serif text-xl">Add category</h2>

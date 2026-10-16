@@ -159,6 +159,7 @@ h3 {
 
 .input {
   width: 100%;
+  min-height: 2.75rem;
   border: 1px solid var(--border);
   background: var(--surface);
   border-radius: 0.2rem;

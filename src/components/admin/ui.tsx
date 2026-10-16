@@ -4,7 +4,7 @@ import { buttonClass } from "@/components/ui/button";
 import { orderStatusLabel } from "@/lib/order-status";
 
 export function adminButton(className?: string) {
-  return buttonClass("primary", className);
+  return buttonClass("primary", cn("h-12 min-h-12 w-full sm:w-auto", className));
 }
 
 export function AdminPageHeader({
@@ -41,7 +41,7 @@ export function AdminPageHeader({
           </p>
         ) : null}
       </div>
-      {action ? <div className="flex flex-wrap items-center gap-2">{action}</div> : null}
+      {action ? <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center">{action}</div> : null}
     </div>
   );
 }
@@ -114,10 +114,14 @@ export function AdminTable({
   className?: string;
 }) {
   return (
-    <div className={cn("overflow-x-auto rounded-xl border border-border bg-surface", className)}>
+    <div className={cn("hidden overflow-x-auto rounded-xl border border-border bg-surface md:block", className)}>
       <table className="w-full text-left text-sm">{children}</table>
     </div>
   );
+}
+
+export function MobileCards({ children, className }: { children: React.ReactNode; className?: string }) {
+  return <ul className={cn("mt-4 space-y-3 md:hidden", className)}>{children}</ul>;
 }
 
 export function EmptyState({
@@ -140,7 +144,9 @@ export function EmptyState({
 
 export function Toolbar({ children }: { children: React.ReactNode }) {
   return (
-    <div className="mt-6 flex flex-wrap items-center gap-2 rounded-2xl border border-border bg-background p-3">{children}</div>
+    <div className="mt-6 flex flex-col gap-2 rounded-xl border border-border bg-white/95 p-3 sm:flex-row sm:flex-wrap sm:items-center">
+      {children}
+    </div>
   );
 }
 
@@ -148,7 +154,7 @@ export function BackLink({ href, children }: { href: string; children: React.Rea
   return (
     <Link
       href={href}
-      className="mb-4 inline-block rounded-md bg-white/95 px-2 py-1 text-sm text-neutral-800 hover:text-foreground"
+      className="mb-4 inline-flex min-h-11 items-center rounded-md bg-white/95 px-2 py-1 text-sm text-neutral-800 hover:text-foreground"
     >
       {children}
     </Link>
