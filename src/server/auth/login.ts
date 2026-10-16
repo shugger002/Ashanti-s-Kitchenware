@@ -13,8 +13,12 @@ export async function authenticateAdmin(input: {
   userAgent: string | null;
 }): Promise<{ ok: true; token: string } | { ok: false; error: string }> {
   const email = input.email.trim().toLowerCase();
-  if (await isLoginBlocked(email, input.ip)) {
-    return { ok: false, error: "Too many failed attempts. Try again in 15 minutes." };
+  try {
+    if (await isLoginBlocked(email, input.ip)) {
+      return { ok: false, error: "Too many failed attempts. Try again in 15 minutes." };
+    }
+  } catch (error) {
+    console.error("admin login rate limit skipped", error);
   }
 
   const result = await query<{

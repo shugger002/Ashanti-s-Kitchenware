@@ -1,37 +1,27 @@
 "use client";
 
-import { useState } from "react";
+import { useActionState } from "react";
 import { adminLogin } from "@/app/admin/login/actions";
 import { Button } from "@/components/ui/button";
+import { PasswordField } from "@/components/ui/password-field";
 
 export function AdminLoginForm() {
-  const [error, setError] = useState<string | null>(null);
-  const [pending, setPending] = useState(false);
+  const [state, action, pending] = useActionState(adminLogin, null);
   return (
-    <form
-      className="mt-8 space-y-4"
-      onSubmit={async (event) => {
-        event.preventDefault();
-        setPending(true);
-        setError(null);
-        const result = await adminLogin(new FormData(event.currentTarget));
-        if (!result.ok) {
-          setPending(false);
-          setError(result.error);
-          return;
-        }
-        window.location.assign("/admin");
-      }}
-    >
+    <form className="mt-8 space-y-4" action={action}>
       <label className="block text-sm">
         Email
-        <input name="email" type="email" required className="input mt-1" />
+        <input
+          name="email"
+          type="email"
+          required
+          autoComplete="username"
+          defaultValue={state?.email}
+          className="input mt-1"
+        />
       </label>
-      <label className="block text-sm">
-        Password
-        <input name="password" type="password" required className="input mt-1" />
-      </label>
-      {error ? <p className="text-sm text-accent">{error}</p> : null}
+      <PasswordField name="password" label="Password" required autoComplete="current-password" />
+      {state?.error ? <p className="text-sm text-accent">{state.error}</p> : null}
       <Button type="submit" disabled={pending} className="h-12 w-full">
         {pending ? "Signing in…" : "Log In"}
       </Button>

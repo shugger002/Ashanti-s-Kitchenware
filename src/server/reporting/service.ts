@@ -56,8 +56,8 @@ export async function dashboardMetrics() {
     query<{ demo: string; promo: string; total_products: string }>(sql`
       SELECT
          count(*) FILTER (WHERE archived_at IS NULL)::text AS total_products,
-         count(*) FILTER (WHERE sku ILIKE 'DEMO-%')::text AS demo,
-         count(*) FILTER (WHERE sale_price IS NOT NULL AND sale_price < price)::text AS promo
+         count(*) FILTER (WHERE archived_at IS NULL AND sku ILIKE 'DEMO-%')::text AS demo,
+         count(*) FILTER (WHERE archived_at IS NULL AND sale_price IS NOT NULL AND sale_price < price)::text AS promo
        FROM products
     `),
     query<{
