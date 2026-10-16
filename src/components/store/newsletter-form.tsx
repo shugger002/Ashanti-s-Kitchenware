@@ -11,7 +11,7 @@ export function NewsletterForm({ compact = false, invert = false }: { compact?: 
       action={action}
       className={
         compact
-          ? "space-y-3"
+          ? "space-y-2 lg:space-y-3"
           : invert
             ? "mt-6 flex flex-col gap-3"
             : "mt-6 flex max-w-md flex-col gap-3 sm:flex-row"

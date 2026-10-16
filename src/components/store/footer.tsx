@@ -31,7 +31,15 @@ const helpLinks = [
 
 function FooterHeading({ children }: { children: ReactNode }) {
   return (
-    <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-muted">{children}</p>
+    <p className="text-[10px] font-medium uppercase tracking-[0.14em] text-muted lg:text-[11px]">{children}</p>
+  );
+}
+
+function FooterLink({ href, children }: { href: string; children: ReactNode }) {
+  return (
+    <Link href={href} className="flex min-h-9 items-center py-0.5 hover:text-accent lg:min-h-11">
+      {children}
+    </Link>
   );
 }
 
@@ -61,43 +69,43 @@ export function StoreFooter({
   return (
     <footer className="mt-auto bg-surface pb-[calc(var(--store-dock)+env(safe-area-inset-bottom))] lg:pb-0">
       <section className="border-t border-border">
-        <div className="mx-auto max-w-6xl px-4 py-8 lg:px-8 lg:py-16">
-          <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-accent">Visit the Accra shop</p>
-          <p className="mt-3 max-w-3xl font-serif text-2xl text-pretty md:text-4xl">
+        <div className="mx-auto max-w-6xl px-4 py-5 lg:px-8 lg:py-16">
+          <p className="text-[10px] font-medium uppercase tracking-[0.14em] text-accent lg:text-[11px]">Visit the Accra shop</p>
+          <p className="mt-2 max-w-3xl font-serif text-lg leading-snug text-pretty md:text-4xl lg:mt-3">
             {contact.addressLine1 || locality}
           </p>
-          {contact.addressLine1 ? <p className="mt-2 text-sm text-muted">{locality}</p> : null}
-          <p className="mt-4 max-w-md text-pretty text-sm leading-relaxed text-muted">{shopHours}</p>
-          <div className="mt-6 flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:gap-3">
-            <Link href="/directions" className={buttonClass("primary", "h-12 w-full sm:w-auto")}>
-              Get directions
+          {contact.addressLine1 ? <p className="mt-1 text-xs text-muted lg:mt-2 lg:text-sm">{locality}</p> : null}
+          <p className="mt-2 max-w-md text-pretty text-xs leading-relaxed text-muted lg:mt-4 lg:text-sm">{shopHours}</p>
+          <div className="mt-4 grid grid-cols-3 gap-2 lg:mt-6 lg:flex lg:flex-wrap lg:gap-3">
+            <Link href="/directions" className={buttonClass("primary", "h-10 px-2 text-xs lg:h-12 lg:w-auto lg:px-5 lg:text-sm")}>
+              Directions
             </Link>
-            <a href={`https://wa.me/${digits}`} className={buttonClass("secondary", "h-12 w-full sm:w-auto")}>
+            <a href={`https://wa.me/${digits}`} className={buttonClass("secondary", "h-10 px-2 text-xs lg:h-12 lg:w-auto lg:px-5 lg:text-sm")}>
               WhatsApp
             </a>
-            <a href={`tel:${contact.phoneE164}`} className={buttonClass("secondary", "h-12 w-full sm:w-auto")}>
+            <a href={`tel:${contact.phoneE164}`} className={buttonClass("secondary", "h-10 px-2 text-xs lg:h-12 lg:w-auto lg:px-5 lg:text-sm")}>
               Call
             </a>
           </div>
         </div>
       </section>
 
-      <div className="mx-auto grid max-w-6xl gap-8 px-4 py-8 sm:grid-cols-2 lg:grid-cols-4 lg:gap-12 lg:px-8 lg:py-14">
-        <div>
-          <StoreLogo className="h-10 w-auto max-w-[12rem] lg:h-12 lg:max-w-[14rem]" />
-          <p className="mt-4 max-w-xs text-pretty text-sm leading-relaxed text-muted">
+      <div className="mx-auto grid max-w-6xl grid-cols-2 gap-x-6 gap-y-6 px-4 py-5 lg:grid-cols-4 lg:gap-12 lg:px-8 lg:py-14">
+        <div className="col-span-2 lg:col-span-1">
+          <StoreLogo className="h-8 w-auto max-w-[10rem] lg:h-12 lg:max-w-[14rem]" />
+          <p className="mt-2 hidden max-w-xs text-pretty text-sm leading-relaxed text-muted lg:mt-4 lg:block">
             Kitchen appliances from the Accra shop, priced in Ghana Cedis.
           </p>
-          <p className="mt-4 text-sm leading-relaxed">
+          <p className="mt-2 text-xs leading-relaxed lg:mt-4 lg:text-sm">
             <a className="hover:text-accent" href={`tel:${contact.phoneE164}`}>
               {contact.phoneDisplay}
             </a>
-            <br />
+            <span className="text-muted"> · </span>
             <a className="hover:text-accent" href={`mailto:${contact.email}`}>
               {contact.email}
             </a>
           </p>
-          <p className="mt-3">
+          <p className="mt-1 hidden lg:mt-3 lg:block">
             <a href={mapsUrl} rel="noreferrer" className="text-sm text-accent hover:text-accent-hover">
               Open in Google Maps
             </a>
@@ -106,22 +114,16 @@ export function StoreFooter({
 
         <nav aria-label="Shop" className="text-sm">
           <FooterHeading>Shop</FooterHeading>
-          <ul className="mt-2">
+          <ul className="mt-1.5 lg:mt-2">
             <li>
-              <Link href="/products" className="flex min-h-11 items-center hover:text-accent">
-                All products
-              </Link>
+              <FooterLink href="/products">All products</FooterLink>
             </li>
             <li>
-              <Link href="/promo" className="flex min-h-11 items-center hover:text-accent">
-                Promo and discounted
-              </Link>
+              <FooterLink href="/promo">Promo</FooterLink>
             </li>
             {shopLinks.map((item) => (
               <li key={item.href}>
-                <Link href={item.href} className="flex min-h-11 items-center hover:text-accent">
-                  {item.label}
-                </Link>
+                <FooterLink href={item.href}>{item.label}</FooterLink>
               </li>
             ))}
           </ul>
@@ -129,44 +131,42 @@ export function StoreFooter({
 
         <nav aria-label="Help" className="text-sm">
           <FooterHeading>Help</FooterHeading>
-          <ul className="mt-2">
+          <ul className="mt-1.5 lg:mt-2">
             {helpLinks.map((item) => (
               <li key={item.href}>
-                <Link href={item.href} className="flex min-h-11 items-center hover:text-accent">
-                  {item.label}
-                </Link>
+                <FooterLink href={item.href}>{item.label}</FooterLink>
               </li>
             ))}
           </ul>
         </nav>
 
-        <div className="text-sm">
+        <div className="col-span-2 text-sm lg:col-span-1">
           <FooterHeading>Stock updates</FooterHeading>
-          <p className="mt-4 text-pretty leading-relaxed text-muted">
+          <p className="mt-2 hidden text-pretty leading-relaxed text-muted lg:mt-4 lg:block">
             Email when listed appliances restock. This is not a discount unless the shop publishes one.
           </p>
-          <div className="mt-4">
+          <div className="mt-2 lg:mt-4">
             <NewsletterForm compact />
           </div>
         </div>
       </div>
 
       <div className="bg-foreground text-white/70">
-        <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-4 text-xs lg:flex-row lg:items-center lg:justify-between lg:px-8 lg:py-5">
+        <div className="mx-auto flex max-w-6xl flex-col gap-2 px-4 py-3 text-xs lg:flex-row lg:items-center lg:justify-between lg:gap-3 lg:px-8 lg:py-5">
           <p>
             © {new Date().getFullYear()} {contact.legalName || brand.name} · Accra, Ghana
           </p>
-          <nav className="flex flex-wrap items-center gap-x-4 gap-y-2" aria-label="Policies">
-            <Link href="/privacy" className="inline-flex min-h-11 items-center hover:text-white">
+          <nav className="flex flex-wrap items-center gap-x-4 gap-y-1" aria-label="Policies">
+            <Link href="/privacy" className="inline-flex min-h-9 items-center hover:text-white lg:min-h-11">
               Privacy
             </Link>
-            <Link href="/terms" className="inline-flex min-h-11 items-center hover:text-white">
+            <Link href="/terms" className="inline-flex min-h-9 items-center hover:text-white lg:min-h-11">
               Terms
             </Link>
-            <Link href="/cookies" className="inline-flex min-h-11 items-center hover:text-white">
+            <Link href="/cookies" className="inline-flex min-h-9 items-center hover:text-white lg:min-h-11">
               Cookies
             </Link>
-            <CookieSettingsButton className="text-xs text-white/70 hover:text-white" />
+            <CookieSettingsButton className="inline-flex min-h-9 items-center text-xs text-white/70 hover:text-white" />
             {socialLinks.map(([label, href]) => (
               <a key={label} href={href} rel="noreferrer" className="hover:text-white">
                 {label}
