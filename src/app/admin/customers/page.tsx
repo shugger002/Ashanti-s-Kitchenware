@@ -23,7 +23,7 @@ export default async function CustomersPage() {
           {customers.map((c) => {
             const digits = ghanaInternationalMsisdn(String(c.phone ?? ""));
             return (
-              <li key={c.id} className="rounded-xl border border-border bg-white/95 p-4 shadow-sm">
+              <li key={c.id} className="admin-panel p-4">
                 <p className="font-medium">{c.full_name}</p>
                 {digits.length >= 11 ? (
                   <a href={`tel:+${digits}`} className="mt-2 block min-h-11 text-accent">

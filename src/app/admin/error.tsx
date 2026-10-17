@@ -7,7 +7,7 @@ export default function AdminError({
   reset: () => void;
 }) {
   return (
-    <div className="rounded-xl border border-border bg-white/95 p-6 shadow-sm">
+    <div className="admin-panel p-6">
       <h1 className="text-xl font-medium">This page did not open</h1>
       <p className="mt-2 text-sm text-neutral-800">Try again, or go back to Home.</p>
       <div className="mt-5 flex flex-wrap gap-3">

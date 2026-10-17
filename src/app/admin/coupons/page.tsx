@@ -2,7 +2,7 @@ import { requirePermission } from "@/server/auth/authorize";
 import { createCoupon, listCoupons, setCouponActive } from "@/server/coupons/service";
 import { formatGhs } from "@/lib/money";
 import { revalidatePath } from "next/cache";
-import { adminButton, AdminPageHeader, AdminTable, EmptyState, MobileCards, StatusPill } from "@/components/admin/ui";
+import { adminButton, AdminPageHeader, AdminSection, AdminStat, AdminTable, EmptyState, MobileCards, StatusPill } from "@/components/admin/ui";
 
 async function addCoupon(formData: FormData) {
   "use server";
@@ -45,17 +45,14 @@ export default async function CouponsPage() {
       />
 
       <ul className="mt-8 grid gap-3 sm:grid-cols-3">
-        <li className="rounded-xl border border-border bg-surface p-5">
-          <p className="text-sm text-muted">Coupons</p>
-          <p className="mt-2 text-3xl font-medium tabular-nums">{coupons.length}</p>
+        <li>
+          <AdminStat label="Coupons" value={coupons.length} />
         </li>
-        <li className="rounded-xl border border-border bg-surface p-5">
-          <p className="text-sm text-muted">Turned on</p>
-          <p className="mt-2 text-3xl font-medium tabular-nums">{active}</p>
+        <li>
+          <AdminStat label="Turned on" value={active} />
         </li>
-        <li className="rounded-xl border border-border bg-surface p-5">
-          <p className="text-sm text-muted">Times used</p>
-          <p className="mt-2 text-3xl font-medium tabular-nums">{uses}</p>
+        <li>
+          <AdminStat label="Times used" value={uses} />
         </li>
       </ul>
 
@@ -70,7 +67,7 @@ export default async function CouponsPage() {
         <>
         <MobileCards className="mt-6">
           {coupons.map((c) => (
-            <li key={c.id} className="rounded-xl border border-border bg-white/95 p-4 shadow-sm">
+            <li key={c.id} className="admin-panel p-4">
               <div className="flex items-start justify-between gap-3">
                 <p className="font-medium">{c.code}</p>
                 <StatusPill value={c.is_active ? "On" : "Off"} tone={c.is_active ? "ok" : "muted"} />
@@ -138,8 +135,9 @@ export default async function CouponsPage() {
         </>
       )}
 
-      <form action={addCoupon} className="mt-8 max-w-xl space-y-3 rounded-xl border border-border bg-surface p-5">
-        <h2 className="text-lg font-medium">New coupon</h2>
+      <form action={addCoupon} className="mt-8 max-w-xl">
+        <AdminSection title="New coupon" hint="A percent or Cedis off the basket. Delivery stays on WhatsApp.">
+        <div className="space-y-3">
         <label className="block text-sm">
           Code customers type
           <input name="code" required minLength={3} className="input mt-1" placeholder="WELCOME10" />
@@ -175,6 +173,8 @@ export default async function CouponsPage() {
         <button className={adminButton()} type="submit">
           Save coupon
         </button>
+        </div>
+        </AdminSection>
       </form>
     </div>
   );

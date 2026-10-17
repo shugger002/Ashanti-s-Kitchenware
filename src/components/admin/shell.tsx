@@ -301,7 +301,7 @@ export function AdminShell({ user, children }: { user: AdminUser; children: Reac
           alt=""
           className="pointer-events-none absolute inset-0 h-full w-full object-cover object-center"
         />
-        <div className="pointer-events-none absolute inset-0 bg-white/60" />
+        <div className="pointer-events-none absolute inset-0 bg-[color-mix(in_srgb,#f6efe6_78%,transparent)]" />
         <header className="sticky top-0 z-30 flex h-14 items-center gap-2 border-b border-border bg-white px-3 lg:hidden">
           <button
             type="button"
@@ -328,7 +328,7 @@ export function AdminShell({ user, children }: { user: AdminUser; children: Reac
             <PanelLeft className="h-4 w-4" />
           </button>
         </div>
-        <div className="relative z-10 mx-auto max-w-6xl px-4 py-5 pb-10 sm:px-8 sm:py-9">{children}</div>
+        <div className="relative z-10 mx-auto max-w-6xl px-4 py-6 pb-12 sm:px-8 sm:py-10">{children}</div>
       </div>
     </div>
   );

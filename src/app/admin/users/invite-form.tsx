@@ -3,7 +3,7 @@ import { addStaffUser } from "@/app/admin/users/actions";
 
 export function InviteStaffForm() {
   return (
-    <form action={addStaffUser} className="max-w-md space-y-3 rounded-2xl border border-border bg-background p-5">
+    <form action={addStaffUser} className="max-w-md admin-panel space-y-3">
       <h2 className="font-serif text-xl">New staff login</h2>
       <label className="block text-sm">
         Name

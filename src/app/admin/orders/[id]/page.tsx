@@ -137,7 +137,7 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
 
       <div className="grid gap-5 lg:grid-cols-[1.15fr_0.85fr]">
         <div className="space-y-5">
-          <section className="rounded-2xl border border-border bg-background p-5">
+          <section className="admin-panel">
             <h2 className="font-serif text-xl">What to pack</h2>
             <ul className="mt-4 divide-y divide-border text-sm">
               {data.items.map((item) => (
@@ -174,7 +174,7 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
             </dl>
           </section>
 
-          <section className="rounded-2xl border border-border bg-background p-5 text-sm">
+          <section className="admin-panel text-sm">
             <h2 className="font-serif text-xl">Customer</h2>
             <p className="mt-3">{text(order.full_name)}</p>
             {waDigits.length >= 11 ? (
@@ -214,7 +214,7 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
         <div className="space-y-5">
           {canWrite ? (
             allowed.length > 0 ? (
-              <form action={changeStatus} className="space-y-3 rounded-2xl border border-border bg-background p-5">
+              <form action={changeStatus} className="admin-panel space-y-3">
                 <h2 className="font-serif text-xl">Next step</h2>
                 <input type="hidden" name="orderId" value={id} />
                 <label className="block text-sm">
@@ -236,7 +236,7 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
                 </button>
               </form>
             ) : (
-              <div className="rounded-2xl border border-border bg-background p-5">
+              <div className="admin-panel">
                 <h2 className="font-serif text-xl">This order</h2>
                 <p className="mt-2 text-sm text-muted">Nothing left to move. It is finished, cancelled, or refunded.</p>
               </div>
@@ -244,7 +244,7 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
           ) : null}
 
           {canCapture && paymentStatus !== "paid" ? (
-            <form action={capture} className="space-y-3 rounded-2xl border border-accent bg-background p-5">
+            <form action={capture} className="space-y-3 admin-panel">
               <h2 className="font-serif text-xl">Mark as paid</h2>
               <p className="text-xs leading-relaxed text-muted">
                 Use this only if you can see the real payment on Hubtel, Moolre, or the bank. Type the payment number from there.
@@ -263,7 +263,7 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
               </button>
             </form>
           ) : paymentStatus === "paid" ? (
-            <div className="rounded-2xl border border-border bg-background p-5 text-sm">
+            <div className="admin-panel text-sm">
               <h2 className="font-serif text-xl">Payment</h2>
               <p className="mt-2 text-muted">Marked paid.</p>
               {data.payments.length > 0 ? (
@@ -287,7 +287,7 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
           ) : null}
 
           {data.shipments.length > 0 ? (
-            <section className="rounded-2xl border border-border bg-background p-5 text-sm">
+            <section className="admin-panel text-sm">
               <h2 className="font-serif text-xl">Delivery notes</h2>
               <ul className="mt-3 space-y-2">
                 {data.shipments.map((shipment) => {
@@ -304,7 +304,7 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
             </section>
           ) : null}
 
-          <form action={note} className="space-y-3 rounded-2xl border border-border bg-background p-5">
+          <form action={note} className="admin-panel space-y-3">
             <h2 className="font-serif text-xl">Staff notes</h2>
             {canWrite ? (
               <>

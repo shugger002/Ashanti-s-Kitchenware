@@ -71,7 +71,7 @@ export default async function SettingsPage() {
         title="Settings"
         description="Shop name, phone, address, and the words on the homepage. Delivery is still quoted on WhatsApp."
       />
-      <form action={saveContact} className="max-w-xl space-y-4 rounded-xl border border-border bg-surface p-5">
+      <form action={saveContact} className="max-w-xl space-y-4 admin-panel">
         <h2 className="font-serif text-xl">Contact</h2>
         <Field name="legalName" label="Legal name" defaultValue={config.contact.legalName} />
         <Field name="tradingName" label="Trading name" defaultValue={config.contact.tradingName} />
@@ -89,7 +89,7 @@ export default async function SettingsPage() {
           Save contact
         </button>
       </form>
-      <form action={saveHero} className="max-w-xl space-y-4 rounded-xl border border-border bg-surface p-5">
+      <form action={saveHero} className="max-w-xl space-y-4 admin-panel">
         <h2 className="font-serif text-xl">Homepage words</h2>
         <p className="text-sm leading-relaxed text-muted">
           These sit under the utensils photo. The announcement is the thin strip at the very top of the shop.
@@ -107,7 +107,7 @@ export default async function SettingsPage() {
           Save homepage
         </button>
       </form>
-      <section className="max-w-xl rounded-xl border border-border bg-surface p-5">
+      <section className="max-w-xl admin-panel">
         <h2 className="text-xl">Other desk pages</h2>
         <p className="mt-2 text-sm leading-relaxed text-muted">Stock, categories, customers, and delivery are on their own pages.</p>
         <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:flex-wrap">

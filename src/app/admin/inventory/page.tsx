@@ -2,7 +2,7 @@ import Link from "next/link";
 import { requirePermission } from "@/server/auth/authorize";
 import { adjustStock, listInventory } from "@/server/inventory/service";
 import { revalidatePath } from "next/cache";
-import { adminButton, AdminPageHeader, AdminTable, EmptyState, MobileCards, StatusPill } from "@/components/admin/ui";
+import { adminButton, AdminPageHeader, AdminStat, AdminTable, EmptyState, MobileCards, StatusPill } from "@/components/admin/ui";
 import { InventoryCsvForm } from "@/app/admin/inventory/csv-form";
 import { cn } from "@/lib/utils";
 
@@ -50,17 +50,14 @@ export default async function InventoryPage() {
       </div>
       {rows.length > 0 ? (
         <ul className="mt-6 grid gap-3 sm:grid-cols-3">
-          <li className="rounded-2xl border border-border bg-background px-4 py-3">
-            <p className="text-xs text-muted">Items</p>
-            <p className="mt-1 font-serif text-2xl tabular-nums">{rows.length}</p>
+          <li>
+            <AdminStat label="Items" value={rows.length} />
           </li>
-          <li className={`rounded-2xl border bg-background px-4 py-3 ${low > 0 ? "border-accent" : "border-border"}`}>
-            <p className="text-xs text-muted">Low stock</p>
-            <p className={`mt-1 font-serif text-2xl tabular-nums ${low > 0 ? "text-accent" : ""}`}>{low}</p>
+          <li>
+            <AdminStat label="Low stock" value={low} warn={low > 0} />
           </li>
-          <li className={`rounded-2xl border bg-background px-4 py-3 ${out > 0 ? "border-accent" : "border-border"}`}>
-            <p className="text-xs text-muted">Out of stock</p>
-            <p className={`mt-1 font-serif text-2xl tabular-nums ${out > 0 ? "text-accent" : ""}`}>{out}</p>
+          <li>
+            <AdminStat label="Out of stock" value={out} warn={out > 0} />
           </li>
         </ul>
       ) : null}
@@ -86,8 +83,8 @@ export default async function InventoryPage() {
               <li
                 key={row.id}
                 className={cn(
-                  "rounded-xl border bg-white/95 p-4 shadow-sm",
-                  tight ? "border-accent/40" : "border-border",
+                  "admin-panel",
+                  tight && "warn",
                 )}
               >
                 <Link href={`/admin/products/${row.productId}`} className="flex items-start gap-3">

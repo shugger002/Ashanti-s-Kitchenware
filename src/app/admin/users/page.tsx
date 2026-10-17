@@ -18,7 +18,7 @@ export default async function UsersPage() {
       />
       <MobileCards className="mt-6">
         {users.map((u) => (
-          <li key={u.id} className="rounded-xl border border-border bg-white/95 p-4 shadow-sm">
+          <li key={u.id} className="admin-panel p-4">
             <div className="flex items-start justify-between gap-3">
               <p className="font-medium">{u.full_name}</p>
               <StatusPill value={u.is_active ? "Can sign in" : "Blocked"} tone={u.is_active ? "ok" : "muted"} />

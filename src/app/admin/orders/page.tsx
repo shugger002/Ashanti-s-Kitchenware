@@ -84,7 +84,7 @@ export default async function AdminOrdersPage({
             <li key={order.id}>
               <Link
                 href={`/admin/orders/${order.id}`}
-                className="block min-h-11 rounded-xl border border-border bg-white/95 p-4 shadow-sm"
+                className="block min-h-11 admin-panel p-4"
               >
                 <div className="flex items-start justify-between gap-3">
                   <p className="font-medium">{order.publicRef}</p>

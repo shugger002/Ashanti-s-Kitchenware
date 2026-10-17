@@ -59,7 +59,7 @@ export default async function DeliveryPage() {
         description="Do not charge delivery at checkout. Agree the fee on WhatsApp, then move the order: received, packing, out, delivered. Shop pickup is Ready at the shop, then Collected."
       />
 
-      <form action={saveFulfillment} className="max-w-xl space-y-4 rounded-2xl border border-border bg-background p-5">
+      <form action={saveFulfillment} className="max-w-xl admin-panel space-y-4">
         <h2 className="font-serif text-xl">Where we deliver</h2>
         <fieldset className="space-y-2 text-sm">
           <legend className="font-medium">Where we send</legend>
@@ -110,7 +110,7 @@ export default async function DeliveryPage() {
           <>
           <MobileCards>
             {rates.map((rate) => (
-              <li key={rate.id} className="rounded-xl border border-border bg-white/95 p-4 shadow-sm">
+              <li key={rate.id} className="admin-panel p-4">
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <p className="font-medium">{rate.zoneName}</p>
@@ -177,7 +177,7 @@ export default async function DeliveryPage() {
         )}
       </section>
 
-      <form action={addRate} className="max-w-xl space-y-3 rounded-2xl border border-border bg-background p-5">
+      <form action={addRate} className="max-w-xl admin-panel space-y-3">
         <h2 className="font-serif text-xl">Add a staff price note</h2>
         <label className="block text-sm">
           Area

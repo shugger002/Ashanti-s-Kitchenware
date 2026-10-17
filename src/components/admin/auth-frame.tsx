@@ -17,8 +17,8 @@ export function AdminAuthFrame({
         alt={brand.name}
         className="mb-8 h-9 w-auto max-w-[10rem] object-contain brightness-0"
       />
-      <div className="w-full max-w-md rounded-2xl border border-border bg-white p-6 sm:p-8">
-        <h1 className="text-center text-2xl font-medium">{title}</h1>
+      <div className="admin-panel w-full max-w-md p-6 sm:p-8">
+        <h1 className="text-center text-[2rem] leading-tight">{title}</h1>
         <p className="mt-2 text-center text-sm text-muted">{description}</p>
         {children}
       </div>

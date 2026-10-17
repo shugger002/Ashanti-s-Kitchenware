@@ -5,12 +5,13 @@ import { formatGhs } from "@/lib/money";
 import { hasPermission } from "@/server/auth/types";
 import {
   AdminPageHeader,
+  AdminSection,
+  AdminStat,
   EmptyState,
   liveOrderBadge,
   paymentTone,
   StatusPill,
 } from "@/components/admin/ui";
-import { cn } from "@/lib/utils";
 
 function count(value: string | undefined) {
   return Number(value ?? 0);
@@ -88,66 +89,42 @@ export default async function AdminHomePage() {
         description="Orders to pack, stock that is low, and anything still waiting."
       />
 
-      <section className="mt-6">
-        <h2 className="text-sm font-medium text-muted">Work now</h2>
-        <ul className="mt-3 grid grid-cols-2 gap-2 lg:grid-cols-4 lg:gap-3">
+      <section className="mt-8">
+        <h2 className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted">Work now</h2>
+        <ul className="mt-3 grid grid-cols-2 gap-3 lg:grid-cols-4">
           {queue.map((item) => (
             <li key={item.label}>
-              <Link
-                href={item.href}
-                className={cn(
-                  "block min-h-24 rounded-xl border bg-white/95 p-4 shadow-sm",
-                  item.value > 0 ? "border-accent" : "border-border",
-                )}
-              >
-                <p className="text-xs text-muted">{item.label}</p>
-                <p className={cn("mt-2 text-3xl font-medium tabular-nums", item.value > 0 && "text-accent")}>
-                  {item.value}
-                </p>
-                <p className="mt-1 text-[11px] leading-snug text-muted">{item.hint}</p>
-              </Link>
+              <AdminStat href={item.href} label={item.label} value={item.value} hint={item.hint} warn={item.value > 0} />
             </li>
           ))}
         </ul>
       </section>
 
       {stock.length > 0 ? (
-        <section className="mt-6">
-          <h2 className="text-sm font-medium text-muted">Products</h2>
-          <ul className="mt-3 grid grid-cols-2 gap-2 lg:grid-cols-4 lg:gap-3">
+        <section className="mt-8">
+          <h2 className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted">Products</h2>
+          <ul className="mt-3 grid grid-cols-2 gap-3 lg:grid-cols-4">
             {stock.map((item) => (
               <li key={item.label}>
-                <Link
-                  href={item.href}
-                  className={cn(
-                    "block rounded-xl border bg-white/95 p-4 shadow-sm",
-                    item.warn ? "border-accent" : "border-border",
-                  )}
-                >
-                  <p className="text-xs text-muted">{item.label}</p>
-                  <p className={cn("mt-2 text-2xl font-medium tabular-nums", item.warn && "text-accent")}>{item.value}</p>
-                </Link>
+                <AdminStat href={item.href} label={item.label} value={item.value} warn={item.warn} />
               </li>
             ))}
           </ul>
         </section>
       ) : null}
 
-      <section className="mt-6">
-        <h2 className="text-sm font-medium text-muted">Today (Accra)</h2>
-        <ul className="mt-3 grid grid-cols-2 gap-2 lg:grid-cols-4 lg:gap-3">
+      <section className="mt-8">
+        <h2 className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted">Today (Accra)</h2>
+        <ul className="mt-3 grid grid-cols-2 gap-3 lg:grid-cols-4">
           {today.map((item) => (
             <li key={item.label}>
-              <Link href={item.href} className="block rounded-xl border border-border bg-white/95 p-4 shadow-sm">
-                <p className="text-xs text-muted">{item.label}</p>
-                <p className="mt-2 text-xl font-medium tabular-nums">{item.value}</p>
-              </Link>
+              <AdminStat href={item.href} label={item.label} value={item.value} />
             </li>
           ))}
         </ul>
       </section>
 
-      <section className="mt-6 rounded-xl border border-border bg-white/95 p-4 shadow-sm sm:p-5">
+      <AdminSection className="mt-8" title="Recent orders">
         <div className="flex items-center justify-between gap-3">
           <h2 className="text-lg font-medium">Recent orders</h2>
           <Link href="/admin/orders" className="inline-flex min-h-11 items-center text-sm text-accent">
@@ -179,22 +156,21 @@ export default async function AdminHomePage() {
             ))}
           </ul>
         )}
-      </section>
+      </AdminSection>
 
       {metrics.bestSellers.length > 0 ? (
-        <section className="mt-6 rounded-xl border border-border bg-white/95 p-4 shadow-sm sm:p-5">
-          <h2 className="text-lg font-medium">Best sellers</h2>
-          <ul className="mt-3 space-y-2">
+        <AdminSection className="mt-8" title="Best sellers">
+          <ul className="space-y-3">
             {metrics.bestSellers.map((row) => (
-              <li key={row.product_name} className="flex items-baseline justify-between gap-3 text-sm">
+              <li key={row.product_name} className="flex items-baseline justify-between gap-3 border-b border-[color-mix(in_srgb,var(--accent)_8%,#eadfd4)] pb-3 text-sm last:border-0 last:pb-0">
                 <span className="min-w-0 truncate">{row.product_name}</span>
-                <span className="shrink-0 tabular-nums text-muted">
+                <span className="shrink-0 font-serif tabular-nums text-foreground">
                   {row.units} · {formatGhs(Number(row.revenue))}
                 </span>
               </li>
             ))}
           </ul>
-        </section>
+        </AdminSection>
       ) : null}
     </div>
   );

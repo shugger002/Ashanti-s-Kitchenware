@@ -34,7 +34,7 @@ export default async function CategoriesPage() {
         <>
         <MobileCards>
           {categories.map((c) => (
-            <li key={c.id} className="rounded-xl border border-border bg-white/95 p-4 shadow-sm">
+            <li key={c.id} className="admin-panel p-4">
               <form action={saveCategory} className="flex flex-col gap-3">
                 <input type="hidden" name="id" value={c.id} />
                 <input type="hidden" name="description" value={c.description ?? ""} />
@@ -93,7 +93,7 @@ export default async function CategoriesPage() {
         </AdminTable>
         </>
       )}
-      <form action={saveCategory} className="mt-8 max-w-md space-y-3 rounded-2xl border border-border bg-background p-5">
+      <form action={saveCategory} className="mt-8 max-w-md admin-panel space-y-3">
         <h2 className="font-serif text-xl">Add category</h2>
         <label className="block text-sm">
           Name

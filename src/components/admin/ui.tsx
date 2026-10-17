@@ -7,6 +7,10 @@ export function adminButton(className?: string) {
   return buttonClass("primary", cn("h-12 min-h-12 w-full sm:w-auto", className));
 }
 
+export function adminPanel(className?: string) {
+  return cn("admin-panel", className);
+}
+
 export function AdminPageHeader({
   title,
   description,
@@ -23,18 +27,19 @@ export function AdminPageHeader({
   return (
     <div
       className={cn(
-        "flex flex-wrap gap-4 rounded-xl border border-white/90 bg-white/95 px-5 py-4 shadow-sm backdrop-blur-md",
-        align === "center" ? "flex-col items-center text-center" : "items-start justify-between",
+        "flex flex-wrap gap-5 border-b border-[color-mix(in_srgb,var(--accent)_18%,transparent)] pb-6",
+        align === "center" ? "flex-col items-center text-center" : "items-end justify-between",
         className,
       )}
     >
       <div>
-        <h1 className="text-2xl leading-tight text-foreground sm:text-[1.75rem]">{title}</h1>
+        <h1 className="max-w-2xl text-[2rem] leading-[1.1] text-foreground sm:text-[2.35rem]">{title}</h1>
+        <span className="mt-3 block h-px w-12 bg-accent" aria-hidden />
         {description ? (
           <p
             className={cn(
-              "mt-1.5 text-sm leading-relaxed text-neutral-800",
-              align === "center" ? "max-w-lg" : "max-w-xl",
+              "mt-3 max-w-xl text-[0.95rem] leading-relaxed text-neutral-800",
+              align === "center" && "mx-auto",
             )}
           >
             {description}
@@ -43,6 +48,62 @@ export function AdminPageHeader({
       </div>
       {action ? <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center">{action}</div> : null}
     </div>
+  );
+}
+
+export function AdminSection({
+  step,
+  title,
+  hint,
+  children,
+  className,
+}: {
+  step?: string;
+  title: string;
+  hint?: string;
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <section className={cn("admin-panel", className)}>
+      <header className="mb-5 flex items-start gap-3">
+        {step ? <span className="admin-step">{step}</span> : null}
+        <div>
+          <h2 className="text-[1.35rem] leading-tight">{title}</h2>
+          {hint ? <p className="mt-1.5 text-sm leading-relaxed text-muted">{hint}</p> : null}
+        </div>
+      </header>
+      {children}
+    </section>
+  );
+}
+
+export function AdminStat({
+  href,
+  label,
+  value,
+  hint,
+  warn,
+}: {
+  href?: string;
+  label: string;
+  value: string | number;
+  hint?: string;
+  warn?: boolean;
+}) {
+  const inner = (
+    <>
+      <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-muted">{label}</p>
+      <p className={cn("mt-3 font-serif text-[2.05rem] leading-none tabular-nums", warn && "text-accent")}>{value}</p>
+      {hint ? <p className="mt-2 text-xs leading-snug text-muted">{hint}</p> : null}
+    </>
+  );
+  return href ? (
+    <Link href={href} className={cn("admin-stat", warn && "admin-stat-warn")}>
+      {inner}
+    </Link>
+  ) : (
+    <div className={cn("admin-stat", warn && "admin-stat-warn")}>{inner}</div>
   );
 }
 
@@ -112,7 +173,7 @@ export function StatusPill({
   return (
     <span
       className={cn(
-        "inline-flex rounded-full px-2 py-0.5 text-[11px]",
+        "inline-flex rounded-sm px-2 py-0.5 text-[11px] font-medium tracking-wide",
         /[A-Z]/.test(text) ? "" : "capitalize",
         tone === "attention" && "bg-accent/10 text-accent",
         tone === "ok" && "bg-foreground text-background",
@@ -146,7 +207,7 @@ export function AdminTable({
   className?: string;
 }) {
   return (
-    <div className={cn("hidden overflow-x-auto rounded-xl border border-border bg-surface md:block", className)}>
+    <div className={cn("hidden overflow-x-auto border border-[color-mix(in_srgb,var(--accent)_12%,#eadfd4)] bg-[#fffdf8] md:block", className)}>
       <table className="w-full text-left text-sm">{children}</table>
     </div>
   );
@@ -166,17 +227,17 @@ export function EmptyState({
   action?: React.ReactNode;
 }) {
   return (
-    <div className="rounded-xl border border-dashed border-border bg-surface px-6 py-12 text-center">
-      <p className="font-serif text-xl">{title}</p>
+    <div className="admin-panel px-6 py-14 text-center">
+      <p className="font-serif text-2xl">{title}</p>
       <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-muted">{body}</p>
-      {action ? <div className="mt-5">{action}</div> : null}
+      {action ? <div className="mt-5 flex justify-center">{action}</div> : null}
     </div>
   );
 }
 
 export function Toolbar({ children }: { children: React.ReactNode }) {
   return (
-    <div className="mt-6 flex flex-col gap-2 rounded-xl border border-border bg-white/95 p-3 sm:flex-row sm:flex-wrap sm:items-center">
+    <div className="admin-panel mt-6 flex flex-col gap-2 p-3 sm:flex-row sm:flex-wrap sm:items-center">
       {children}
     </div>
   );
@@ -186,7 +247,7 @@ export function BackLink({ href, children }: { href: string; children: React.Rea
   return (
     <Link
       href={href}
-      className="mb-4 inline-flex min-h-11 items-center rounded-md bg-white/95 px-2 py-1 text-sm text-neutral-800 hover:text-foreground"
+      className="mb-5 inline-flex min-h-11 items-center text-sm text-neutral-800 hover:text-accent"
     >
       {children}
     </Link>

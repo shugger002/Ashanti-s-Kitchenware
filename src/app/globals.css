@@ -63,11 +63,145 @@ html:has(.admin-desk).dark,
   color: #1a1a1a;
 }
 
-.admin-desk h1,
+.admin-desk h1 {
+  font-family: var(--font-newsreader), Georgia, serif;
+  letter-spacing: -0.03em;
+  text-wrap: balance;
+}
+
 .admin-desk h2,
 .admin-desk h3 {
-  font-family: var(--font-figtree), system-ui, sans-serif;
-  letter-spacing: -0.03em;
+  font-family: var(--font-newsreader), Georgia, serif;
+  letter-spacing: -0.02em;
+}
+
+.admin-panel {
+  position: relative;
+  border: 1px solid color-mix(in srgb, var(--accent) 12%, #eadfd4);
+  background: #fffdf8;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.9) inset,
+    0 18px 40px rgba(40, 16, 18, 0.06);
+  border-radius: 4px;
+  padding: 1.35rem 1.4rem 1.45rem 1.55rem;
+}
+
+.admin-panel.warn {
+  border-color: color-mix(in srgb, var(--accent) 45%, #eadfd4);
+  background: color-mix(in srgb, var(--accent) 5%, #fffdf8);
+}
+
+.admin-panel-flush {
+  padding: 0;
+}
+
+.admin-panel-flush::before {
+  top: 0;
+  bottom: 0;
+}
+
+.admin-panel::before {
+  content: "";
+  position: absolute;
+  top: 14px;
+  bottom: 14px;
+  left: 0;
+  width: 3px;
+  border-radius: 0 2px 2px 0;
+  background: var(--accent);
+}
+
+.admin-step {
+  display: inline-flex;
+  min-width: 2rem;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-newsreader), Georgia, serif;
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  color: var(--accent);
+  border-bottom: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+  padding-bottom: 0.15rem;
+}
+
+.admin-stat {
+  display: block;
+  min-height: 7.5rem;
+  border: 1px solid color-mix(in srgb, var(--accent) 12%, #eadfd4);
+  background: #fffdf8;
+  padding: 1.1rem 1.15rem 1.15rem;
+  box-shadow: 0 14px 32px rgba(40, 16, 18, 0.05);
+  border-radius: 4px;
+  transition: transform 160ms cubic-bezier(0.2, 0, 0, 1), border-color 160ms ease;
+}
+
+.admin-stat:hover {
+  transform: translateY(-1px);
+  border-color: color-mix(in srgb, var(--accent) 40%, #eadfd4);
+}
+
+.admin-stat-warn {
+  border-color: color-mix(in srgb, var(--accent) 45%, #eadfd4);
+  background: color-mix(in srgb, var(--accent) 5%, #fffdf8);
+}
+
+.admin-drop {
+  display: flex;
+  min-height: 8.5rem;
+  cursor: pointer;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  border: 1px dashed color-mix(in srgb, var(--accent) 35%, #d8cfc4);
+  background: color-mix(in srgb, var(--accent) 3%, #fffdf8);
+  padding: 1.25rem;
+  text-align: center;
+  border-radius: 4px;
+}
+
+.admin-drop:hover,
+.admin-drop:focus-within {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 6%, #fffdf8);
+}
+
+.admin-save {
+  position: sticky;
+  bottom: 0.75rem;
+  z-index: 20;
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 0.5rem;
+  border: 1px solid color-mix(in srgb, var(--accent) 12%, #eadfd4);
+  background: color-mix(in srgb, #fffdf8 92%, transparent);
+  padding: 0.75rem 1rem;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 12px 28px rgba(40, 16, 18, 0.08);
+  border-radius: 4px;
+}
+
+.admin-file {
+  display: block;
+  width: 100%;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  background: #fff;
+  padding: 0.55rem 0.7rem;
+  font-size: 0.875rem;
+  border-radius: 4px;
+}
+
+.admin-file::file-selector-button {
+  margin-right: 0.75rem;
+  border: 0;
+  background: var(--accent);
+  color: #fff;
+  padding: 0.45rem 0.8rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  border-radius: 3px;
 }
 
 @theme inline {

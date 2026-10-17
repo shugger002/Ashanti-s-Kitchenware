@@ -25,7 +25,7 @@ export default async function AdminProductsPage({
   return (
     <div>
       {low.length > 0 ? (
-        <div className="mb-6 rounded-xl border border-accent/30 bg-accent/5 p-4">
+        <div className="admin-panel mb-6">
           <h2 className="text-sm font-medium">
             Running low: {low.length} piece{low.length === 1 ? "" : "s"} with {LOW_STOCK_ALERT} or fewer left
           </h2>
@@ -96,7 +96,7 @@ export default async function AdminProductsPage({
         <>
         <MobileCards>
           {items.map((p) => (
-            <li key={p.id} className="rounded-xl border border-border bg-white/95 p-4 shadow-sm">
+            <li key={p.id} className="admin-panel p-4">
               <Link href={`/admin/products/${p.id}`} className="block">
                 <p className="font-medium">{p.name}</p>
                 <p className="mt-0.5 text-xs uppercase text-muted">{p.categoryName ?? "No category"}</p>

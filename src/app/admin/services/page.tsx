@@ -38,7 +38,7 @@ export default async function ServiceHealthPage() {
         title="Connections"
         description="Can this shop talk to the database, send mail, store photos, and take payment. Keys are not shown here."
       />
-      <ul className="mt-8 divide-y divide-border overflow-hidden rounded-2xl border border-border bg-background">
+      <ul className="admin-panel admin-panel-flush mt-8 divide-y divide-border overflow-hidden">
         {rows.map((row) => (
           <li key={row.label} className="flex min-h-14 items-center justify-between gap-4 px-5 py-4 text-sm">
             <span>{row.label}</span>

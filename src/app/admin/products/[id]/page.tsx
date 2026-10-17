@@ -4,7 +4,7 @@ import { ProductForm } from "@/components/admin/product-form";
 import { archiveProductAction, setReviewPublishedAction } from "@/app/admin/products/actions";
 import { requirePermission } from "@/server/auth/authorize";
 import { listCategories, getProductById } from "@/server/catalog/queries";
-import { adminButton, AdminPageHeader, BackLink, StatusPill } from "@/components/admin/ui";
+import { adminButton, AdminPageHeader, AdminSection, BackLink, StatusPill } from "@/components/admin/ui";
 import { listProductReviewsForAdmin } from "@/server/reviews/service";
 
 export default async function EditProductPage({ params }: { params: Promise<{ id: string }> }) {
@@ -30,14 +30,13 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
         }
       />
       <ProductForm categories={categories} product={product} />
-      <section className="mt-8 max-w-2xl rounded-2xl border border-border bg-background p-5">
-        <h2 className="font-serif text-xl">Photos</h2>
+      <AdminSection className="mt-8 max-w-3xl" title="Photos">
         {product.images.length === 0 ? (
           <p className="mt-3 text-sm text-muted">No photos yet. Add a picture of the piece on the shelf.</p>
         ) : (
           <ul className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
             {product.images.map((image) => (
-              <li key={image.id} className="overflow-hidden rounded-xl border border-border">
+              <li key={image.id} className="overflow-hidden border border-[color-mix(in_srgb,var(--accent)_12%,#eadfd4)] bg-white">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={image.url} alt={image.alt} className="aspect-square w-full object-cover" />
                 <p className="truncate px-2 py-1.5 text-[11px] text-muted">
@@ -49,14 +48,16 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
           </ul>
         )}
         <ImageUpload productId={product.id} productName={product.name} />
-      </section>
-      <section className="mt-8 max-w-2xl rounded-2xl border border-border bg-background p-5">
-        <h2 className="font-serif text-xl">Reviews</h2>
-        <p className="mt-2 text-sm text-muted">Publish only reviews that look like a real customer’s experience.</p>
+      </AdminSection>
+      <AdminSection
+        className="mt-8 max-w-3xl"
+        title="Reviews"
+        hint="Publish only reviews that look like a real customer’s experience."
+      >
         {reviews.length === 0 ? (
-          <p className="mt-3 text-sm text-muted">None submitted.</p>
+          <p className="text-sm text-muted">None submitted.</p>
         ) : (
-          <ul className="mt-4 divide-y divide-border text-sm">
+          <ul className="divide-y divide-border text-sm">
             {reviews.map((review) => (
               <li key={review.id} className="space-y-2 py-3">
                 <p className="font-medium">
@@ -75,7 +76,7 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
             ))}
           </ul>
         )}
-      </section>
+      </AdminSection>
       <form action={archiveProductAction} className="mt-10 max-w-2xl">
         <input type="hidden" name="id" value={product.id} />
         <button type="submit" className="text-sm text-accent">

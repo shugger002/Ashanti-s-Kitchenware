@@ -50,7 +50,7 @@ export default async function PromotionsPage() {
         <>
         <MobileCards className="mt-6">
           {items.map((p) => (
-            <li key={p.id} className="rounded-xl border border-border bg-white/95 p-4 shadow-sm">
+            <li key={p.id} className="admin-panel p-4">
               <p className="font-medium">{p.name}</p>
               <p className="mt-0.5 text-xs uppercase text-muted">{p.categoryName ?? "-"}</p>
               <p className="mt-2 tabular-nums">{formatGhs(Number(p.price))}</p>

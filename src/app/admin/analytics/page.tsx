@@ -1,7 +1,7 @@
 import { requirePermission } from "@/server/auth/authorize";
 import { dashboardMetrics, listAuditLogs } from "@/server/reporting/service";
 import { formatGhs } from "@/lib/money";
-import { AdminPageHeader, AdminTable, deskActionLabel, EmptyState, MobileCards } from "@/components/admin/ui";
+import { AdminPageHeader, AdminStat, AdminTable, deskActionLabel, EmptyState, MobileCards } from "@/components/admin/ui";
 
 export default async function AnalyticsPage() {
   const [, metrics, logs] = await Promise.all([
@@ -20,32 +20,25 @@ export default async function AnalyticsPage() {
         title="Analytics"
         description="Money in, how many pieces are on promo, and what is running low. From this shop’s own orders."
       />
-      <dl className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="rounded-xl border border-border bg-surface p-5">
-          <dt className="text-sm text-muted">Orders</dt>
-          <dd className="mt-2 text-3xl font-medium tabular-nums">{metrics.total_orders}</dd>
-          <p className="mt-2 text-xs text-muted">Waiting for payment: {metrics.pending_orders}</p>
-        </div>
-        <div className="rounded-xl border border-border bg-surface p-5">
-          <dt className="text-sm text-muted">Paid sales</dt>
-          <dd className="mt-2 text-3xl font-medium tabular-nums">{formatGhs(Number(metrics.revenue))}</dd>
-          <p className="mt-2 text-xs text-muted">Paid orders only</p>
-        </div>
-        <div className="rounded-xl border border-border bg-surface p-5">
-          <dt className="text-sm text-muted">On sale</dt>
-          <dd className="mt-2 text-3xl font-medium tabular-nums">{coverage}%</dd>
-          <p className="mt-2 text-xs text-muted">
-            {promo} of {totalProducts} products
-          </p>
-        </div>
-        <div className="rounded-xl border border-border bg-surface p-5">
-          <dt className="text-sm text-muted">Need restock</dt>
-          <dd className="mt-2 text-3xl font-medium tabular-nums">{stockRisk}</dd>
-          <p className="mt-2 text-xs text-muted">
-            Low: {metrics.lowStock} · Finished: {metrics.outOfStock}
-          </p>
-        </div>
-      </dl>
+      <ul className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <li>
+          <AdminStat label="Orders" value={metrics.total_orders} hint={`Waiting for payment: ${metrics.pending_orders}`} />
+        </li>
+        <li>
+          <AdminStat label="Paid sales" value={formatGhs(Number(metrics.revenue))} hint="Paid orders only" />
+        </li>
+        <li>
+          <AdminStat label="On sale" value={`${coverage}%`} hint={`${promo} of ${totalProducts} products`} />
+        </li>
+        <li>
+          <AdminStat
+            label="Need restock"
+            value={stockRisk}
+            hint={`Low: ${metrics.lowStock} · Finished: ${metrics.outOfStock}`}
+            warn={stockRisk > 0}
+          />
+        </li>
+      </ul>
       <h2 className="mt-10 text-lg font-medium">What staff did</h2>
       {logs.length === 0 ? (
         <div className="mt-4">
@@ -55,7 +48,7 @@ export default async function AnalyticsPage() {
         <>
         <MobileCards>
           {logs.map((log) => (
-            <li key={log.id} className="rounded-xl border border-border bg-white/95 p-4 shadow-sm">
+            <li key={log.id} className="admin-panel p-4">
               <p className="text-xs text-muted">{new Date(log.created_at).toLocaleString("en-GH")}</p>
               <p className="mt-1 font-medium">{deskActionLabel(log.action)}</p>
               <p className="mt-1 text-sm text-muted">{log.actor_email ?? "System"}</p>
