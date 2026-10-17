@@ -10,6 +10,7 @@ import { customerWhatsAppHref } from "@/lib/order-whatsapp";
 import { OrderWhatsAppLink } from "@/components/admin/whatsapp-link";
 import { CUSTOMER_TRACK_STEPS, customerTrackIndex, ORDER_STATUS_LABEL } from "@/lib/order-status";
 import { revalidatePath } from "next/cache";
+import { buttonClass } from "@/components/ui/button";
 import {
   adminButton,
   AdminPageHeader,
@@ -29,8 +30,8 @@ function money(value: unknown) {
 }
 
 const STAFF_NEXT: Record<string, string> = {
-  paid: "Start packing",
-  packing: "Mark as packing",
+  paid: "Mark as paid",
+  packing: "Start packing",
   shipped: "Send out for delivery",
   ready_for_collection: "Ready at the shop",
   delivered: "Mark as delivered",
@@ -38,6 +39,22 @@ const STAFF_NEXT: Record<string, string> = {
   cancelled: "Cancel this order",
   refunded: "Mark as refunded",
 };
+
+function nextStepHint(status: string, method: string) {
+  if (status === "paid") {
+    return method === "collection"
+      ? "Pack first. After that you can mark it ready at the shop, then collected."
+      : "Pack first. After that you can send it out, then mark it delivered.";
+  }
+  if (status === "packing") {
+    return method === "collection"
+      ? "When the pack is ready on the floor, mark it ready at the shop."
+      : "When the rider leaves, send it out for delivery.";
+  }
+  if (status === "shipped") return "When the customer has the goods, mark it delivered.";
+  if (status === "ready_for_collection") return "When they pick it up at the shop, mark it collected.";
+  return "Choose the step that has just happened.";
+}
 
 export default async function AdminOrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const user = await requirePermission("orders.read");
@@ -256,24 +273,34 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
             allowed.length > 0 ? (
               <form action={changeStatus} className="admin-panel space-y-3">
                 <h2 className="font-serif text-xl">Next step</h2>
+                <p className="text-sm leading-relaxed text-muted">{nextStepHint(status, method)}</p>
                 <input type="hidden" name="orderId" value={id} />
-                <label className="block text-sm">
-                  What happens now
-                  <select name="toStatus" className="input mt-1">
-                    {allowed.map((value) => (
-                      <option key={value} value={value}>
-                        {STAFF_NEXT[value] ?? ORDER_STATUS_LABEL[value] ?? value.replaceAll("_", " ")}
-                      </option>
-                    ))}
-                  </select>
-                </label>
                 <label className="block text-sm">
                   Rider note (staff only)
                   <input name="trackingNumber" className="input mt-1" placeholder="Customers do not see this" />
                 </label>
-                <button className={adminButton()} type="submit">
-                  Save
-                </button>
+                <div className="flex flex-col gap-2">
+                  {allowed
+                    .filter((value) => value !== "cancelled" && value !== "refunded")
+                    .map((value) => (
+                      <button key={value} className={adminButton()} type="submit" name="toStatus" value={value}>
+                        {STAFF_NEXT[value] ?? ORDER_STATUS_LABEL[value] ?? value.replaceAll("_", " ")}
+                      </button>
+                    ))}
+                  {allowed
+                    .filter((value) => value === "cancelled" || value === "refunded")
+                    .map((value) => (
+                      <button
+                        key={value}
+                        className={buttonClass("secondary", "h-12 min-h-12 w-full sm:w-auto")}
+                        type="submit"
+                        name="toStatus"
+                        value={value}
+                      >
+                        {STAFF_NEXT[value] ?? ORDER_STATUS_LABEL[value] ?? value.replaceAll("_", " ")}
+                      </button>
+                    ))}
+                </div>
               </form>
             ) : (
               <div className="admin-panel">
