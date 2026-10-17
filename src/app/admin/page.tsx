@@ -4,7 +4,7 @@ import { dashboardMetrics } from "@/server/reporting/service";
 import { formatGhs } from "@/lib/money";
 import { customerWhatsAppHref, packLines } from "@/lib/order-whatsapp";
 import { hasPermission } from "@/server/auth/types";
-import { buttonClass } from "@/components/ui/button";
+import { OrderWhatsAppLink } from "@/components/admin/whatsapp-link";
 import {
   AdminPageHeader,
   AdminSection,
@@ -165,11 +165,7 @@ export default async function AdminHomePage() {
                       <span className="mt-1 block text-sm tabular-nums">{formatGhs(Number(order.total))}</span>
                     </span>
                   </Link>
-                  {wa ? (
-                    <a href={wa} className={buttonClass("primary", "h-11 min-h-11 w-full sm:w-auto")} target="_blank" rel="noreferrer">
-                      WhatsApp customer
-                    </a>
-                  ) : null}
+                  {wa ? <OrderWhatsAppLink href={wa} /> : null}
                 </li>
               );
             })}

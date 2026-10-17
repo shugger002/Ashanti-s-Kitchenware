@@ -3,7 +3,7 @@ import { requirePermission } from "@/server/auth/authorize";
 import { listOrders } from "@/server/orders/service";
 import { formatGhs } from "@/lib/money";
 import { customerWhatsAppHref, packLines } from "@/lib/order-whatsapp";
-import { buttonClass } from "@/components/ui/button";
+import { OrderWhatsAppLink } from "@/components/admin/whatsapp-link";
 import {
   adminButton,
   AdminPageHeader,
@@ -123,9 +123,7 @@ export default async function AdminOrdersPage({
                   </div>
                 </Link>
                 {wa ? (
-                  <a href={wa} className={adminButton()} target="_blank" rel="noreferrer">
-                    WhatsApp customer
-                  </a>
+                  <OrderWhatsAppLink href={wa} />
                 ) : (
                   <p className="text-xs text-muted">No WhatsApp number on this order.</p>
                 )}
@@ -184,9 +182,7 @@ export default async function AdminOrdersPage({
                   </td>
                   <td className="px-4 py-3">
                     {wa ? (
-                      <a href={wa} className={buttonClass("primary", "h-11 min-h-11 w-auto px-4")} target="_blank" rel="noreferrer">
-                        WhatsApp
-                      </a>
+                      <OrderWhatsAppLink href={wa} />
                     ) : (
                       <span className="text-xs text-muted">No number</span>
                     )}

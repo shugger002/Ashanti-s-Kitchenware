@@ -6,9 +6,9 @@ import { recordManualPayment } from "@/server/checkout/service";
 import { formatGhs } from "@/lib/money";
 import { ghanaInternationalMsisdn } from "@/lib/phone-gh";
 import { customerWhatsAppHref } from "@/lib/order-whatsapp";
+import { OrderWhatsAppLink } from "@/components/admin/whatsapp-link";
 import { CUSTOMER_TRACK_STEPS, customerTrackIndex, ORDER_STATUS_LABEL } from "@/lib/order-status";
 import { revalidatePath } from "next/cache";
-import { buttonClass } from "@/components/ui/button";
 import {
   adminButton,
   AdminPageHeader,
@@ -206,9 +206,7 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
                 </a>
               ) : null}
               {waHref ? (
-                <a href={waHref} className={buttonClass("secondary", "h-12 w-full sm:w-auto")} target="_blank" rel="noreferrer">
-                  WhatsApp customer
-                </a>
+                <OrderWhatsAppLink href={waHref} />
               ) : (
                 <p className="text-xs text-muted">No WhatsApp number on this order.</p>
               )}
