@@ -28,7 +28,7 @@ export function customerWhatsAppHref(input: {
   const digits = ghanaInternationalMsisdn(input.phone);
   if (digits.length < 11) return null;
 
-  const firstName = input.fullName.trim().split(/\s+/)[0] || input.fullName;
+  const greetingName = input.fullName.trim() || "there";
   const pack = input.items.map((item) => `• ${item.name} × ${item.quantity}`).join("\n");
   const collection = input.deliveryMethod === "collection";
   const address = (input.address ?? "").trim();
@@ -56,7 +56,7 @@ export function customerWhatsAppHref(input: {
 
   const parts = [
     "Ashanti's Kitchenware",
-    `Hi ${firstName},`,
+    `Hi ${greetingName},`,
     `We have your order ${input.publicRef}.`,
     pack || null,
     input.totalLabel ? `Goods total ${input.totalLabel}. Delivery is not in this amount.` : null,
