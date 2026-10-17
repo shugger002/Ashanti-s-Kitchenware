@@ -20,7 +20,7 @@ export const shopMap = {
 } as const;
 
 /** Accra shop hours given by the shop. */
-export const shopHours = "Monday to Saturday, 7:00–19:00. Closed Sunday." as const;
+export const shopHours = "Monday to Saturday, 7 a.m. to 7 p.m. Closed Sunday." as const;
 
 export const defaultContact = {
   legalName: "Ashanti's Kitchenware",
