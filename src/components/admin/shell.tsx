@@ -160,6 +160,7 @@ function Nav({
                     <Link
                       key={link.href}
                       href={link.href}
+                      prefetch
                       title={link.label}
                       onClick={() => onNavigate?.()}
                       className={cn(
@@ -216,52 +217,48 @@ export function AdminShell({ user, children }: { user: AdminUser; children: Reac
   return (
     <div className="flex min-h-dvh">
       {menuOpen ? (
-        <button
-          type="button"
-          className="fixed inset-0 z-40 bg-foreground/40 lg:hidden"
-          aria-label="Close menu"
-          onClick={() => setMenuOpen(false)}
-        />
-      ) : null}
-
-      <aside
-        className={cn(
-          "fixed inset-y-0 left-0 z-50 flex w-[min(18rem,88vw)] flex-col bg-accent text-white transition-transform duration-200 lg:hidden",
-          menuOpen ? "translate-x-0" : "-translate-x-full",
-        )}
-      >
-        <div className="flex items-center justify-between px-3 pt-2">
-          <p className="px-1 text-sm font-medium text-white">Menu</p>
+        <>
           <button
             type="button"
-            className="inline-flex size-11 items-center justify-center rounded-lg text-white hover:bg-white/15"
+            className="fixed inset-0 z-40 bg-foreground/40 lg:hidden"
             aria-label="Close menu"
             onClick={() => setMenuOpen(false)}
-          >
-            <X className="h-5 w-5" />
-          </button>
-        </div>
-        <Nav user={user} collapsed={false} showLogoCard={false} onNavigate={() => setMenuOpen(false)} />
-        <div className="border-t border-white/20 px-4 py-4 text-sm">
-          <div className="flex items-center gap-3">
-            <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-white/20 text-[11px] font-medium">
-              {initials(user)}
-            </span>
-            <span className="min-w-0">
-              <p className="truncate">{user.fullName || user.email}</p>
-              <p className="truncate text-xs text-white/70">{user.email}</p>
-            </span>
-          </div>
-          <div className="mt-3 flex flex-col items-start gap-1">
-            <Link href="/" className="inline-flex min-h-11 items-center text-white/80 hover:text-white">
-              View store
-            </Link>
-            <button type="button" className="inline-flex min-h-11 items-center text-white/80 hover:text-white" onClick={signOut}>
-              Sign out
-            </button>
-          </div>
-        </div>
-      </aside>
+          />
+          <aside className="fixed inset-y-0 left-0 z-50 flex w-[min(18rem,88vw)] flex-col bg-accent text-white lg:hidden">
+            <div className="flex items-center justify-between px-3 pt-2">
+              <p className="px-1 text-sm font-medium text-white">Menu</p>
+              <button
+                type="button"
+                className="inline-flex size-11 items-center justify-center rounded-lg text-white hover:bg-white/15"
+                aria-label="Close menu"
+                onClick={() => setMenuOpen(false)}
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <Nav user={user} collapsed={false} showLogoCard={false} onNavigate={() => setMenuOpen(false)} />
+            <div className="border-t border-white/20 px-4 py-4 text-sm">
+              <div className="flex items-center gap-3">
+                <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-white/20 text-[11px] font-medium">
+                  {initials(user)}
+                </span>
+                <span className="min-w-0">
+                  <p className="truncate">{user.fullName || user.email}</p>
+                  <p className="truncate text-xs text-white/70">{user.email}</p>
+                </span>
+              </div>
+              <div className="mt-3 flex flex-col items-start gap-1">
+                <Link href="/" className="inline-flex min-h-11 items-center text-white/80 hover:text-white">
+                  View store
+                </Link>
+                <button type="button" className="inline-flex min-h-11 items-center text-white/80 hover:text-white" onClick={signOut}>
+                  Sign out
+                </button>
+              </div>
+            </div>
+          </aside>
+        </>
+      ) : null}
 
       <aside
         className={cn(
@@ -294,14 +291,7 @@ export function AdminShell({ user, children }: { user: AdminUser; children: Reac
           )}
         </div>
       </aside>
-      <div className="relative min-h-dvh min-w-0 flex-1 bg-transparent">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="/admin/kitchen-wall.jpg"
-          alt=""
-          className="pointer-events-none absolute inset-0 h-full w-full object-cover object-center"
-        />
-        <div className="pointer-events-none absolute inset-0 bg-[color-mix(in_srgb,#f6efe6_78%,transparent)]" />
+      <div className="admin-desk-paper">
         <header className="sticky top-0 z-30 flex h-14 items-center gap-2 border-b border-border bg-white px-3 lg:hidden">
           <button
             type="button"

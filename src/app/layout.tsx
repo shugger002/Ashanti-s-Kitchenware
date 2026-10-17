@@ -2,7 +2,6 @@ import type { Metadata, Viewport } from "next";
 import Script from "next/script";
 import { Figtree, Newsreader } from "next/font/google";
 import { brand } from "@/config/brand";
-import { CartProvider } from "@/components/store/cart-provider";
 import { getAppUrl } from "@/server/env";
 import "./globals.css";
 
@@ -58,9 +57,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           {`try{if(localStorage.getItem("ak_theme")==="dark")document.documentElement.classList.add("dark")}catch(e){}
 window.__akDeferredPrompt=null;
 window.addEventListener("beforeinstallprompt",function(e){e.preventDefault();window.__akDeferredPrompt=e;});
-if("serviceWorker" in navigator){navigator.serviceWorker.register("/sw.js").catch(function(){})}`}
+if("serviceWorker" in navigator && location.pathname.indexOf("/admin")!==0){navigator.serviceWorker.register("/sw.js").catch(function(){})}`}
         </Script>
-        <CartProvider>{children}</CartProvider>
+        {children}
       </body>
     </html>
   );

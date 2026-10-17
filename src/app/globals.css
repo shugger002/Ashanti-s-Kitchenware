@@ -63,6 +63,22 @@ html:has(.admin-desk).dark,
   color: #1a1a1a;
 }
 
+.admin-desk-paper {
+  position: relative;
+  min-height: 100dvh;
+  min-width: 0;
+  flex: 1;
+  background-color: #f6efe6;
+  background-image:
+    linear-gradient(
+      color-mix(in srgb, #f6efe6 78%, transparent),
+      color-mix(in srgb, #f6efe6 78%, transparent)
+    ),
+    url("/admin/kitchen-wall.jpg");
+  background-size: cover;
+  background-position: center;
+}
+
 .admin-desk h1 {
   font-family: var(--font-newsreader), Georgia, serif;
   letter-spacing: -0.03em;

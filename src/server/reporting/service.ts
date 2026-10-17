@@ -1,104 +1,164 @@
+import { cache } from "react";
 import { query } from "@/server/db/pool";
 import { sql } from "@/server/db/sql";
 
-export async function dashboardMetrics() {
-  const [totals, stock, recent, best, catalogue, today] = await Promise.all([
-    query<{
-      total_orders: string;
-      paid_orders: string;
-      pending_orders: string;
-      packing_orders: string;
-      ready_to_pack: string;
-      out_for_delivery: string;
-      revenue: string;
-      aov: string;
-    }>(sql`
-      SELECT
-         count(*)::text AS total_orders,
-         count(*) FILTER (WHERE payment_status = 'paid' AND status NOT IN ('cancelled','refunded'))::text AS paid_orders,
-         count(*) FILTER (WHERE payment_status IN ('pending','unpaid') AND status = 'pending_payment')::text AS pending_orders,
-         count(*) FILTER (WHERE payment_status = 'paid' AND status = 'paid')::text AS ready_to_pack,
-         count(*) FILTER (WHERE status = 'packing')::text AS packing_orders,
-         count(*) FILTER (WHERE status IN ('shipped','ready_for_collection'))::text AS out_for_delivery,
-         COALESCE(SUM(total) FILTER (WHERE payment_status = 'paid' AND status NOT IN ('cancelled','refunded')), 0)::text AS revenue,
-         COALESCE(AVG(total) FILTER (WHERE payment_status = 'paid' AND status NOT IN ('cancelled','refunded')), 0)::text AS aov
-       FROM orders
-    `),
-    query<{ low: string; out: string }>(sql`
-      SELECT
-         count(*) FILTER (WHERE on_hand - reserved > 0 AND on_hand - reserved <= low_stock_threshold)::text AS low,
-         count(*) FILTER (WHERE on_hand - reserved <= 0)::text AS out
-       FROM inventory
-    `),
-    query<{
-      id: string;
-      public_ref: string;
-      full_name: string;
-      total: string;
-      status: string;
-      payment_status: string;
-      delivery_method: string;
-      created_at: Date;
-    }>(sql`
-      SELECT id, public_ref, full_name, total::text, status, payment_status, delivery_method, created_at
-       FROM orders ORDER BY created_at DESC LIMIT 8
-    `),
-    query<{ product_name: string; units: number; revenue: string }>(sql`
-      SELECT oi.product_name, SUM(oi.quantity)::int AS units, SUM(oi.line_total)::text AS revenue
-       FROM order_items oi
-       JOIN orders o ON o.id = oi.order_id
-       WHERE o.payment_status = 'paid' AND o.status NOT IN ('cancelled','refunded')
-       GROUP BY oi.product_name
-       HAVING SUM(oi.quantity) > 0
-       ORDER BY units DESC
-       LIMIT 5
-    `),
-    query<{ demo: string; promo: string; total_products: string }>(sql`
-      SELECT
-         count(*) FILTER (WHERE archived_at IS NULL)::text AS total_products,
-         count(*) FILTER (WHERE archived_at IS NULL AND sku ILIKE 'DEMO-%')::text AS demo,
-         count(*) FILTER (WHERE archived_at IS NULL AND sale_price IS NOT NULL AND sale_price < price)::text AS promo
-       FROM products
-    `),
-    query<{
-      today_orders: string;
-      today_revenue: string;
-      fulfilled_today: string;
-      new_customers_today: string;
-    }>(sql`
-      WITH gh AS (
-         SELECT (CURRENT_TIMESTAMP AT TIME ZONE 'Africa/Accra')::date AS day
-       )
-       SELECT
-         (SELECT count(*)::text FROM orders o, gh
-           WHERE (o.created_at AT TIME ZONE 'Africa/Accra')::date = gh.day) AS today_orders,
-         (SELECT COALESCE(SUM(o.total), 0)::text FROM orders o, gh
-           WHERE (o.created_at AT TIME ZONE 'Africa/Accra')::date = gh.day
-             AND o.payment_status = 'paid'
-             AND o.status NOT IN ('cancelled','refunded')) AS today_revenue,
-         (SELECT count(*)::text FROM orders o, gh
-           WHERE o.status IN ('delivered','collected')
-             AND (o.updated_at AT TIME ZONE 'Africa/Accra')::date = gh.day) AS fulfilled_today,
-         (SELECT count(*)::text FROM customers c, gh
-           WHERE (c.created_at AT TIME ZONE 'Africa/Accra')::date = gh.day) AS new_customers_today
-    `),
-  ]);
+type RecentOrder = {
+  id: string;
+  public_ref: string;
+  full_name: string;
+  total: string;
+  status: string;
+  payment_status: string;
+  delivery_method: string;
+  created_at: string;
+};
 
-  return {
-    ...totals.rows[0],
-    total_products: catalogue.rows[0]?.total_products ?? "0",
-    today_orders: today.rows[0]?.today_orders ?? "0",
-    today_revenue: today.rows[0]?.today_revenue ?? "0",
-    fulfilled_today: today.rows[0]?.fulfilled_today ?? "0",
-    new_customers_today: today.rows[0]?.new_customers_today ?? "0",
-    lowStock: stock.rows[0]?.low ?? "0",
-    outOfStock: stock.rows[0]?.out ?? "0",
-    demoListings: catalogue.rows[0]?.demo ?? "0",
-    promoListings: catalogue.rows[0]?.promo ?? "0",
-    recent: recent.rows,
-    bestSellers: best.rows,
-  };
+type BestSeller = {
+  product_name: string;
+  units: number;
+  revenue: string;
+};
+
+function asRows<T>(value: T[] | string | null | undefined): T[] {
+  if (!value) return [];
+  if (typeof value === "string") return JSON.parse(value) as T[];
+  return value;
 }
+
+export const dashboardMetrics = cache(async () => {
+  const result = await query<{
+    total_orders: string;
+    paid_orders: string;
+    pending_orders: string;
+    packing_orders: string;
+    ready_to_pack: string;
+    out_for_delivery: string;
+    revenue: string;
+    aov: string;
+    today_orders: string;
+    today_revenue: string;
+    fulfilled_today: string;
+    new_customers_today: string;
+    low: string;
+    out: string;
+    total_products: string;
+    demo: string;
+    promo: string;
+    recent: RecentOrder[] | null;
+    best_sellers: BestSeller[] | null;
+  }>(sql`
+    WITH gh AS (
+      SELECT (CURRENT_TIMESTAMP AT TIME ZONE 'Africa/Accra')::date AS day
+    ),
+    order_agg AS (
+      SELECT
+        count(*)::text AS total_orders,
+        count(*) FILTER (WHERE payment_status = 'paid' AND status NOT IN ('cancelled','refunded'))::text AS paid_orders,
+        count(*) FILTER (WHERE payment_status IN ('pending','unpaid') AND status = 'pending_payment')::text AS pending_orders,
+        count(*) FILTER (WHERE payment_status = 'paid' AND status = 'paid')::text AS ready_to_pack,
+        count(*) FILTER (WHERE status = 'packing')::text AS packing_orders,
+        count(*) FILTER (WHERE status IN ('shipped','ready_for_collection'))::text AS out_for_delivery,
+        COALESCE(SUM(total) FILTER (WHERE payment_status = 'paid' AND status NOT IN ('cancelled','refunded')), 0)::text AS revenue,
+        COALESCE(AVG(total) FILTER (WHERE payment_status = 'paid' AND status NOT IN ('cancelled','refunded')), 0)::text AS aov,
+        count(*) FILTER (WHERE (created_at AT TIME ZONE 'Africa/Accra')::date = (SELECT day FROM gh))::text AS today_orders,
+        COALESCE(SUM(total) FILTER (
+          WHERE (created_at AT TIME ZONE 'Africa/Accra')::date = (SELECT day FROM gh)
+            AND payment_status = 'paid'
+            AND status NOT IN ('cancelled','refunded')
+        ), 0)::text AS today_revenue,
+        count(*) FILTER (
+          WHERE status IN ('delivered','collected')
+            AND (updated_at AT TIME ZONE 'Africa/Accra')::date = (SELECT day FROM gh)
+        )::text AS fulfilled_today
+      FROM orders
+    ),
+    stock_agg AS (
+      SELECT
+        count(*) FILTER (WHERE on_hand - reserved > 0 AND on_hand - reserved <= low_stock_threshold)::text AS low,
+        count(*) FILTER (WHERE on_hand - reserved <= 0)::text AS out
+      FROM inventory
+    ),
+    catalogue_agg AS (
+      SELECT
+        count(*) FILTER (WHERE archived_at IS NULL)::text AS total_products,
+        count(*) FILTER (WHERE archived_at IS NULL AND sku ILIKE 'DEMO-%')::text AS demo,
+        count(*) FILTER (WHERE archived_at IS NULL AND sale_price IS NOT NULL AND sale_price < price)::text AS promo
+      FROM products
+    ),
+    new_cust AS (
+      SELECT count(*)::text AS new_customers_today
+      FROM customers, gh
+      WHERE (created_at AT TIME ZONE 'Africa/Accra')::date = gh.day
+    )
+    SELECT
+      o.total_orders,
+      o.paid_orders,
+      o.pending_orders,
+      o.packing_orders,
+      o.ready_to_pack,
+      o.out_for_delivery,
+      o.revenue,
+      o.aov,
+      o.today_orders,
+      o.today_revenue,
+      o.fulfilled_today,
+      n.new_customers_today,
+      s.low,
+      s.out,
+      c.total_products,
+      c.demo,
+      c.promo,
+      (
+        SELECT COALESCE(json_agg(r), '[]'::json)
+        FROM (
+          SELECT id, public_ref, full_name, total::text AS total, status, payment_status, delivery_method, created_at
+          FROM orders
+          ORDER BY created_at DESC
+          LIMIT 8
+        ) r
+      ) AS recent,
+      (
+        SELECT COALESCE(json_agg(b), '[]'::json)
+        FROM (
+          SELECT oi.product_name, SUM(oi.quantity)::int AS units, SUM(oi.line_total)::text AS revenue
+          FROM order_items oi
+          JOIN orders o2 ON o2.id = oi.order_id
+          WHERE o2.payment_status = 'paid' AND o2.status NOT IN ('cancelled','refunded')
+          GROUP BY oi.product_name
+          HAVING SUM(oi.quantity) > 0
+          ORDER BY SUM(oi.quantity) DESC
+          LIMIT 5
+        ) b
+      ) AS best_sellers
+    FROM order_agg o
+    CROSS JOIN stock_agg s
+    CROSS JOIN catalogue_agg c
+    CROSS JOIN new_cust n
+  `);
+
+  const row = result.rows[0];
+  return {
+    total_orders: row?.total_orders ?? "0",
+    paid_orders: row?.paid_orders ?? "0",
+    pending_orders: row?.pending_orders ?? "0",
+    packing_orders: row?.packing_orders ?? "0",
+    ready_to_pack: row?.ready_to_pack ?? "0",
+    out_for_delivery: row?.out_for_delivery ?? "0",
+    revenue: row?.revenue ?? "0",
+    aov: row?.aov ?? "0",
+    total_products: row?.total_products ?? "0",
+    today_orders: row?.today_orders ?? "0",
+    today_revenue: row?.today_revenue ?? "0",
+    fulfilled_today: row?.fulfilled_today ?? "0",
+    new_customers_today: row?.new_customers_today ?? "0",
+    lowStock: row?.low ?? "0",
+    outOfStock: row?.out ?? "0",
+    demoListings: row?.demo ?? "0",
+    promoListings: row?.promo ?? "0",
+    recent: asRows(row?.recent),
+    bestSellers: asRows(row?.best_sellers),
+  };
+});
 
 export async function listCustomers() {
   const result = await query<{

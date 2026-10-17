@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import { CartProvider } from "@/components/store/cart-provider";
 import { CookieBanner } from "@/components/store/cookie-banner";
 import { StoreFooter } from "@/components/store/footer";
 import { StoreChrome } from "@/components/store/store-chrome";
@@ -90,6 +91,7 @@ function StoreShellFallback({ children }: { children: React.ReactNode }) {
 
 export default function StoreLayout({ children }: { children: React.ReactNode }) {
   return (
+    <CartProvider>
     <div className="flex min-h-full flex-col">
       <a
         href="#main-content"
@@ -102,5 +104,6 @@ export default function StoreLayout({ children }: { children: React.ReactNode })
       </Suspense>
       <Toasts />
     </div>
+    </CartProvider>
   );
 }
