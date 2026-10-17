@@ -5,6 +5,7 @@ import { addOrderNote, getOrderById, ORDER_TRANSITIONS, transitionOrder } from "
 import { recordManualPayment } from "@/server/checkout/service";
 import { formatGhs } from "@/lib/money";
 import { ghanaInternationalMsisdn } from "@/lib/phone-gh";
+import { customerWhatsAppHref } from "@/lib/order-whatsapp";
 import { CUSTOMER_TRACK_STEPS, customerTrackIndex, ORDER_STATUS_LABEL } from "@/lib/order-status";
 import { revalidatePath } from "next/cache";
 import { buttonClass } from "@/components/ui/button";
@@ -60,12 +61,14 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
   const shippingAmount = Number(order.shipping_amount ?? 0);
   const customerStep = customerTrackIndex(status);
   const waDigits = ghanaInternationalMsisdn(text(order.phone));
-  const quoteHref =
-    waDigits.length >= 11
-      ? `https://wa.me/${waDigits}?text=${encodeURIComponent(
-          `Ashanti's Kitchenware, ${text(order.public_ref)}\nHi ${text(order.full_name)}, we have your order. Please confirm your location so we can quote the delivery charge.`,
-        )}`
-      : null;
+  const waHref = customerWhatsAppHref({
+    phone: text(order.phone),
+    publicRef: text(order.public_ref),
+    fullName: text(order.full_name),
+    items: data.items.map((item) => ({ name: item.product_name, quantity: item.quantity, sku: item.sku })),
+    totalLabel: money(order.total),
+    deliveryMethod: method,
+  });
 
   async function changeStatus(formData: FormData) {
     "use server";
@@ -202,11 +205,13 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
                   Call customer
                 </a>
               ) : null}
-              {method === "delivery" && quoteHref ? (
-                <a href={quoteHref} className={buttonClass("secondary", "h-12 w-full sm:w-auto")} target="_blank" rel="noreferrer">
-                  Quote delivery on WhatsApp
+              {waHref ? (
+                <a href={waHref} className={buttonClass("secondary", "h-12 w-full sm:w-auto")} target="_blank" rel="noreferrer">
+                  WhatsApp customer
                 </a>
-              ) : null}
+              ) : (
+                <p className="text-xs text-muted">No WhatsApp number on this order.</p>
+              )}
             </div>
           </section>
         </div>

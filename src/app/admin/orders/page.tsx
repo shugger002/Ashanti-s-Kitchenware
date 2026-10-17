@@ -2,6 +2,8 @@ import Link from "next/link";
 import { requirePermission } from "@/server/auth/authorize";
 import { listOrders } from "@/server/orders/service";
 import { formatGhs } from "@/lib/money";
+import { customerWhatsAppHref, packLines } from "@/lib/order-whatsapp";
+import { buttonClass } from "@/components/ui/button";
 import {
   adminButton,
   AdminPageHeader,
@@ -80,79 +82,118 @@ export default async function AdminOrdersPage({
       ) : (
         <>
         <MobileCards>
-          {orders.map((order) => (
-            <li key={order.id}>
-              <Link
-                href={`/admin/orders/${order.id}`}
-                className="block min-h-11 admin-panel p-4"
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <p className="font-medium">{order.publicRef}</p>
-                  <p className="shrink-0 tabular-nums">{formatGhs(Number(order.total))}</p>
-                </div>
-                <p className="mt-1 text-sm">{order.fullName}</p>
-                <p className="mt-0.5 text-xs text-muted">
-                  {new Date(order.createdAt).toLocaleString("en-GH", {
-                    day: "numeric",
-                    month: "short",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
-                  {" · "}
-                  {order.deliveryMethod === "collection" ? "Collection" : "Delivery"}
-                </p>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  <StatusPill value={order.status} tone={orderTone(order.status)} />
-                  <StatusPill
-                    value={order.paymentStatus}
-                    tone={paymentTone(order.paymentStatus)}
-                    label={paymentLabel(order.paymentStatus)}
-                  />
-                </div>
-              </Link>
-            </li>
-          ))}
+          {orders.map((order) => {
+            const wa = customerWhatsAppHref({
+              phone: order.phone,
+              publicRef: order.publicRef,
+              fullName: order.fullName,
+              items: order.items,
+              totalLabel: formatGhs(Number(order.total)),
+              deliveryMethod: order.deliveryMethod,
+            });
+            return (
+              <li key={order.id} className="admin-panel space-y-3 p-4">
+                <Link href={`/admin/orders/${order.id}`} className="block min-h-11">
+                  <div className="flex items-start justify-between gap-3">
+                    <p className="font-medium">{order.publicRef}</p>
+                    <p className="shrink-0 font-serif tabular-nums">{formatGhs(Number(order.total))}</p>
+                  </div>
+                  <p className="mt-3 text-[11px] font-medium uppercase tracking-[0.14em] text-muted">Customer</p>
+                  <p className="mt-0.5 text-sm">{order.fullName}</p>
+                  <p className="text-xs text-muted">{order.phone}</p>
+                  <p className="mt-3 text-[11px] font-medium uppercase tracking-[0.14em] text-muted">Package</p>
+                  <p className="mt-0.5 text-sm leading-relaxed">{packLines(order.items)}</p>
+                  <p className="mt-2 text-xs text-muted">
+                    {new Date(order.createdAt).toLocaleString("en-GH", {
+                      day: "numeric",
+                      month: "short",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                    {" · "}
+                    {order.deliveryMethod === "collection" ? "Collection" : "Delivery"}
+                  </p>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <StatusPill value={order.status} tone={orderTone(order.status)} />
+                    <StatusPill
+                      value={order.paymentStatus}
+                      tone={paymentTone(order.paymentStatus)}
+                      label={paymentLabel(order.paymentStatus)}
+                    />
+                  </div>
+                </Link>
+                {wa ? (
+                  <a href={wa} className={adminButton()} target="_blank" rel="noreferrer">
+                    WhatsApp customer
+                  </a>
+                ) : (
+                  <p className="text-xs text-muted">No WhatsApp number on this order.</p>
+                )}
+              </li>
+            );
+          })}
         </MobileCards>
         <AdminTable className="mt-4">
           <thead>
             <tr className="border-b border-border bg-surface text-xs text-muted">
               <th className="px-4 py-3 font-medium">Order no.</th>
-              <th className="px-4 py-3 font-medium">When</th>
               <th className="px-4 py-3 font-medium">Customer</th>
-              <th className="px-4 py-3 font-medium">How</th>
+              <th className="px-4 py-3 font-medium">Package</th>
               <th className="px-4 py-3 font-medium">Total</th>
               <th className="px-4 py-3 font-medium">Stage</th>
-              <th className="px-4 py-3 font-medium">Payment</th>
+              <th className="px-4 py-3 font-medium"> </th>
             </tr>
           </thead>
           <tbody>
-            {orders.map((order) => (
-              <tr key={order.id} className="border-b border-border last:border-0 hover:bg-surface">
-                <td className="px-4 py-3">
-                  <Link href={`/admin/orders/${order.id}`} className="font-medium">
-                    {order.publicRef}
-                  </Link>
-                </td>
-                <td className="px-4 py-3 text-muted">
-                  {new Date(order.createdAt).toLocaleString("en-GH", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
-                </td>
-                <td className="px-4 py-3">{order.fullName}</td>
-                <td className="px-4 py-3 text-muted">
-                  {order.deliveryMethod === "collection" ? "Collection" : "Delivery"}
-                </td>
-                <td className="px-4 py-3 tabular-nums">{formatGhs(Number(order.total))}</td>
-                <td className="px-4 py-3">
-                  <StatusPill value={order.status} tone={orderTone(order.status)} />
-                </td>
-                <td className="px-4 py-3">
-                  <StatusPill
-                    value={order.paymentStatus}
-                    tone={paymentTone(order.paymentStatus)}
-                    label={paymentLabel(order.paymentStatus)}
-                  />
-                </td>
-              </tr>
-            ))}
+            {orders.map((order) => {
+              const wa = customerWhatsAppHref({
+                phone: order.phone,
+                publicRef: order.publicRef,
+                fullName: order.fullName,
+                items: order.items,
+                totalLabel: formatGhs(Number(order.total)),
+                deliveryMethod: order.deliveryMethod,
+              });
+              return (
+                <tr key={order.id} className="border-b border-border last:border-0 align-top hover:bg-surface">
+                  <td className="px-4 py-3">
+                    <Link href={`/admin/orders/${order.id}`} className="font-medium">
+                      {order.publicRef}
+                    </Link>
+                    <p className="mt-1 text-xs text-muted">
+                      {new Date(order.createdAt).toLocaleString("en-GH", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
+                      {" · "}
+                      {order.deliveryMethod === "collection" ? "Collection" : "Delivery"}
+                    </p>
+                  </td>
+                  <td className="px-4 py-3">
+                    <p>{order.fullName}</p>
+                    <p className="mt-0.5 text-xs text-muted">{order.phone}</p>
+                  </td>
+                  <td className="px-4 py-3 text-sm leading-relaxed">{packLines(order.items)}</td>
+                  <td className="px-4 py-3 tabular-nums">{formatGhs(Number(order.total))}</td>
+                  <td className="px-4 py-3">
+                    <div className="flex flex-col items-start gap-1">
+                      <StatusPill value={order.status} tone={orderTone(order.status)} />
+                      <StatusPill
+                        value={order.paymentStatus}
+                        tone={paymentTone(order.paymentStatus)}
+                        label={paymentLabel(order.paymentStatus)}
+                      />
+                    </div>
+                  </td>
+                  <td className="px-4 py-3">
+                    {wa ? (
+                      <a href={wa} className={buttonClass("primary", "h-11 min-h-11 w-auto px-4")} target="_blank" rel="noreferrer">
+                        WhatsApp
+                      </a>
+                    ) : (
+                      <span className="text-xs text-muted">No number</span>
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </AdminTable>
         </>

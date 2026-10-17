@@ -2,7 +2,9 @@ import Link from "next/link";
 import { requirePermission } from "@/server/auth/authorize";
 import { dashboardMetrics } from "@/server/reporting/service";
 import { formatGhs } from "@/lib/money";
+import { customerWhatsAppHref, packLines } from "@/lib/order-whatsapp";
 import { hasPermission } from "@/server/auth/types";
+import { buttonClass } from "@/components/ui/button";
 import {
   AdminPageHeader,
   AdminSection,
@@ -137,23 +139,40 @@ export default async function AdminHomePage() {
           </div>
         ) : (
           <ul className="mt-3 divide-y divide-border">
-            {metrics.recent.map((order) => (
-              <li key={order.id}>
-                <Link href={`/admin/orders/${order.id}`} className="flex min-h-14 items-center justify-between gap-3 py-3">
-                  <span className="min-w-0">
-                    <span className="block truncate font-medium">{order.full_name}</span>
-                    <span className="mt-0.5 block text-xs text-muted">{order.public_ref}</span>
-                  </span>
-                  <span className="shrink-0 text-right">
-                    <StatusPill
-                      value={liveOrderBadge(order.payment_status, order.status)}
-                      tone={order.payment_status === "paid" ? "ok" : paymentTone(order.payment_status)}
-                    />
-                    <span className="mt-1 block text-sm tabular-nums">{formatGhs(Number(order.total))}</span>
-                  </span>
-                </Link>
-              </li>
-            ))}
+            {metrics.recent.map((order) => {
+              const items = Array.isArray(order.items) ? order.items : [];
+              const wa = customerWhatsAppHref({
+                phone: order.phone,
+                publicRef: order.public_ref,
+                fullName: order.full_name,
+                items,
+                totalLabel: formatGhs(Number(order.total)),
+                deliveryMethod: order.delivery_method,
+              });
+              return (
+                <li key={order.id} className="space-y-2 py-3">
+                  <Link href={`/admin/orders/${order.id}`} className="flex min-h-11 items-start justify-between gap-3">
+                    <span className="min-w-0">
+                      <span className="block truncate font-medium">{order.full_name}</span>
+                      <span className="mt-0.5 block text-xs text-muted">{order.public_ref}</span>
+                      <span className="mt-1 block text-sm leading-relaxed text-neutral-800">{packLines(items)}</span>
+                    </span>
+                    <span className="shrink-0 text-right">
+                      <StatusPill
+                        value={liveOrderBadge(order.payment_status, order.status)}
+                        tone={order.payment_status === "paid" ? "ok" : paymentTone(order.payment_status)}
+                      />
+                      <span className="mt-1 block text-sm tabular-nums">{formatGhs(Number(order.total))}</span>
+                    </span>
+                  </Link>
+                  {wa ? (
+                    <a href={wa} className={buttonClass("primary", "h-11 min-h-11 w-full sm:w-auto")} target="_blank" rel="noreferrer">
+                      WhatsApp customer
+                    </a>
+                  ) : null}
+                </li>
+              );
+            })}
           </ul>
         )}
       </AdminSection>

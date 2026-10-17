@@ -15,6 +15,12 @@ export const ORDER_TRANSITIONS: Record<string, string[]> = {
   refunded: [],
 };
 
+export type OrderPackLine = {
+  name: string;
+  quantity: number;
+  sku: string;
+};
+
 export type OrderListItem = {
   id: string;
   publicRef: string;
@@ -25,6 +31,7 @@ export type OrderListItem = {
   deliveryMethod: string;
   total: string;
   createdAt: string;
+  items: OrderPackLine[];
 };
 
 export async function listOrders(filters: {
@@ -55,11 +62,20 @@ export async function listOrders(filters: {
     delivery_method: string;
     total: string;
     created_at: Date;
+    items: OrderPackLine[] | string | null;
   }>(sql`
-    SELECT id, public_ref, full_name, phone, status, payment_status, delivery_method, total::text, created_at
-     FROM orders
+    SELECT o.id, o.public_ref, o.full_name, o.phone, o.status, o.payment_status, o.delivery_method, o.total::text, o.created_at,
+            COALESCE(
+              (
+                SELECT json_agg(json_build_object('name', oi.product_name, 'quantity', oi.quantity, 'sku', oi.sku) ORDER BY oi.product_name)
+                FROM order_items oi
+                WHERE oi.order_id = o.id
+              ),
+              '[]'::json
+            ) AS items
+     FROM orders o
      WHERE ${sqlAnd(where)}
-     ORDER BY created_at DESC
+     ORDER BY o.created_at DESC
      LIMIT 100
   `);
   return result.rows.map((row) => ({
@@ -72,6 +88,17 @@ export async function listOrders(filters: {
     deliveryMethod: row.delivery_method,
     total: row.total,
     createdAt: row.created_at.toISOString(),
+    items: parsePackLines(row.items),
+  }));
+}
+
+function parsePackLines(value: OrderPackLine[] | string | null | undefined): OrderPackLine[] {
+  if (!value) return [];
+  const rows = typeof value === "string" ? (JSON.parse(value) as OrderPackLine[]) : value;
+  return rows.map((row) => ({
+    name: String(row.name ?? ""),
+    quantity: Number(row.quantity ?? 0),
+    sku: String(row.sku ?? ""),
   }));
 }
 
@@ -104,7 +131,8 @@ export async function listOrdersForCustomer(customerId: string): Promise<OrderLi
     total: string;
     created_at: Date;
   }>(sql`
-    SELECT id, public_ref, full_name, phone, status, payment_status, delivery_method, total::text, created_at
+    SELECT id, public_ref, full_name, phone, status, payment_status, delivery_method, total::text, created_at,
+            '[]'::json AS items
      FROM orders
      WHERE customer_id = ${customerId}
      ORDER BY created_at DESC
@@ -120,6 +148,7 @@ export async function listOrdersForCustomer(customerId: string): Promise<OrderLi
     deliveryMethod: row.delivery_method,
     total: row.total,
     createdAt: row.created_at.toISOString(),
+    items: [],
   }));
 }
 
