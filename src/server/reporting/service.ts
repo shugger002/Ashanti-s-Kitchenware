@@ -11,6 +11,11 @@ type RecentOrder = {
   status: string;
   payment_status: string;
   delivery_method: string;
+  address_line1: string | null;
+  address_line2: string | null;
+  city: string | null;
+  region: string | null;
+  delivery_instructions: string | null;
   created_at: string;
   items: { name: string; quantity: number }[] | null;
 };
@@ -113,7 +118,8 @@ export const dashboardMetrics = cache(async () => {
       (
         SELECT COALESCE(json_agg(r), '[]'::json)
         FROM (
-          SELECT o3.id, o3.public_ref, o3.full_name, o3.phone, o3.total::text AS total, o3.status, o3.payment_status, o3.delivery_method, o3.created_at,
+          SELECT o3.id, o3.public_ref, o3.full_name, o3.phone, o3.total::text AS total, o3.status, o3.payment_status, o3.delivery_method,
+                 o3.address_line1, o3.address_line2, o3.city, o3.region, o3.delivery_instructions, o3.created_at,
                  (
                    SELECT COALESCE(json_agg(json_build_object('name', oi.product_name, 'quantity', oi.quantity) ORDER BY oi.product_name), '[]'::json)
                    FROM order_items oi

@@ -2,7 +2,7 @@ import Link from "next/link";
 import { requirePermission } from "@/server/auth/authorize";
 import { dashboardMetrics } from "@/server/reporting/service";
 import { formatGhs } from "@/lib/money";
-import { customerWhatsAppHref, packLines } from "@/lib/order-whatsapp";
+import { customerWhatsAppHref, formatOrderAddress, packLines } from "@/lib/order-whatsapp";
 import { hasPermission } from "@/server/auth/types";
 import { OrderWhatsAppLink } from "@/components/admin/whatsapp-link";
 import {
@@ -148,6 +148,8 @@ export default async function AdminHomePage() {
                 items,
                 totalLabel: formatGhs(Number(order.total)),
                 deliveryMethod: order.delivery_method,
+                address: formatOrderAddress([order.address_line1, order.address_line2, order.city, order.region]),
+                deliveryNote: order.delivery_instructions ?? undefined,
               });
               return (
                 <li key={order.id} className="space-y-2 py-3">

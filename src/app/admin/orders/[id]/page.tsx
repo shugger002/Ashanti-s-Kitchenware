@@ -69,6 +69,8 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
     items: data.items.map((item) => ({ name: item.product_name, quantity: item.quantity, sku: item.sku })),
     totalLabel: money(order.total),
     deliveryMethod: method,
+    address,
+    deliveryNote: text(order.delivery_instructions) || undefined,
   });
 
   async function changeStatus(formData: FormData) {

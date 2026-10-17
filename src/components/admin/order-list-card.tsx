@@ -15,6 +15,7 @@ export function OrderListCard({ order }: { order: OrderListItem }) {
   const pieces = order.items.reduce((sum, item) => sum + item.quantity, 0);
   const collection = order.deliveryMethod === "collection";
   const shipping = Number(order.shippingAmount);
+  const address = addressLine(order);
   const wa = customerWhatsAppHref({
     phone: order.phone,
     publicRef: order.publicRef,
@@ -22,8 +23,9 @@ export function OrderListCard({ order }: { order: OrderListItem }) {
     items: order.items,
     totalLabel: formatGhs(Number(order.total)),
     deliveryMethod: order.deliveryMethod,
+    address,
+    deliveryNote: order.deliveryInstructions ?? undefined,
   });
-  const address = addressLine(order);
 
   return (
     <article className="admin-panel space-y-5">
