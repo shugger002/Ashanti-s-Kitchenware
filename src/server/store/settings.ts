@@ -35,6 +35,7 @@ export type SocialSettings = {
   facebook: string;
   twitter: string;
   linkedin: string;
+  tiktok: string;
 };
 
 export type FulfillmentSettings = {
@@ -65,7 +66,13 @@ const fallback: StorefrontConfig = {
     enabled: true,
     text: "Demo photography is on this site for layout. Replace with photographed stock before launch.",
   },
-  social: { instagram: "", facebook: "", twitter: "", linkedin: "" },
+  social: {
+    instagram: "",
+    facebook: "",
+    twitter: "",
+    linkedin: "",
+    tiktok: "https://www.tiktok.com/@ashantiskitchenware1",
+  },
   fulfillment: {
     coverage: "accra",
     collectionEnabled: true,
@@ -116,7 +123,12 @@ export async function getStorefrontConfig(): Promise<StorefrontConfig> {
         title: hero.title.replace(/what are you cooking tonight\??/i, "Equip Your Kitchen"),
         subtitle: strippedSubtitle,
       };
-  return { contact: liveContact, hero: liveHero, announcement: liveAnnouncement, social, fulfillment };
+  const liveSocial = {
+    ...fallback.social,
+    ...social,
+    tiktok: social.tiktok?.trim() || fallback.social.tiktok,
+  };
+  return { contact: liveContact, hero: liveHero, announcement: liveAnnouncement, social: liveSocial, fulfillment };
 }
 
 export async function updateSetting(key: string, value: unknown): Promise<void> {

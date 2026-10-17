@@ -53,6 +53,7 @@ export function StoreFooter({
   categories?: CategoryLink[];
 }) {
   const socialLinks = [
+    ["TikTok", social.tiktok],
     ["Instagram", social.instagram],
     ["Facebook", social.facebook],
     ["X", social.twitter],
@@ -168,7 +169,7 @@ export function StoreFooter({
             </Link>
             <CookieSettingsButton className="inline-flex min-h-9 items-center text-xs text-white/70 hover:text-white" />
             {socialLinks.map(([label, href]) => (
-              <a key={label} href={href} rel="noreferrer" className="hover:text-white">
+              <a key={label} href={href} rel="noreferrer" target="_blank" className="inline-flex min-h-9 items-center hover:text-white">
                 {label}
               </a>
             ))}
