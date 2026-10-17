@@ -4,6 +4,7 @@ import { hasPermission } from "@/server/auth/types";
 import { addOrderNote, getOrderById, ORDER_TRANSITIONS, transitionOrder } from "@/server/orders/service";
 import { recordManualPayment } from "@/server/checkout/service";
 import { formatGhs } from "@/lib/money";
+import { formatAccraWhen } from "@/lib/accra-time";
 import { ghanaInternationalMsisdn } from "@/lib/phone-gh";
 import { customerWhatsAppHref } from "@/lib/order-whatsapp";
 import { OrderWhatsAppLink } from "@/components/admin/whatsapp-link";
@@ -107,7 +108,7 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
       <BackLink href="/admin/orders">All orders</BackLink>
       <AdminPageHeader
         title={text(order.public_ref)}
-        description={`${text(order.full_name)} · ${text(order.phone)}`}
+        description={`${text(order.full_name)} · ${text(order.phone)} · Placed ${order.created_at ? formatAccraWhen(String(order.created_at)) : ""}`}
         action={
           <span className="flex flex-wrap gap-2">
             <StatusPill value={status} tone={orderTone(status)} />
@@ -142,16 +143,28 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
         <div className="space-y-5">
           <section className="admin-panel">
             <h2 className="font-serif text-xl">What to pack</h2>
+            <p className="mt-1 text-sm text-muted">
+              {data.items.reduce((sum, item) => sum + item.quantity, 0)}{" "}
+              {data.items.reduce((sum, item) => sum + item.quantity, 0) === 1 ? "piece" : "pieces"}
+            </p>
             <ul className="mt-4 divide-y divide-border text-sm">
               {data.items.map((item) => (
-                <li key={item.id} className="flex justify-between gap-3 py-3">
-                  <span>
+                <li key={item.id} className="flex gap-3 py-3">
+                  {item.image_url ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={item.image_url} alt="" className="h-16 w-16 shrink-0 object-cover" />
+                  ) : (
+                    <span className="flex h-16 w-16 shrink-0 items-center justify-center border border-border bg-white text-[10px] text-muted">
+                      {item.sku.slice(0, 6)}
+                    </span>
+                  )}
+                  <span className="min-w-0 flex-1">
                     {item.product_name}
                     <span className="block text-xs text-muted">
-                      {item.sku} · × {item.quantity}
+                      Sheet code {item.sku} · {item.quantity} × {formatGhs(Number(item.unit_price))}
                     </span>
                   </span>
-                  <span className="tabular-nums">{formatGhs(Number(item.line_total ?? item.unit_price))}</span>
+                  <span className="shrink-0 tabular-nums">{formatGhs(Number(item.line_total ?? item.unit_price))}</span>
                 </li>
               ))}
             </ul>
@@ -179,26 +192,48 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
 
           <section className="admin-panel text-sm">
             <h2 className="font-serif text-xl">Customer</h2>
-            <p className="mt-3">{text(order.full_name)}</p>
-            {waDigits.length >= 11 ? (
-              <a href={`tel:+${waDigits}`} className="mt-1 block min-h-11 text-accent">
-                {text(order.phone)}
-              </a>
-            ) : (
-              <p className="mt-1 text-muted">{text(order.phone)}</p>
-            )}
-            {text(order.email) ? (
-              <a href={`mailto:${text(order.email)}`} className="block min-h-11 text-muted">
-                {text(order.email)}
-              </a>
-            ) : null}
-            <p className="mt-4 text-xs uppercase tracking-[0.14em] text-muted">
-              {text(order.delivery_method) === "collection" ? "Collection" : "Delivery"}
-            </p>
-            {address ? <p className="mt-1 leading-relaxed">{address}</p> : <p className="mt-1 text-muted">No street address on this order.</p>}
-            {text(order.delivery_instructions) ? (
-              <p className="mt-3 text-muted">{text(order.delivery_instructions)}</p>
-            ) : null}
+            <dl className="mt-4 space-y-3">
+              <div>
+                <dt className="text-[11px] font-medium uppercase tracking-[0.14em] text-muted">Name</dt>
+                <dd className="mt-0.5">{text(order.full_name)}</dd>
+              </div>
+              <div>
+                <dt className="text-[11px] font-medium uppercase tracking-[0.14em] text-muted">Phone</dt>
+                <dd className="mt-0.5">
+                  {waDigits.length >= 11 ? (
+                    <a href={`tel:+${waDigits}`} className="text-accent">
+                      {text(order.phone)}
+                    </a>
+                  ) : (
+                    text(order.phone)
+                  )}
+                </dd>
+              </div>
+              {text(order.email) ? (
+                <div>
+                  <dt className="text-[11px] font-medium uppercase tracking-[0.14em] text-muted">Email</dt>
+                  <dd className="mt-0.5">
+                    <a href={`mailto:${text(order.email)}`} className="text-muted">
+                      {text(order.email)}
+                    </a>
+                  </dd>
+                </div>
+              ) : null}
+              <div>
+                <dt className="text-[11px] font-medium uppercase tracking-[0.14em] text-muted">
+                  {method === "collection" ? "Collection" : "Delivery address"}
+                </dt>
+                <dd className="mt-0.5 leading-relaxed">
+                  {method === "collection" ? "Collect at the Accra shop." : address || "No street address on this order."}
+                </dd>
+              </div>
+              {text(order.delivery_instructions) ? (
+                <div>
+                  <dt className="text-[11px] font-medium uppercase tracking-[0.14em] text-muted">Note on the order</dt>
+                  <dd className="mt-0.5 text-muted">{text(order.delivery_instructions)}</dd>
+                </div>
+              ) : null}
+            </dl>
             <div className="mt-4 flex flex-col gap-2">
               {waDigits.length >= 11 ? (
                 <a href={`tel:+${waDigits}`} className={adminButton()}>

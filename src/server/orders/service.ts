@@ -19,6 +19,9 @@ export type OrderPackLine = {
   name: string;
   quantity: number;
   sku: string;
+  unitPrice: string;
+  lineTotal: string;
+  imageUrl: string | null;
 };
 
 export type OrderListItem = {
@@ -26,9 +29,17 @@ export type OrderListItem = {
   publicRef: string;
   fullName: string;
   phone: string;
+  email: string | null;
   status: string;
   paymentStatus: string;
   deliveryMethod: string;
+  addressLine1: string | null;
+  addressLine2: string | null;
+  city: string | null;
+  region: string | null;
+  deliveryInstructions: string | null;
+  subtotal: string;
+  shippingAmount: string;
   total: string;
   createdAt: string;
   items: OrderPackLine[];
@@ -57,18 +68,44 @@ export async function listOrders(filters: {
     public_ref: string;
     full_name: string;
     phone: string;
+    email: string | null;
     status: string;
     payment_status: string;
     delivery_method: string;
+    address_line1: string | null;
+    address_line2: string | null;
+    city: string | null;
+    region: string | null;
+    delivery_instructions: string | null;
+    subtotal: string;
+    shipping_amount: string;
     total: string;
     created_at: Date;
     items: OrderPackLine[] | string | null;
   }>(sql`
-    SELECT o.id, o.public_ref, o.full_name, o.phone, o.status, o.payment_status, o.delivery_method, o.total::text, o.created_at,
+    SELECT o.id, o.public_ref, o.full_name, o.phone, o.email, o.status, o.payment_status, o.delivery_method,
+            o.address_line1, o.address_line2, o.city, o.region, o.delivery_instructions,
+            o.subtotal::text, o.shipping_amount::text, o.total::text, o.created_at,
             COALESCE(
               (
-                SELECT json_agg(json_build_object('name', oi.product_name, 'quantity', oi.quantity, 'sku', oi.sku) ORDER BY oi.product_name)
+                SELECT json_agg(
+                  json_build_object(
+                    'name', oi.product_name,
+                    'quantity', oi.quantity,
+                    'sku', oi.sku,
+                    'unitPrice', oi.unit_price::text,
+                    'lineTotal', oi.line_total::text,
+                    'imageUrl', img.url
+                  ) ORDER BY oi.product_name
+                )
                 FROM order_items oi
+                LEFT JOIN LATERAL (
+                  SELECT pi.url
+                  FROM product_images pi
+                  WHERE pi.product_id = oi.product_id
+                  ORDER BY pi.is_primary DESC, pi.sort_order ASC
+                  LIMIT 1
+                ) img ON TRUE
                 WHERE oi.order_id = o.id
               ),
               '[]'::json
@@ -83,9 +120,17 @@ export async function listOrders(filters: {
     publicRef: row.public_ref,
     fullName: row.full_name,
     phone: row.phone,
+    email: row.email,
     status: row.status,
     paymentStatus: row.payment_status,
     deliveryMethod: row.delivery_method,
+    addressLine1: row.address_line1,
+    addressLine2: row.address_line2,
+    city: row.city,
+    region: row.region,
+    deliveryInstructions: row.delivery_instructions,
+    subtotal: row.subtotal,
+    shippingAmount: row.shipping_amount,
     total: row.total,
     createdAt: row.created_at.toISOString(),
     items: parsePackLines(row.items),
@@ -99,6 +144,9 @@ function parsePackLines(value: OrderPackLine[] | string | null | undefined): Ord
     name: String(row.name ?? ""),
     quantity: Number(row.quantity ?? 0),
     sku: String(row.sku ?? ""),
+    unitPrice: String(row.unitPrice ?? "0"),
+    lineTotal: String(row.lineTotal ?? "0"),
+    imageUrl: row.imageUrl ? String(row.imageUrl) : null,
   }));
 }
 
@@ -112,7 +160,20 @@ export async function getOrderById(id: string) {
     quantity: number;
     unit_price: string;
     line_total: string;
-  }>(sql`SELECT id, product_name, sku, quantity, unit_price::text, line_total::text FROM order_items WHERE order_id = ${id}`);
+    image_url: string | null;
+  }>(sql`
+    SELECT oi.id, oi.product_name, oi.sku, oi.quantity, oi.unit_price::text, oi.line_total::text, img.url AS image_url
+     FROM order_items oi
+     LEFT JOIN LATERAL (
+       SELECT pi.url
+       FROM product_images pi
+       WHERE pi.product_id = oi.product_id
+       ORDER BY pi.is_primary DESC, pi.sort_order ASC
+       LIMIT 1
+     ) img ON TRUE
+     WHERE oi.order_id = ${id}
+     ORDER BY oi.product_name
+  `);
   const history = await query(sql`SELECT * FROM order_status_history WHERE order_id = ${id} ORDER BY created_at ASC`);
   const payments = await query(sql`SELECT * FROM payments WHERE order_id = ${id} ORDER BY created_at ASC`);
   const shipments = await query(sql`SELECT * FROM shipments WHERE order_id = ${id}`);
@@ -131,8 +192,7 @@ export async function listOrdersForCustomer(customerId: string): Promise<OrderLi
     total: string;
     created_at: Date;
   }>(sql`
-    SELECT id, public_ref, full_name, phone, status, payment_status, delivery_method, total::text, created_at,
-            '[]'::json AS items
+    SELECT id, public_ref, full_name, phone, status, payment_status, delivery_method, total::text, created_at
      FROM orders
      WHERE customer_id = ${customerId}
      ORDER BY created_at DESC
@@ -143,9 +203,17 @@ export async function listOrdersForCustomer(customerId: string): Promise<OrderLi
     publicRef: row.public_ref,
     fullName: row.full_name,
     phone: row.phone,
+    email: null,
     status: row.status,
     paymentStatus: row.payment_status,
     deliveryMethod: row.delivery_method,
+    addressLine1: null,
+    addressLine2: null,
+    city: null,
+    region: null,
+    deliveryInstructions: null,
+    subtotal: row.total,
+    shippingAmount: "0",
     total: row.total,
     createdAt: row.created_at.toISOString(),
     items: [],

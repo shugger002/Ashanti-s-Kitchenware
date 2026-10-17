@@ -1,21 +1,7 @@
-import Link from "next/link";
 import { requirePermission } from "@/server/auth/authorize";
 import { listOrders } from "@/server/orders/service";
-import { formatGhs } from "@/lib/money";
-import { customerWhatsAppHref, packLines } from "@/lib/order-whatsapp";
-import { OrderWhatsAppLink } from "@/components/admin/whatsapp-link";
-import {
-  adminButton,
-  AdminPageHeader,
-  AdminTable,
-  EmptyState,
-  MobileCards,
-  orderTone,
-  paymentLabel,
-  paymentTone,
-  StatusPill,
-  Toolbar,
-} from "@/components/admin/ui";
+import { OrderListCard } from "@/components/admin/order-list-card";
+import { adminButton, AdminPageHeader, AdminStat, EmptyState, Toolbar } from "@/components/admin/ui";
 
 export default async function AdminOrdersPage({
   searchParams,
@@ -32,12 +18,29 @@ export default async function AdminOrdersPage({
     }),
   ]);
   const filtered = Boolean(params.q || params.status || params.payment);
+  const waitingPay = orders.filter((order) => order.paymentStatus !== "paid" && order.status !== "cancelled").length;
+  const toPack = orders.filter((order) => order.paymentStatus === "paid" && order.status === "paid").length;
+  const pieces = orders.reduce((sum, order) => sum + order.items.reduce((n, item) => n + item.quantity, 0), 0);
+
   return (
     <div>
       <AdminPageHeader
         title="Orders"
-        description="When a customer pays, pack it, quote delivery on WhatsApp, then mark it sent. Checkout does not add a delivery fee."
+        description="Customer, pieces to pack, address, and WhatsApp on every order. Delivery is quoted on WhatsApp, not at checkout."
       />
+      {orders.length > 0 ? (
+        <ul className="mt-8 grid gap-3 sm:grid-cols-3">
+          <li>
+            <AdminStat label="On this list" value={orders.length} hint={filtered ? "Matching the filter" : "Latest 100"} />
+          </li>
+          <li>
+            <AdminStat label="Waiting on payment" value={waitingPay} warn={waitingPay > 0} />
+          </li>
+          <li>
+            <AdminStat label="Ready to pack" value={toPack} hint={`${pieces} pieces on this list`} warn={toPack > 0} />
+          </li>
+        </ul>
+      ) : null}
       <Toolbar>
         <form className="flex w-full flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center" method="get">
           <label htmlFor="order-q" className="sr-only">
@@ -80,119 +83,13 @@ export default async function AdminOrdersPage({
           />
         </div>
       ) : (
-        <>
-        <MobileCards>
-          {orders.map((order) => {
-            const wa = customerWhatsAppHref({
-              phone: order.phone,
-              publicRef: order.publicRef,
-              fullName: order.fullName,
-              items: order.items,
-              totalLabel: formatGhs(Number(order.total)),
-              deliveryMethod: order.deliveryMethod,
-            });
-            return (
-              <li key={order.id} className="admin-panel space-y-3 p-4">
-                <Link href={`/admin/orders/${order.id}`} className="block min-h-11">
-                  <div className="flex items-start justify-between gap-3">
-                    <p className="font-medium">{order.publicRef}</p>
-                    <p className="shrink-0 font-serif tabular-nums">{formatGhs(Number(order.total))}</p>
-                  </div>
-                  <p className="mt-3 text-[11px] font-medium uppercase tracking-[0.14em] text-muted">Customer</p>
-                  <p className="mt-0.5 text-sm">{order.fullName}</p>
-                  <p className="text-xs text-muted">{order.phone}</p>
-                  <p className="mt-3 text-[11px] font-medium uppercase tracking-[0.14em] text-muted">Package</p>
-                  <p className="mt-0.5 text-sm leading-relaxed">{packLines(order.items)}</p>
-                  <p className="mt-2 text-xs text-muted">
-                    {new Date(order.createdAt).toLocaleString("en-GH", {
-                      day: "numeric",
-                      month: "short",
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
-                    {" · "}
-                    {order.deliveryMethod === "collection" ? "Collection" : "Delivery"}
-                  </p>
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    <StatusPill value={order.status} tone={orderTone(order.status)} />
-                    <StatusPill
-                      value={order.paymentStatus}
-                      tone={paymentTone(order.paymentStatus)}
-                      label={paymentLabel(order.paymentStatus)}
-                    />
-                  </div>
-                </Link>
-                {wa ? (
-                  <OrderWhatsAppLink href={wa} />
-                ) : (
-                  <p className="text-xs text-muted">No WhatsApp number on this order.</p>
-                )}
-              </li>
-            );
-          })}
-        </MobileCards>
-        <AdminTable className="mt-4">
-          <thead>
-            <tr className="border-b border-border bg-surface text-xs text-muted">
-              <th className="px-4 py-3 font-medium">Order no.</th>
-              <th className="px-4 py-3 font-medium">Customer</th>
-              <th className="px-4 py-3 font-medium">Package</th>
-              <th className="px-4 py-3 font-medium">Total</th>
-              <th className="px-4 py-3 font-medium">Stage</th>
-              <th className="px-4 py-3 font-medium"> </th>
-            </tr>
-          </thead>
-          <tbody>
-            {orders.map((order) => {
-              const wa = customerWhatsAppHref({
-                phone: order.phone,
-                publicRef: order.publicRef,
-                fullName: order.fullName,
-                items: order.items,
-                totalLabel: formatGhs(Number(order.total)),
-                deliveryMethod: order.deliveryMethod,
-              });
-              return (
-                <tr key={order.id} className="border-b border-border last:border-0 align-top hover:bg-surface">
-                  <td className="px-4 py-3">
-                    <Link href={`/admin/orders/${order.id}`} className="font-medium">
-                      {order.publicRef}
-                    </Link>
-                    <p className="mt-1 text-xs text-muted">
-                      {new Date(order.createdAt).toLocaleString("en-GH", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
-                      {" · "}
-                      {order.deliveryMethod === "collection" ? "Collection" : "Delivery"}
-                    </p>
-                  </td>
-                  <td className="px-4 py-3">
-                    <p>{order.fullName}</p>
-                    <p className="mt-0.5 text-xs text-muted">{order.phone}</p>
-                  </td>
-                  <td className="px-4 py-3 text-sm leading-relaxed">{packLines(order.items)}</td>
-                  <td className="px-4 py-3 tabular-nums">{formatGhs(Number(order.total))}</td>
-                  <td className="px-4 py-3">
-                    <div className="flex flex-col items-start gap-1">
-                      <StatusPill value={order.status} tone={orderTone(order.status)} />
-                      <StatusPill
-                        value={order.paymentStatus}
-                        tone={paymentTone(order.paymentStatus)}
-                        label={paymentLabel(order.paymentStatus)}
-                      />
-                    </div>
-                  </td>
-                  <td className="px-4 py-3">
-                    {wa ? (
-                      <OrderWhatsAppLink href={wa} />
-                    ) : (
-                      <span className="text-xs text-muted">No number</span>
-                    )}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </AdminTable>
-        </>
+        <ul className="mt-6 space-y-4">
+          {orders.map((order) => (
+            <li key={order.id}>
+              <OrderListCard order={order} />
+            </li>
+          ))}
+        </ul>
       )}
     </div>
   );
