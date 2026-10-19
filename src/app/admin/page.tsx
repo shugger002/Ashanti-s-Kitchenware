@@ -21,7 +21,8 @@ function count(value: string | undefined) {
 
 export default async function AdminHomePage() {
   const [metrics, user] = await Promise.all([dashboardMetrics(), requirePermission("orders.read")]);
-  const greeting = (user?.fullName ?? "Staff").trim().split(/\s+/)[0] || "Staff";
+  const firstName = (user?.fullName ?? "").trim().split(/\s+/)[0] || "";
+  const greeting = /^(store|admin|staff|owner)$/i.test(firstName) ? "Accra desk" : `${firstName || "Staff"}, Accra desk`;
   const canProducts = hasPermission(user.roles, "products.read");
   const canInventory = hasPermission(user.roles, "inventory.write");
   const canReports = hasPermission(user.roles, "reports.read");
@@ -87,7 +88,7 @@ export default async function AdminHomePage() {
   return (
     <div>
       <AdminPageHeader
-        title={`${greeting}, Accra desk`}
+        title={greeting}
         description="Orders to pack, stock that is low, and anything still waiting."
       />
 
@@ -127,8 +128,7 @@ export default async function AdminHomePage() {
       </section>
 
       <AdminSection className="mt-8" title="Recent orders">
-        <div className="flex items-center justify-between gap-3">
-          <h2 className="text-lg font-medium">Recent orders</h2>
+        <div className="-mt-2 flex justify-end">
           <Link href="/admin/orders" className="inline-flex min-h-11 items-center text-sm text-accent">
             All orders
           </Link>
