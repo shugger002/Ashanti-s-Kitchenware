@@ -1,13 +1,12 @@
 /**
- * Visual system: client red and white. Official wordmark lettering reads Ashanti's Kitchenwear.
- * Legal name of the shop is Ashanti's Kitchenware.
+ * Visual system: client red and white. Wordmark and legal name: Ashanti's Kitchenware.
  * Phone and email below were transcribed from ashantiskitchenware.com.
  * Google listing supplied by the shop: https://maps.app.goo.gl/MQ5u4nCsSU6oH1q2A
  */
 export const brand = {
   name: "Ashanti's Kitchenware",
   domain: "ashantisakitchenware.com",
-  logoSrc: "/logo.png?v=official",
+  logoSrc: "/logo.png?v=kitchenware",
   placeholderNotice:
     "Demo product photography is still in use. Replace with photographed stock before launch.",
 } as const;

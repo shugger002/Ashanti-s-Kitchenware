@@ -91,7 +91,7 @@ export const termsPolicy = {
     },
     {
       heading: "Intellectual property",
-      body: `The Ashanti's Kitchenware name and our own photographs and copy are used for this store. The shop wordmark may letter as Kitchenwear; the legal name is Ashanti's Kitchenware. Product names, logos, and designs of manufacturers remain their property. Listing a brand does not mean we make that brand, or that the manufacturer endorses this shop. Demo photographs are placeholders and must not be treated as the shop’s own product photography until replaced.`,
+      body: `The Ashanti's Kitchenware name and our own photographs and copy are used for this store. Product names, logos, and designs of manufacturers remain their property. Listing a brand does not mean we make that brand, or that the manufacturer endorses this shop. Demo photographs are placeholders and must not be treated as the shop’s own product photography until replaced.`,
     },
     {
       heading: "Privacy",
