@@ -4,7 +4,10 @@ import { sql } from "@/server/db/sql";
 import { isProduction } from "@/server/env";
 import { isHubtelConfigured } from "@/server/payments/hubtel";
 import { isMoolreConfigured } from "@/server/payments/moolre";
-import { AdminPageHeader } from "@/components/admin/ui";
+import { adminButton, AdminPageHeader } from "@/components/admin/ui";
+import { isMailConfigured, sendEmail } from "@/server/notifications/email";
+import { getStorefrontConfig } from "@/server/store/settings";
+import { redirect } from "next/navigation";
 
 async function pingDatabase() {
   try {
@@ -15,17 +18,36 @@ async function pingDatabase() {
   }
 }
 
-export default async function ServiceHealthPage() {
-  const [, databaseOk] = await Promise.all([requirePermission("settings.write"), pingDatabase()]);
-  const smtpReady = Boolean(process.env.SMTP_HOST && process.env.SMTP_FROM);
+async function sendTestMail() {
+  "use server";
+  await requirePermission("settings.write");
+  const { contact } = await getStorefrontConfig();
+  const result = await sendEmail({
+    to: contact.email,
+    subject: "Ashanti's Kitchenware mail test",
+    text: "If you can read this in the shop inbox, website email is working.",
+  });
+  redirect(result.sent ? "/admin/services?mail=sent" : "/admin/services?mail=fail");
+}
+
+export default async function ServiceHealthPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ mail?: string }>;
+}) {
+  const [{ mail }, , databaseOk, config] = await Promise.all([
+    searchParams,
+    requirePermission("settings.write"),
+    pingDatabase(),
+    getStorefrontConfig(),
+  ]);
+  const smtpReady = isMailConfigured();
   const photosOk = Boolean(process.env.S3_BUCKET && process.env.S3_ACCESS_KEY_ID) || !isProduction();
-  const objectStorage = photosOk
-    ? "Ready"
-    : "Not set up yet";
+  const objectStorage = photosOk ? "Ready" : "Not set up yet";
 
   const rows = [
     { label: "Shop data", value: databaseOk ? "Working" : "Down", ok: databaseOk },
-    { label: "Staff email", value: smtpReady ? "Ready" : "Not set up yet", ok: smtpReady },
+    { label: "Shop email", value: smtpReady ? "Ready to send" : "Not set up yet", ok: smtpReady },
     { label: "Product photos", value: objectStorage, ok: photosOk },
     { label: "Hubtel", value: isHubtelConfigured() ? "Ready" : "Not set up yet", ok: isHubtelConfigured() },
     { label: "Moolre", value: isMoolreConfigured() ? "Ready" : "Not set up yet", ok: isMoolreConfigured() },
@@ -46,6 +68,26 @@ export default async function ServiceHealthPage() {
           </li>
         ))}
       </ul>
+      <section className="admin-panel mt-8 max-w-xl">
+        <h2 className="font-serif text-xl">Shop email</h2>
+        <p className="mt-2 text-sm leading-relaxed text-muted">
+          Mail to {config.contact.email} is received through Namecheap forwarding. The website sends contact
+          messages, paid-order notices, and staff password resets when sending is switched on.
+        </p>
+        {smtpReady ? (
+          <form action={sendTestMail} className="mt-4">
+            <button className={adminButton()} type="submit">
+              Send a test to {config.contact.email}
+            </button>
+          </form>
+        ) : (
+          <p className="mt-3 text-sm text-accent">Sending is not switched on yet.</p>
+        )}
+        {mail === "sent" ? <p className="mt-3 text-sm">Test sent. Check the shop inbox.</p> : null}
+        {mail === "fail" ? (
+          <p className="mt-3 text-sm text-accent">Test did not send. The mail key needs checking.</p>
+        ) : null}
+      </section>
     </div>
   );
 }

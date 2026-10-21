@@ -48,6 +48,7 @@ export async function sendContactMessage(
 
   const result = await sendEmail({
     to: contact.email,
+    replyTo: parsed.data.email,
     subject: `Website enquiry from ${parsed.data.name}`,
     text: body,
   });

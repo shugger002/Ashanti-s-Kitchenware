@@ -8,6 +8,7 @@ import { getPaymentProvider } from "@/server/payments";
 import { getAppUrl } from "@/server/env";
 import { writeAuditLog } from "@/server/auth/audit";
 import { isDemoListing } from "@/lib/listing";
+import { sendPaidOrderEmails } from "@/server/notifications/order-mail";
 
 export const checkoutSchema = z.object({
   fullName: z.string().trim().min(2).max(120),
@@ -220,7 +221,7 @@ export async function markOrderPaid(input: {
   amountGhs: number;
   payload: Record<string, unknown>;
 }): Promise<void> {
-  await withTransaction(async (db) => {
+  const paidOrderId = await withTransaction(async (db) => {
     const inserted = await db.query(sql`
       INSERT INTO payment_events (provider, provider_event_id, event_type, payload)
        VALUES (${input.provider}, ${input.providerEventId}, 'charge.success', ${JSON.stringify(input.payload)}::jsonb)
@@ -250,7 +251,11 @@ export async function markOrderPaid(input: {
        VALUES (${row.id}, 'pending_payment', 'paid', 'Payment verified')
     `);
     await convertReservationToSale(db, { orderId: row.id });
+    return row.id;
   });
+  if (paidOrderId) {
+    await sendPaidOrderEmails(paidOrderId);
+  }
 }
 
 export async function recordManualPayment(input: {
@@ -259,7 +264,7 @@ export async function recordManualPayment(input: {
   actorUserId: string;
   note: string;
 }): Promise<void> {
-  await withTransaction(async (db) => {
+  const paidOrderId = await withTransaction(async (db) => {
     const order = await db.query<{
       id: string;
       payment_status: string;
@@ -289,7 +294,11 @@ export async function recordManualPayment(input: {
       },
       db,
     );
+    return row.id;
   });
+  if (paidOrderId) {
+    await sendPaidOrderEmails(paidOrderId);
+  }
 }
 
 export async function cancelUnpaidOrder(orderId: string, actorUserId: string | null): Promise<void> {

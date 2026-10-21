@@ -2,13 +2,13 @@ import { query, withTransaction } from "@/server/db/pool";
 import { sql } from "@/server/db/sql";
 import { hashPassword } from "@/server/auth/password";
 import { generateOpaqueToken, hashToken } from "@/server/auth/tokens";
-import { sendEmail } from "@/server/notifications/email";
+import { isMailConfigured, sendEmail } from "@/server/notifications/email";
 import { getAppUrl } from "@/server/env";
 import { writeAuditLog } from "@/server/auth/audit";
 import { hitRateLimit } from "@/server/auth/rate-limit";
 
 export function isPasswordResetEnabled(): boolean {
-  return Boolean(process.env.SMTP_HOST && process.env.SMTP_FROM);
+  return isMailConfigured();
 }
 
 export async function requestPasswordReset(email: string, ip: string | null): Promise<{ ok: true }> {
@@ -32,6 +32,7 @@ export async function requestPasswordReset(email: string, ip: string | null): Pr
     to: user.rows[0].email,
     subject: "Reset your Ashanti's Kitchenware staff password",
     text: `Use this link within one hour to set a new password:\n${link}\n\nIf you did not request this, ignore the email.`,
+    html: `<p>Use this link within one hour to set a new password:</p><p><a href="${link}">Set a new password</a></p><p>If you did not request this, ignore the email.</p>`,
   });
   await writeAuditLog({
     actorUserId: user.rows[0].id,
