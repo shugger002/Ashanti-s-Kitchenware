@@ -24,7 +24,7 @@ export function escapeHtml(value: string) {
 export function defaultFromAddress() {
   return (
     process.env.SMTP_FROM?.trim() ||
-    "Ashanti's Kitchenware <support@ashantiskitchenware.com>"
+    "Ashanti's Kitchenware <ashantiskitchenware@gmail.com>"
   );
 }
 

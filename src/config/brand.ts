@@ -24,7 +24,7 @@ export const shopHours = "Monday to Saturday, 7 a.m. to 7 p.m. Closed Sunday." a
 export const defaultContact = {
   legalName: "Ashanti's Kitchenware",
   tradingName: "Ashanti's Kitchenware",
-  email: "support@ashantiskitchenware.com",
+  email: "ashantiskitchenware@gmail.com",
   phoneDisplay: "+233 (0) 20 194 4235",
   phoneE164: "+233201944235",
   whatsappE164: "+233201944235",

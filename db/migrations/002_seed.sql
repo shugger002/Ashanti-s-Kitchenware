@@ -17,7 +17,7 @@ INSERT INTO store_settings (key, value) VALUES
   '{
     "legalName": "Ashantis Kitchenware",
     "tradingName": "Ashantis Kitchenware",
-    "email": "support@ashantiskitchenware.com",
+    "email": "ashantiskitchenware@gmail.com",
     "phoneDisplay": "+233 (0) 20 194 4235",
     "phoneE164": "+233201944235",
     "whatsappE164": "+233201944235",

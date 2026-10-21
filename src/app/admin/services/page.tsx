@@ -71,8 +71,8 @@ export default async function ServiceHealthPage({
       <section className="admin-panel mt-8 max-w-xl">
         <h2 className="font-serif text-xl">Shop email</h2>
         <p className="mt-2 text-sm leading-relaxed text-muted">
-          Mail to {config.contact.email} is received through Namecheap forwarding. The website sends contact
-          messages, paid-order notices, and staff password resets when sending is switched on.
+          The shop inbox is {config.contact.email}. Contact messages, paid-order notices, and staff password
+          resets send from that address when Gmail SMTP is switched on.
         </p>
         {smtpReady ? (
           <form action={sendTestMail} className="mt-4">

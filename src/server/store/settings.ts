@@ -111,6 +111,9 @@ export async function getStorefrontConfig(): Promise<StorefrontConfig> {
   const mallAddress = /accra mall/i.test(namedContact.addressLine1);
   const liveContact = {
     ...namedContact,
+    email: /@(ashantiskitchenware|ashantisakitchenware)\.com$/i.test(namedContact.email)
+      ? fallback.contact.email
+      : namedContact.email,
     addressLine1: mallAddress ? fallback.contact.addressLine1 : namedContact.addressLine1,
     mapsUrl: namedContact.mapsUrl || fallback.contact.mapsUrl,
   };
