@@ -55,23 +55,28 @@ export function AdminSection({
   step,
   title,
   hint,
+  action,
   children,
   className,
 }: {
   step?: string;
   title: string;
   hint?: string;
+  action?: React.ReactNode;
   children: React.ReactNode;
   className?: string;
 }) {
   return (
     <section className={cn("admin-panel", className)}>
-      <header className="mb-5 flex items-start gap-3">
-        {step ? <span className="admin-step">{step}</span> : null}
-        <div>
-          <h2 className="text-[1.35rem] leading-tight">{title}</h2>
-          {hint ? <p className="mt-1.5 text-sm leading-relaxed text-muted">{hint}</p> : null}
+      <header className="mb-5 flex items-start justify-between gap-3">
+        <div className="flex min-w-0 items-start gap-3">
+          {step ? <span className="admin-step">{step}</span> : null}
+          <div>
+            <h2 className="text-[1.35rem] leading-tight">{title}</h2>
+            {hint ? <p className="mt-1.5 text-sm leading-relaxed text-muted">{hint}</p> : null}
+          </div>
         </div>
+        {action ? <div className="shrink-0">{action}</div> : null}
       </header>
       {children}
     </section>
@@ -84,26 +89,35 @@ export function AdminStat({
   value,
   hint,
   warn,
+  size = "default",
 }: {
   href?: string;
   label: string;
   value: string | number;
   hint?: string;
   warn?: boolean;
+  size?: "default" | "lg";
 }) {
   const inner = (
     <>
       <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-muted">{label}</p>
-      <p className={cn("mt-3 font-serif text-[2.05rem] leading-none tabular-nums", warn && "text-accent")}>{value}</p>
+      <p
+        className={cn(
+          "admin-stat-value mt-3 font-serif text-[2.05rem] leading-none tabular-nums",
+          warn && "text-accent",
+        )}
+      >
+        {value}
+      </p>
       {hint ? <p className="mt-2 text-xs leading-snug text-muted">{hint}</p> : null}
     </>
   );
   return href ? (
-    <Link href={href} className={cn("admin-stat", warn && "admin-stat-warn")}>
+    <Link href={href} className={cn("admin-stat", size === "lg" && "admin-stat-lg", warn && "admin-stat-warn")}>
       {inner}
     </Link>
   ) : (
-    <div className={cn("admin-stat", warn && "admin-stat-warn")}>{inner}</div>
+    <div className={cn("admin-stat", size === "lg" && "admin-stat-lg", warn && "admin-stat-warn")}>{inner}</div>
   );
 }
 

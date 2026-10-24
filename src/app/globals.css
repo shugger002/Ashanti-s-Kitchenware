@@ -142,11 +142,12 @@ html:has(.admin-desk).dark,
 }
 
 .admin-stat {
+  position: relative;
   display: block;
-  min-height: 7.5rem;
+  min-height: 7.25rem;
   border: 1px solid color-mix(in srgb, var(--accent) 12%, #eadfd4);
   background: #fffdf8;
-  padding: 1.1rem 1.15rem 1.15rem;
+  padding: 1.15rem 1.2rem 1.2rem;
   box-shadow: 0 14px 32px rgba(40, 16, 18, 0.05);
   border-radius: 4px;
   transition: transform 160ms cubic-bezier(0.2, 0, 0, 1), border-color 160ms ease;
@@ -157,9 +158,29 @@ html:has(.admin-desk).dark,
   border-color: color-mix(in srgb, var(--accent) 40%, #eadfd4);
 }
 
+.admin-stat-lg {
+  min-height: 8.5rem;
+}
+
+.admin-stat-lg .admin-stat-value {
+  font-size: 2.55rem;
+}
+
 .admin-stat-warn {
   border-color: color-mix(in srgb, var(--accent) 45%, #eadfd4);
   background: color-mix(in srgb, var(--accent) 5%, #fffdf8);
+  padding-left: 1.35rem;
+}
+
+.admin-stat-warn::before {
+  content: "";
+  position: absolute;
+  top: 12px;
+  bottom: 12px;
+  left: 0;
+  width: 3px;
+  border-radius: 0 2px 2px 0;
+  background: var(--accent);
 }
 
 .admin-drop {

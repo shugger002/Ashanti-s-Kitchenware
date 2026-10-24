@@ -6,6 +6,7 @@ import { customerWhatsAppHref, formatOrderAddress, packLines } from "@/lib/order
 import { hasPermission } from "@/server/auth/types";
 import { OrderWhatsAppLink } from "@/components/admin/whatsapp-link";
 import {
+  adminButton,
   AdminPageHeader,
   AdminSection,
   AdminStat,
@@ -14,9 +15,19 @@ import {
   paymentTone,
   StatusPill,
 } from "@/components/admin/ui";
+import { buttonClass } from "@/components/ui/button";
 
 function count(value: string | undefined) {
   return Number(value ?? 0);
+}
+
+function accraDateLabel() {
+  return new Intl.DateTimeFormat("en-GH", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    timeZone: "Africa/Accra",
+  }).format(new Date());
 }
 
 export default async function AdminHomePage() {
@@ -24,8 +35,10 @@ export default async function AdminHomePage() {
   const firstName = (user?.fullName ?? "").trim().split(/\s+/)[0] || "";
   const greeting = /^(store|admin|staff|owner)$/i.test(firstName) ? "Accra desk" : `${firstName || "Staff"}, Accra desk`;
   const canProducts = hasPermission(user.roles, "products.read");
+  const canAddProduct = hasPermission(user.roles, "products.write");
   const canInventory = hasPermission(user.roles, "inventory.write");
   const canReports = hasPermission(user.roles, "reports.read");
+  const canCustomers = hasPermission(user.roles, "customers.read");
 
   const queue = [
     {
@@ -54,91 +67,116 @@ export default async function AdminHomePage() {
     },
   ];
 
-  const stock = [
-    canInventory
-      ? { href: "/admin/inventory", label: "Low stock", value: count(metrics.lowStock), warn: count(metrics.lowStock) > 0 }
-      : null,
-    canInventory
-      ? { href: "/admin/inventory", label: "Out of stock", value: count(metrics.outOfStock), warn: count(metrics.outOfStock) > 0 }
-      : null,
-    canProducts
-      ? { href: "/admin/products", label: "Sample products", value: count(metrics.demoListings), warn: count(metrics.demoListings) > 0 }
-      : null,
-    canProducts
-      ? { href: "/admin/promotions", label: "On promo", value: count(metrics.promoListings), warn: false }
-      : null,
-  ].filter(Boolean) as { href: string; label: string; value: number; warn: boolean }[];
-
-  const canCustomers = hasPermission(user.roles, "customers.read");
-  const today = [
-    { href: "/admin/orders", label: "Orders today", value: String(count(metrics.today_orders)) },
+  const glance = [
+    { href: "/admin/orders", label: "Orders today", value: String(count(metrics.today_orders)), warn: false },
     {
       href: canReports ? "/admin/analytics" : "/admin/orders",
       label: "Paid today",
       value: formatGhs(Number(metrics.today_revenue)),
+      warn: false,
     },
-    { href: "/admin/orders", label: "Delivered today", value: String(count(metrics.fulfilled_today)) },
+    { href: "/admin/orders", label: "Delivered today", value: String(count(metrics.fulfilled_today)), warn: false },
     {
       href: canCustomers ? "/admin/customers" : "/admin",
       label: "New customers",
       value: String(count(metrics.new_customers_today)),
+      warn: false,
     },
-  ];
+    canInventory
+      ? { href: "/admin/inventory", label: "Low stock", value: String(count(metrics.lowStock)), warn: count(metrics.lowStock) > 0 }
+      : null,
+    canInventory
+      ? { href: "/admin/inventory", label: "Out of stock", value: String(count(metrics.outOfStock)), warn: count(metrics.outOfStock) > 0 }
+      : null,
+    canProducts
+      ? { href: "/admin/products", label: "Sample products", value: String(count(metrics.demoListings)), warn: count(metrics.demoListings) > 0 }
+      : null,
+    canProducts
+      ? { href: "/admin/promotions", label: "On promo", value: String(count(metrics.promoListings)), warn: false }
+      : null,
+  ].filter(Boolean) as { href: string; label: string; value: string; warn: boolean }[];
 
   return (
     <div>
       <AdminPageHeader
         title={greeting}
-        description="Orders to pack, stock that is low, and anything still waiting."
+        description={`${accraDateLabel()}. Orders to pack, stock that is low, and anything still waiting.`}
+        action={
+          <>
+            {canAddProduct ? (
+              <Link href="/admin/products/new" className={adminButton()}>
+                Add product
+              </Link>
+            ) : null}
+            <Link href="/admin/orders" className={buttonClass("secondary", "h-12 min-h-12 w-full sm:w-auto")}>
+              All orders
+            </Link>
+          </>
+        }
       />
 
       <section className="mt-8">
         <h2 className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted">Work now</h2>
-        <ul className="mt-3 grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <ul className="admin-panel admin-panel-flush mt-3 divide-y divide-border overflow-hidden sm:hidden">
           {queue.map((item) => (
             <li key={item.label}>
-              <AdminStat href={item.href} label={item.label} value={item.value} hint={item.hint} warn={item.value > 0} />
+              <Link href={item.href} className="flex min-h-14 items-center justify-between gap-4 px-5 py-3">
+                <span>
+                  <span className="block text-sm font-medium">{item.label}</span>
+                  <span className="mt-0.5 block text-xs text-muted">{item.hint}</span>
+                </span>
+                <span className={`font-serif text-2xl tabular-nums ${item.value > 0 ? "text-accent" : "text-foreground"}`}>
+                  {item.value}
+                </span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+        <ul className="mt-3 hidden gap-3 sm:grid sm:grid-cols-2 lg:grid-cols-4">
+          {queue.map((item) => (
+            <li key={item.label}>
+              <AdminStat
+                href={item.href}
+                label={item.label}
+                value={item.value}
+                hint={item.hint}
+                warn={item.value > 0}
+                size="lg"
+              />
             </li>
           ))}
         </ul>
       </section>
-
-      {stock.length > 0 ? (
-        <section className="mt-8">
-          <h2 className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted">Products</h2>
-          <ul className="mt-3 grid grid-cols-2 gap-3 lg:grid-cols-4">
-            {stock.map((item) => (
-              <li key={item.label}>
-                <AdminStat href={item.href} label={item.label} value={item.value} warn={item.warn} />
-              </li>
-            ))}
-          </ul>
-        </section>
-      ) : null}
 
       <section className="mt-8">
-        <h2 className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted">Today (Accra)</h2>
-        <ul className="mt-3 grid grid-cols-2 gap-3 lg:grid-cols-4">
-          {today.map((item) => (
-            <li key={item.label}>
-              <AdminStat href={item.href} label={item.label} value={item.value} />
+        <h2 className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted">Today and stock</h2>
+        <ul className="mt-3 grid grid-cols-2 gap-px overflow-hidden rounded-[4px] border border-[color-mix(in_srgb,var(--accent)_12%,#eadfd4)] bg-[color-mix(in_srgb,var(--accent)_12%,#eadfd4)] sm:grid-cols-4">
+          {glance.map((item) => (
+            <li key={item.label} className="bg-[#fffdf8]">
+              <Link href={item.href} className="flex min-h-16 flex-col justify-center px-4 py-3 sm:px-5">
+                <span className="text-[11px] uppercase tracking-[0.14em] text-muted">{item.label}</span>
+                <span className={`mt-1 font-serif text-xl tabular-nums ${item.warn ? "text-accent" : "text-foreground"}`}>
+                  {item.value}
+                </span>
+              </Link>
             </li>
           ))}
         </ul>
       </section>
 
-      <AdminSection className="mt-8" title="Recent orders">
-        <div className="-mt-2 flex justify-end">
+      <AdminSection
+        className="mt-8"
+        title="Recent orders"
+        action={
           <Link href="/admin/orders" className="inline-flex min-h-11 items-center text-sm text-accent">
             All orders
           </Link>
-        </div>
+        }
+      >
         {metrics.recent.length === 0 ? (
-          <div className="mt-4">
-            <EmptyState title="No orders yet" body="When a customer finishes checkout, the order shows here." />
-          </div>
+          <EmptyState title="No orders yet" body="When a customer finishes checkout, the order shows here." />
         ) : (
-          <ul className="mt-3 divide-y divide-border">
+          <ul className="-mx-1 divide-y divide-border">
             {metrics.recent.map((order) => {
               const items = Array.isArray(order.items) ? order.items : [];
               const wa = customerWhatsAppHref({
@@ -152,19 +190,19 @@ export default async function AdminHomePage() {
                 deliveryNote: order.delivery_instructions ?? undefined,
               });
               return (
-                <li key={order.id} className="space-y-2 py-3">
-                  <Link href={`/admin/orders/${order.id}`} className="flex min-h-11 items-start justify-between gap-3">
+                <li key={order.id} className="space-y-3 py-5 first:pt-1">
+                  <Link href={`/admin/orders/${order.id}`} className="flex min-h-11 items-start justify-between gap-4">
                     <span className="min-w-0">
-                      <span className="block truncate font-medium">{order.full_name}</span>
+                      <span className="block truncate text-base font-medium">{order.full_name}</span>
                       <span className="mt-0.5 block text-xs text-muted">{order.public_ref}</span>
-                      <span className="mt-1 block text-sm leading-relaxed text-neutral-800">{packLines(items)}</span>
+                      <span className="mt-2 block text-sm leading-relaxed text-neutral-800">{packLines(items)}</span>
                     </span>
                     <span className="shrink-0 text-right">
                       <StatusPill
                         value={liveOrderBadge(order.payment_status, order.status)}
                         tone={order.payment_status === "paid" ? "ok" : paymentTone(order.payment_status)}
                       />
-                      <span className="mt-1 block text-sm tabular-nums">{formatGhs(Number(order.total))}</span>
+                      <span className="mt-2 block font-serif text-lg tabular-nums">{formatGhs(Number(order.total))}</span>
                     </span>
                   </Link>
                   {wa ? <OrderWhatsAppLink href={wa} /> : null}
@@ -176,10 +214,14 @@ export default async function AdminHomePage() {
       </AdminSection>
 
       {metrics.bestSellers.length > 0 ? (
-        <AdminSection className="mt-8" title="Best sellers">
-          <ul className="space-y-3">
+        <section className="mt-10">
+          <h2 className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted">Best sellers</h2>
+          <ul className="mt-3 space-y-0">
             {metrics.bestSellers.map((row) => (
-              <li key={row.product_name} className="flex items-baseline justify-between gap-3 border-b border-[color-mix(in_srgb,var(--accent)_8%,#eadfd4)] pb-3 text-sm last:border-0 last:pb-0">
+              <li
+                key={row.product_name}
+                className="flex items-baseline justify-between gap-3 border-b border-[color-mix(in_srgb,var(--accent)_10%,#eadfd4)] py-2.5 text-sm last:border-0"
+              >
                 <span className="min-w-0 truncate">{row.product_name}</span>
                 <span className="shrink-0 font-serif tabular-nums text-foreground">
                   {row.units} · {formatGhs(Number(row.revenue))}
@@ -187,7 +229,7 @@ export default async function AdminHomePage() {
               </li>
             ))}
           </ul>
-        </AdminSection>
+        </section>
       ) : null}
     </div>
   );
