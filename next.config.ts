@@ -35,6 +35,7 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   serverExternalPackages: ["pdf-parse", "@napi-rs/canvas", "xlsx", "pg", "argon2"],
   experimental: {
+    agentUpgrade: "security",
     serverActions: {
       bodySizeLimit: "40mb",
       allowedOrigins: [
