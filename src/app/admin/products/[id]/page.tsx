@@ -1,10 +1,15 @@
 import { notFound } from "next/navigation";
 import { ImageUpload } from "@/components/admin/image-upload";
 import { ProductForm } from "@/components/admin/product-form";
-import { archiveProductAction, setReviewPublishedAction } from "@/app/admin/products/actions";
+import {
+  archiveProductAction,
+  deleteProductImageAction,
+  setProductImagePrimaryAction,
+  setReviewPublishedAction,
+} from "@/app/admin/products/actions";
 import { requirePermission } from "@/server/auth/authorize";
 import { listCategories, getProductById } from "@/server/catalog/queries";
-import { adminButton, AdminPageHeader, AdminSection, BackLink, StatusPill } from "@/components/admin/ui";
+import { adminButton, AdminGlance, AdminPageHeader, AdminSection, BackLink, StatusPill } from "@/components/admin/ui";
 import { listProductReviewsForAdmin } from "@/server/reviews/service";
 
 export default async function EditProductPage({ params }: { params: Promise<{ id: string }> }) {
@@ -29,26 +34,52 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
           </span>
         }
       />
-      <ProductForm categories={categories} product={product} />
-      <AdminSection className="mt-8 max-w-3xl" title="Photos">
+      <AdminGlance
+        className="mt-6 max-w-3xl"
+        items={[
+          { href: "/admin/inventory", label: "To sell", value: product.available, warn: product.available <= product.lowStockThreshold },
+          { label: "Photos", value: product.images.length, warn: product.images.length === 0 },
+          { label: "Shop", value: product.isActive ? "On the shop" : "Hidden", warn: !product.isActive },
+        ]}
+      />
+      <AdminSection className="mt-8 max-w-3xl" title="Photos" hint="The main photo is what customers see first.">
         {product.images.length === 0 ? (
-          <p className="mt-3 text-sm text-muted">No photos yet. Add a picture of the piece on the shelf.</p>
+          <p className="text-sm text-muted">No photos yet. Add a picture of the piece on the shelf.</p>
         ) : (
-          <ul className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
+          <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3">
             {product.images.map((image) => (
               <li key={image.id} className="overflow-hidden border border-[color-mix(in_srgb,var(--accent)_12%,#eadfd4)] bg-white">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={image.url} alt={image.alt} className="aspect-square w-full object-cover" />
-                <p className="truncate px-2 py-1.5 text-[11px] text-muted">
+                <p className="truncate px-2 pt-1.5 text-[11px] text-muted">
                   {image.isPrimary ? "Main photo · " : ""}
                   {image.alt || "Untitled"}
                 </p>
+                <div className="flex flex-wrap gap-x-3 px-2 pb-2 text-xs">
+                  {image.isPrimary ? null : (
+                    <form action={setProductImagePrimaryAction}>
+                      <input type="hidden" name="productId" value={product.id} />
+                      <input type="hidden" name="imageId" value={image.id} />
+                      <button type="submit" className="inline-flex min-h-11 items-center text-accent">
+                        Make main
+                      </button>
+                    </form>
+                  )}
+                  <form action={deleteProductImageAction}>
+                    <input type="hidden" name="productId" value={product.id} />
+                    <input type="hidden" name="imageId" value={image.id} />
+                    <button type="submit" className="inline-flex min-h-11 items-center text-muted hover:text-accent">
+                      Remove
+                    </button>
+                  </form>
+                </div>
               </li>
             ))}
           </ul>
         )}
         <ImageUpload productId={product.id} productName={product.name} />
       </AdminSection>
+      <ProductForm categories={categories} product={product} />
       <AdminSection
         className="mt-8 max-w-3xl"
         title="Reviews"

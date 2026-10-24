@@ -9,7 +9,20 @@ export function WhatsAppMark({ className = "size-6" }: { className?: string }) {
   );
 }
 
-export function OrderWhatsAppLink({ href }: { href: string }) {
+export function OrderWhatsAppLink({ href, labeled = false }: { href: string; labeled?: boolean }) {
+  if (labeled) {
+    return (
+      <a
+        href={href}
+        target="_blank"
+        rel="noreferrer"
+        className="inline-flex h-12 min-h-12 w-full items-center justify-center gap-2 rounded-sm bg-[#25D366] px-5 text-sm font-medium text-white hover:bg-[#1ebe5d] sm:w-auto"
+      >
+        <WhatsAppMark className="size-5" />
+        WhatsApp customer
+      </a>
+    );
+  }
   return (
     <a
       href={href}

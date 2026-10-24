@@ -277,6 +277,31 @@ export async function addProductImage(input: {
   `);
 }
 
+export async function setProductImagePrimary(productId: string, imageId: string): Promise<void> {
+  const owned = await query<{ id: string }>(
+    sql`SELECT id FROM product_images WHERE id = ${imageId} AND product_id = ${productId} LIMIT 1`,
+  );
+  if (!owned.rows[0]) throw new Error("Photo not found");
+  await query(sql`UPDATE product_images SET is_primary = FALSE WHERE product_id = ${productId}`);
+  await query(sql`UPDATE product_images SET is_primary = TRUE WHERE id = ${imageId} AND product_id = ${productId}`);
+}
+
+export async function deleteProductImage(productId: string, imageId: string): Promise<void> {
+  const owned = await query<{ id: string; is_primary: boolean }>(
+    sql`SELECT id, is_primary FROM product_images WHERE id = ${imageId} AND product_id = ${productId} LIMIT 1`,
+  );
+  if (!owned.rows[0]) throw new Error("Photo not found");
+  await query(sql`DELETE FROM product_images WHERE id = ${imageId} AND product_id = ${productId}`);
+  if (owned.rows[0].is_primary) {
+    const next = await query<{ id: string }>(
+      sql`SELECT id FROM product_images WHERE product_id = ${productId} ORDER BY sort_order ASC, id ASC LIMIT 1`,
+    );
+    if (next.rows[0]) {
+      await query(sql`UPDATE product_images SET is_primary = TRUE WHERE id = ${next.rows[0].id}`);
+    }
+  }
+}
+
 export async function setProductSalePrice(
   productId: string,
   salePrice: number | null,

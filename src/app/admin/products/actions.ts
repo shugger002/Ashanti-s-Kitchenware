@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requirePermission } from "@/server/auth/authorize";
-import { archiveProduct, upsertProduct } from "@/server/catalog/admin";
+import { archiveProduct, deleteProductImage, setProductImagePrimary, upsertProduct } from "@/server/catalog/admin";
 import { saveProductPhoto } from "@/server/catalog/images";
 import { setReviewPublished } from "@/server/reviews/service";
 
@@ -79,6 +79,26 @@ export async function setReviewPublishedAction(formData: FormData) {
     published: formData.get("published") === "true",
     actorUserId: user.id,
   });
+  revalidatePath(`/admin/products/${productId}`);
+  revalidatePath("/");
+  revalidatePath("/products");
+  revalidatePath("/shop");
+}
+
+export async function setProductImagePrimaryAction(formData: FormData) {
+  await requirePermission("products.write");
+  const productId = String(formData.get("productId") ?? "");
+  await setProductImagePrimary(productId, String(formData.get("imageId") ?? ""));
+  revalidatePath(`/admin/products/${productId}`);
+  revalidatePath("/");
+  revalidatePath("/products");
+  revalidatePath("/shop");
+}
+
+export async function deleteProductImageAction(formData: FormData) {
+  await requirePermission("products.write");
+  const productId = String(formData.get("productId") ?? "");
+  await deleteProductImage(productId, String(formData.get("imageId") ?? ""));
   revalidatePath(`/admin/products/${productId}`);
   revalidatePath("/");
   revalidatePath("/products");

@@ -13,7 +13,9 @@ import { revalidatePath } from "next/cache";
 import { buttonClass } from "@/components/ui/button";
 import {
   adminButton,
+  AdminGlance,
   AdminPageHeader,
+  AdminSection,
   BackLink,
   orderTone,
   paymentLabel,
@@ -78,6 +80,11 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
     .join(", ");
   const shippingAmount = Number(order.shipping_amount ?? 0);
   const customerStep = customerTrackIndex(status);
+  const pieceCount = data.items.reduce((sum, item) => sum + item.quantity, 0);
+  const forward = allowed.filter((value) => value !== "cancelled" && value !== "refunded");
+  const danger = allowed.filter((value) => value === "cancelled" || value === "refunded");
+  const primaryStep = forward[0];
+  const laterSteps = forward.slice(1);
   const waDigits = ghanaInternationalMsisdn(text(order.phone));
   const waHref = customerWhatsAppHref({
     phone: text(order.phone),
@@ -135,7 +142,15 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
           </span>
         }
       />
-      <p className="font-serif text-3xl tabular-nums">{money(order.total)}</p>
+      <AdminGlance
+        className="mt-0"
+        items={[
+          { label: "Pieces", value: pieceCount },
+          { label: "Payment", value: paymentLabel(paymentStatus), warn: paymentStatus !== "paid" },
+          { label: "How it goes", value: method === "collection" ? "Collection" : "Delivery" },
+          { label: "Total", value: money(order.total) },
+        ]}
+      />
 
       {customerStep < 0 ? (
         <p className="text-sm text-muted">{ORDER_STATUS_LABEL[status] ?? status}</p>
@@ -159,14 +174,175 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
       )}
 
       <div className="grid gap-5 lg:grid-cols-[1.15fr_0.85fr]">
-        <div className="space-y-5">
-          <section className="admin-panel">
-            <h2 className="font-serif text-xl">What to pack</h2>
-            <p className="mt-1 text-sm text-muted">
-              {data.items.reduce((sum, item) => sum + item.quantity, 0)}{" "}
-              {data.items.reduce((sum, item) => sum + item.quantity, 0) === 1 ? "piece" : "pieces"}
-            </p>
-            <ul className="mt-4 divide-y divide-border text-sm">
+        <div className="space-y-5 lg:col-start-2 lg:row-start-1">
+          <AdminSection title="Reach them">
+            <p className="text-base">{text(order.full_name)}</p>
+            <p className="mt-1 text-sm">{text(order.phone)}</p>
+            <div className="mt-4 flex flex-col gap-2">
+              {waDigits.length >= 11 ? (
+                <a href={`tel:+${waDigits}`} className={adminButton()}>
+                  Call customer
+                </a>
+              ) : null}
+              {waHref ? (
+                <OrderWhatsAppLink href={waHref} labeled />
+              ) : (
+                <p className="text-xs text-muted">No WhatsApp number on this order.</p>
+              )}
+            </div>
+          </AdminSection>
+
+          {canWrite ? (
+            allowed.length > 0 ? (
+              <form action={changeStatus}>
+                <AdminSection title="Next step" hint={nextStepHint(status, method)}>
+                  <input type="hidden" name="orderId" value={id} />
+                  <label className="block text-sm">
+                    Rider note (staff only)
+                    <input name="trackingNumber" className="input mt-1" placeholder="Customers do not see this" />
+                  </label>
+                  <div className="mt-4 flex flex-col gap-2">
+                    {primaryStep ? (
+                      <button className={adminButton()} type="submit" name="toStatus" value={primaryStep}>
+                        {STAFF_NEXT[primaryStep] ?? ORDER_STATUS_LABEL[primaryStep] ?? primaryStep.replaceAll("_", " ")}
+                      </button>
+                    ) : null}
+                    {laterSteps.map((value) => (
+                      <button
+                        key={value}
+                        className={buttonClass("secondary", "h-12 min-h-12 w-full sm:w-auto")}
+                        type="submit"
+                        name="toStatus"
+                        value={value}
+                      >
+                        {STAFF_NEXT[value] ?? ORDER_STATUS_LABEL[value] ?? value.replaceAll("_", " ")}
+                      </button>
+                    ))}
+                    {danger.map((value) => (
+                      <button
+                        key={value}
+                        className={buttonClass("ghost", "h-12 min-h-12 w-full text-accent sm:w-auto")}
+                        type="submit"
+                        name="toStatus"
+                        value={value}
+                      >
+                        {STAFF_NEXT[value] ?? ORDER_STATUS_LABEL[value] ?? value.replaceAll("_", " ")}
+                      </button>
+                    ))}
+                  </div>
+                </AdminSection>
+              </form>
+            ) : (
+              <AdminSection title="This order">
+                <p className="text-sm text-muted">Nothing left to move. It is finished, cancelled, or refunded.</p>
+              </AdminSection>
+            )
+          ) : null}
+
+          {canCapture && paymentStatus !== "paid" ? (
+            <form action={capture}>
+              <AdminSection
+                title="Mark as paid"
+                hint="Use this only if you can see the real payment on Hubtel, Moolre, or the bank. Type the payment number from there."
+              >
+                <input type="hidden" name="orderId" value={id} />
+                <label className="block text-sm">
+                  Payment number
+                  <input name="providerRef" required className="input mt-1" />
+                </label>
+                <label className="mt-3 block text-sm">
+                  Note
+                  <input name="note" className="input mt-1" />
+                </label>
+                <button className={`${adminButton()} mt-4`} type="submit">
+                  Mark paid
+                </button>
+              </AdminSection>
+            </form>
+          ) : paymentStatus === "paid" ? (
+            <AdminSection title="Payment">
+              <p className="text-sm text-muted">Marked paid.</p>
+              {data.payments.length > 0 ? (
+                <ul className="mt-3 divide-y divide-border text-sm">
+                  {data.payments.map((payment) => {
+                    const row = payment as Record<string, unknown>;
+                    return (
+                      <li key={text(row.id)} className="flex justify-between gap-3 py-2">
+                        <span>
+                          {text(row.provider)}
+                          {text(row.provider_ref) ? ` · ${text(row.provider_ref)}` : ""}
+                          <span className="block text-xs text-muted">{text(row.status)}</span>
+                        </span>
+                        <span className="font-serif tabular-nums">{money(row.amount)}</span>
+                      </li>
+                    );
+                  })}
+                </ul>
+              ) : null}
+            </AdminSection>
+          ) : null}
+
+          {data.shipments.length > 0 ? (
+            <AdminSection title="Delivery notes">
+              <ul className="space-y-2 text-sm">
+                {data.shipments.map((shipment) => {
+                  const row = shipment as Record<string, unknown>;
+                  return (
+                    <li key={text(row.id)}>
+                      {text(row.carrier) || "Rider not named"}
+                      {text(row.tracking_number) ? ` · ${text(row.tracking_number)}` : ""}
+                      <span className="block text-xs text-muted">{text(row.status)}</span>
+                    </li>
+                  );
+                })}
+              </ul>
+            </AdminSection>
+          ) : null}
+
+          <form action={note}>
+            <AdminSection title="Staff notes">
+              {canWrite ? (
+                <>
+                  <input type="hidden" name="orderId" value={id} />
+                  <label className="block text-sm">
+                    Note
+                    <textarea name="note" required placeholder={`From ${user.email}`} className="input mt-1" rows={3} />
+                  </label>
+                  <button className={`${adminButton()} mt-4`} type="submit">
+                    Add note
+                  </button>
+                </>
+              ) : null}
+              {data.history.length > 0 ? (
+                <ol className="mt-4 divide-y divide-border text-sm">
+                  {data.history.map((entry) => {
+                    const row = entry as Record<string, unknown>;
+                    const from = text(row.from_status);
+                    const to = text(row.to_status);
+                    const same = from === to;
+                    return (
+                      <li key={text(row.id)} className="py-3">
+                        <p className="text-xs text-muted">
+                          {row.created_at ? new Date(String(row.created_at)).toLocaleString("en-GH") : ""}
+                        </p>
+                        <p className="mt-1">
+                          {same
+                            ? "Note"
+                            : `${ORDER_STATUS_LABEL[from] ?? (from.replaceAll("_", " ") || "-")} → ${ORDER_STATUS_LABEL[to] ?? to.replaceAll("_", " ")}`}
+                        </p>
+                        {text(row.note) ? <p className="mt-1 text-muted">{text(row.note)}</p> : null}
+                      </li>
+                    );
+                  })}
+                </ol>
+              ) : null}
+            </AdminSection>
+          </form>
+        </div>
+
+        <div className="space-y-5 lg:col-start-1 lg:row-start-1">
+          <AdminSection title="What to pack" hint={`${pieceCount} ${pieceCount === 1 ? "piece" : "pieces"}`}>
+            <ul className="divide-y divide-border text-sm">
               {data.items.map((item) => (
                 <li key={item.id} className="flex gap-3 py-3">
                   {item.image_url ? (
@@ -183,18 +359,18 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
                       Sheet code {item.sku} · {item.quantity} × {formatGhs(Number(item.unit_price))}
                     </span>
                   </span>
-                  <span className="shrink-0 tabular-nums">{formatGhs(Number(item.line_total ?? item.unit_price))}</span>
+                  <span className="shrink-0 font-serif tabular-nums">{formatGhs(Number(item.line_total ?? item.unit_price))}</span>
                 </li>
               ))}
             </ul>
             <dl className="mt-4 space-y-1 border-t border-border pt-4 text-sm">
               <div className="flex justify-between">
                 <dt className="text-muted">Subtotal</dt>
-                <dd className="tabular-nums">{money(order.subtotal)}</dd>
+                <dd className="font-serif tabular-nums">{money(order.subtotal)}</dd>
               </div>
               <div className="flex justify-between">
                 <dt className="text-muted">Delivery</dt>
-                <dd className={shippingAmount > 0 ? "tabular-nums" : "text-muted"}>
+                <dd className={shippingAmount > 0 ? "font-serif tabular-nums" : "text-muted"}>
                   {shippingAmount > 0
                     ? money(order.shipping_amount)
                     : method === "collection"
@@ -204,14 +380,13 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
               </div>
               <div className="flex justify-between font-medium">
                 <dt>Total</dt>
-                <dd className="tabular-nums">{money(order.total)}</dd>
+                <dd className="font-serif tabular-nums">{money(order.total)}</dd>
               </div>
             </dl>
-          </section>
+          </AdminSection>
 
-          <section className="admin-panel text-sm">
-            <h2 className="font-serif text-xl">Customer</h2>
-            <dl className="mt-4 space-y-3">
+          <AdminSection title="Customer">
+            <dl className="space-y-3 text-sm">
               <div>
                 <dt className="text-[11px] font-medium uppercase tracking-[0.14em] text-muted">Name</dt>
                 <dd className="mt-0.5">{text(order.full_name)}</dd>
@@ -253,162 +428,7 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
                 </div>
               ) : null}
             </dl>
-            <div className="mt-4 flex flex-col gap-2">
-              {waDigits.length >= 11 ? (
-                <a href={`tel:+${waDigits}`} className={adminButton()}>
-                  Call customer
-                </a>
-              ) : null}
-              {waHref ? (
-                <OrderWhatsAppLink href={waHref} />
-              ) : (
-                <p className="text-xs text-muted">No WhatsApp number on this order.</p>
-              )}
-            </div>
-          </section>
-        </div>
-
-        <div className="space-y-5">
-          {canWrite ? (
-            allowed.length > 0 ? (
-              <form action={changeStatus} className="admin-panel space-y-3">
-                <h2 className="font-serif text-xl">Next step</h2>
-                <p className="text-sm leading-relaxed text-muted">{nextStepHint(status, method)}</p>
-                <input type="hidden" name="orderId" value={id} />
-                <label className="block text-sm">
-                  Rider note (staff only)
-                  <input name="trackingNumber" className="input mt-1" placeholder="Customers do not see this" />
-                </label>
-                <div className="flex flex-col gap-2">
-                  {allowed
-                    .filter((value) => value !== "cancelled" && value !== "refunded")
-                    .map((value) => (
-                      <button key={value} className={adminButton()} type="submit" name="toStatus" value={value}>
-                        {STAFF_NEXT[value] ?? ORDER_STATUS_LABEL[value] ?? value.replaceAll("_", " ")}
-                      </button>
-                    ))}
-                  {allowed
-                    .filter((value) => value === "cancelled" || value === "refunded")
-                    .map((value) => (
-                      <button
-                        key={value}
-                        className={buttonClass("secondary", "h-12 min-h-12 w-full sm:w-auto")}
-                        type="submit"
-                        name="toStatus"
-                        value={value}
-                      >
-                        {STAFF_NEXT[value] ?? ORDER_STATUS_LABEL[value] ?? value.replaceAll("_", " ")}
-                      </button>
-                    ))}
-                </div>
-              </form>
-            ) : (
-              <div className="admin-panel">
-                <h2 className="font-serif text-xl">This order</h2>
-                <p className="mt-2 text-sm text-muted">Nothing left to move. It is finished, cancelled, or refunded.</p>
-              </div>
-            )
-          ) : null}
-
-          {canCapture && paymentStatus !== "paid" ? (
-            <form action={capture} className="space-y-3 admin-panel">
-              <h2 className="font-serif text-xl">Mark as paid</h2>
-              <p className="text-xs leading-relaxed text-muted">
-                Use this only if you can see the real payment on Hubtel, Moolre, or the bank. Type the payment number from there.
-              </p>
-              <input type="hidden" name="orderId" value={id} />
-              <label className="block text-sm">
-                Payment number
-                <input name="providerRef" required className="input mt-1" />
-              </label>
-              <label className="block text-sm">
-                Note
-                <input name="note" className="input mt-1" />
-              </label>
-              <button className={adminButton()} type="submit">
-                Mark paid
-              </button>
-            </form>
-          ) : paymentStatus === "paid" ? (
-            <div className="admin-panel text-sm">
-              <h2 className="font-serif text-xl">Payment</h2>
-              <p className="mt-2 text-muted">Marked paid.</p>
-              {data.payments.length > 0 ? (
-                <ul className="mt-3 divide-y divide-border">
-                  {data.payments.map((payment) => {
-                    const row = payment as Record<string, unknown>;
-                    return (
-                      <li key={text(row.id)} className="flex justify-between gap-3 py-2">
-                        <span>
-                          {text(row.provider)}
-                          {text(row.provider_ref) ? ` · ${text(row.provider_ref)}` : ""}
-                          <span className="block text-xs text-muted">{text(row.status)}</span>
-                        </span>
-                        <span className="tabular-nums">{money(row.amount)}</span>
-                      </li>
-                    );
-                  })}
-                </ul>
-              ) : null}
-            </div>
-          ) : null}
-
-          {data.shipments.length > 0 ? (
-            <section className="admin-panel text-sm">
-              <h2 className="font-serif text-xl">Delivery notes</h2>
-              <ul className="mt-3 space-y-2">
-                {data.shipments.map((shipment) => {
-                  const row = shipment as Record<string, unknown>;
-                  return (
-                    <li key={text(row.id)}>
-                      {text(row.carrier) || "Rider not named"}
-                      {text(row.tracking_number) ? ` · ${text(row.tracking_number)}` : ""}
-                      <span className="block text-xs text-muted">{text(row.status)}</span>
-                    </li>
-                  );
-                })}
-              </ul>
-            </section>
-          ) : null}
-
-          <form action={note} className="admin-panel space-y-3">
-            <h2 className="font-serif text-xl">Staff notes</h2>
-            {canWrite ? (
-              <>
-                <input type="hidden" name="orderId" value={id} />
-                <label className="block text-sm">
-                  Note
-                  <textarea name="note" required placeholder={`From ${user.email}`} className="input mt-1" rows={3} />
-                </label>
-                <button className={adminButton()} type="submit">
-                  Add note
-                </button>
-              </>
-            ) : null}
-            {data.history.length > 0 ? (
-              <ol className="mt-2 divide-y divide-border text-sm">
-                {data.history.map((entry) => {
-                  const row = entry as Record<string, unknown>;
-                  const from = text(row.from_status);
-                  const to = text(row.to_status);
-                  const same = from === to;
-                  return (
-                    <li key={text(row.id)} className="py-3">
-                      <p className="text-xs text-muted">
-                        {row.created_at ? new Date(String(row.created_at)).toLocaleString("en-GH") : ""}
-                      </p>
-                      <p className="mt-1">
-                        {same
-                          ? "Note"
-                          : `${ORDER_STATUS_LABEL[from] ?? (from.replaceAll("_", " ") || "-")} → ${ORDER_STATUS_LABEL[to] ?? to.replaceAll("_", " ")}`}
-                      </p>
-                      {text(row.note) ? <p className="mt-1 text-muted">{text(row.note)}</p> : null}
-                    </li>
-                  );
-                })}
-              </ol>
-            ) : null}
-          </form>
+          </AdminSection>
         </div>
       </div>
     </div>

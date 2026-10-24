@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { saveProduct } from "@/app/admin/products/actions";
 import { Button } from "@/components/ui/button";
@@ -7,6 +8,32 @@ import { AdminSection } from "@/components/admin/ui";
 import type { Category, ProductDetail } from "@/server/catalog/types";
 
 type ColorRow = { id?: string; name: string; hex: string; stock: number };
+
+function NewProductPhotos() {
+  const [names, setNames] = useState<string[]>([]);
+  return (
+    <AdminSection step="03" title="Photos" hint="The first picture is the main one. You can add more after you save.">
+      <label className="admin-drop">
+        <input
+          name="images"
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          multiple
+          className="sr-only"
+          onChange={(event) =>
+            setNames(Array.from(event.currentTarget.files ?? []).map((file) => file.name))
+          }
+        />
+        <span className="font-serif text-lg">
+          {names.length > 0 ? `${names.length} photo${names.length === 1 ? "" : "s"} chosen` : "Drop photos here, or tap to choose"}
+        </span>
+        <span className="text-xs text-muted">
+          {names.length > 0 ? names.join(" · ") : "JPEG, PNG, or WebP. 6 MB each."}
+        </span>
+      </label>
+    </AdminSection>
+  );
+}
 
 function ColorOptionsEditor({ product, step }: { product?: ProductDetail; step: string }) {
   const [rows, setRows] = useState<ColorRow[]>(
@@ -170,22 +197,22 @@ export function ProductForm({
             How many on the shelf
             <input name="initialStock" type="number" defaultValue={0} className="input mt-1" />
           </label>
-        ) : null}
+        ) : (
+          <p className="mt-4 text-sm">
+            <span className="font-serif text-xl tabular-nums">{product.available}</span>
+            <span className="ml-2 text-muted">to sell.</span>{" "}
+            <Link href="/admin/inventory" className="text-accent">
+              Restock
+            </Link>
+          </p>
+        )}
         <label className="mt-4 block text-sm">
           Extra details
           <span className="mt-0.5 block text-xs text-muted">One per line, like Size: 32cm</span>
           <textarea name="specifications" defaultValue={specText} rows={4} className="input mt-1" />
         </label>
       </AdminSection>
-      {!product ? (
-        <AdminSection step="03" title="Photos" hint="The first picture is the main one. You can add more after you save.">
-          <label className="admin-drop">
-            <input name="images" type="file" accept="image/jpeg,image/png,image/webp" multiple className="sr-only" />
-            <span className="font-serif text-lg">Drop photos here, or tap to choose</span>
-            <span className="text-xs text-muted">JPEG, PNG, or WebP. 6 MB each.</span>
-          </label>
-        </AdminSection>
-      ) : null}
+      {!product ? <NewProductPhotos /> : null}
       <ColorOptionsEditor product={product} step={product ? "03" : "04"} />
       <AdminSection step={product ? "04" : "05"} title="On the shop" hint="Tick what customers should see.">
         <div className="divide-y divide-[color-mix(in_srgb,var(--accent)_10%,#eadfd4)]">
