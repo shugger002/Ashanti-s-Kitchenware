@@ -157,7 +157,7 @@ export const cookiePolicy = {
     },
     {
       heading: "Analytics (optional)",
-      body: `With your consent, we collect anonymised information about how the store is used. These are only set after you accept optional analytics cookies, and you can withdraw consent at any time. Analytics scripts are not loaded unless a measurement ID is configured and you have accepted.`,
+      body: `With your consent, we collect anonymised information about how the store is used (pages opened, a daily visitor code, and referring site). These are only recorded after you accept optional analytics cookies, and you can withdraw consent at any time. Google Analytics loads only if a measurement ID is configured and you have accepted.`,
     },
     {
       heading: "Third-party content",

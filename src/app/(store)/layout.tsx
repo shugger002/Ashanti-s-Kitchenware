@@ -13,6 +13,8 @@ import { StoreChromeSkeleton } from "@/components/ui/skeleton";
 import { listCategories, searchProducts } from "@/server/catalog/queries";
 import { readStoreCustomer } from "@/server/customers/session";
 import { getStorefrontConfig } from "@/server/store/settings";
+import { AnalyticsTracker } from "@/components/store/analytics-tracker";
+import { getAnalyticsMeasurementId } from "@/server/env";
 
 export const dynamic = "force-dynamic";
 
@@ -103,6 +105,7 @@ export default function StoreLayout({ children }: { children: React.ReactNode })
         <StoreShell>{children}</StoreShell>
       </Suspense>
       <Toasts />
+      <AnalyticsTracker measurementId={getAnalyticsMeasurementId()} />
     </div>
     </CartProvider>
   );

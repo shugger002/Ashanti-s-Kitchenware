@@ -33,3 +33,8 @@ export function getSessionTtlDays(): number {
 export function isProduction(): boolean {
   return process.env.NODE_ENV === "production";
 }
+
+export function getAnalyticsMeasurementId(): string | null {
+  const id = process.env.ANALYTICS_MEASUREMENT_ID?.trim() ?? "";
+  return /^G-[A-Z0-9]+$/i.test(id) ? id : null;
+}

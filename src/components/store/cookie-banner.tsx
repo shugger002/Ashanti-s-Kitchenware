@@ -41,8 +41,8 @@ export function CookieBanner() {
             Cookies
           </p>
           <p className="mt-1 text-xs leading-relaxed text-muted sm:text-sm">
-            Necessary cookies keep the cart and sign-in working. Optional analytics cookies are only
-            used if you accept, and only when a measurement ID is configured.{" "}
+            Necessary cookies keep the cart and sign-in working. Optional analytics cookies count shop
+            visits after you accept.{" "}
             <Link href="/cookies" className="underline">
               Cookie policy
             </Link>

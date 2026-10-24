@@ -6,6 +6,7 @@ import { isHubtelConfigured } from "@/server/payments/hubtel";
 import { isMoolreConfigured } from "@/server/payments/moolre";
 import { adminButton, AdminPageHeader } from "@/components/admin/ui";
 import { isMailConfigured, sendEmail } from "@/server/notifications/email";
+import { getAnalyticsMeasurementId } from "@/server/env";
 import { getStorefrontConfig } from "@/server/store/settings";
 import { redirect } from "next/navigation";
 
@@ -52,6 +53,16 @@ export default async function ServiceHealthPage({
     { label: "Hubtel", value: isHubtelConfigured() ? "Ready" : "Not set up yet", ok: isHubtelConfigured() },
     { label: "Moolre", value: isMoolreConfigured() ? "Ready" : "Not set up yet", ok: isMoolreConfigured() },
     { label: "Paystack", value: process.env.PAYSTACK_SECRET_KEY ? "Ready" : "Not set up yet", ok: Boolean(process.env.PAYSTACK_SECRET_KEY) },
+    {
+      label: "Shop visits",
+      value: "Counted on this desk after cookie accept",
+      ok: true,
+    },
+    {
+      label: "Google Analytics",
+      value: getAnalyticsMeasurementId() ? "Ready" : "Not set up yet",
+      ok: Boolean(getAnalyticsMeasurementId()),
+    },
   ];
 
   return (

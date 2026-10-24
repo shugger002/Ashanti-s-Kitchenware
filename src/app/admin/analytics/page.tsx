@@ -1,13 +1,16 @@
 import { requirePermission } from "@/server/auth/authorize";
 import { dashboardMetrics, listAuditLogs } from "@/server/reporting/service";
+import { storeVisitSummary } from "@/server/analytics/page-views";
 import { formatGhs } from "@/lib/money";
 import { AdminPageHeader, AdminStat, AdminTable, deskActionLabel, EmptyState, MobileCards } from "@/components/admin/ui";
+import { getAnalyticsMeasurementId } from "@/server/env";
 
 export default async function AnalyticsPage() {
-  const [, metrics, logs] = await Promise.all([
+  const [, metrics, logs, visits] = await Promise.all([
     requirePermission("reports.read"),
     dashboardMetrics(),
     listAuditLogs(),
+    storeVisitSummary(),
   ]);
   const totalProducts = Number(metrics.total_products);
   const promo = Number(metrics.promoListings);
@@ -18,9 +21,15 @@ export default async function AnalyticsPage() {
     <div>
       <AdminPageHeader
         title="Analytics"
-        description="Money in, how many pieces are on promo, and what is running low. From this shop’s own orders."
+        description="Shop visits after someone accepts cookies, plus paid orders and stock from this desk."
       />
       <ul className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <li>
+          <AdminStat label="Visits today" value={visits.todayViews} hint={`${visits.todayVisitors} people`} />
+        </li>
+        <li>
+          <AdminStat label="Last 7 days" value={visits.weekViews} hint={`${visits.weekVisitors} people`} />
+        </li>
         <li>
           <AdminStat label="Orders" value={metrics.total_orders} hint={`Waiting for payment: ${metrics.pending_orders}`} />
         </li>
@@ -39,6 +48,24 @@ export default async function AnalyticsPage() {
           />
         </li>
       </ul>
+      {visits.topPaths.length > 0 ? (
+        <>
+          <h2 className="mt-10 text-lg font-medium">Pages this week</h2>
+          <ul className="admin-panel admin-panel-flush mt-4 divide-y divide-border overflow-hidden">
+            {visits.topPaths.map((row) => (
+              <li key={row.path} className="flex min-h-12 items-center justify-between gap-4 px-5 py-3 text-sm">
+                <span className="truncate">{row.path}</span>
+                <span className="tabular-nums text-muted">{row.views}</span>
+              </li>
+            ))}
+          </ul>
+        </>
+      ) : (
+        <p className="mt-8 text-sm text-muted">
+          Visit counts start after a shopper taps Accept all on the cookie bar.
+          {getAnalyticsMeasurementId() ? " Google Analytics is also on for those visits." : ""}
+        </p>
+      )}
       <h2 className="mt-10 text-lg font-medium">What staff did</h2>
       {logs.length === 0 ? (
         <div className="mt-4">

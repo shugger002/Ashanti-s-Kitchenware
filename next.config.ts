@@ -10,11 +10,11 @@ const securityHeaders = [
     value: [
       "default-src 'self'",
       "img-src 'self' data: blob: https:",
-      `script-src 'self' 'unsafe-inline'${process.env.NODE_ENV === "production" ? "" : " 'unsafe-eval'"}`,
+      `script-src 'self' 'unsafe-inline' https://www.googletagmanager.com${process.env.NODE_ENV === "production" ? "" : " 'unsafe-eval'"}`,
       "worker-src 'self' blob:",
       "style-src 'self' 'unsafe-inline'",
       "font-src 'self' data:",
-      "connect-src 'self' https://api.moolre.com https://rmp.hubtel.com https://payproxyapi.hubtel.com ws: wss:",
+      "connect-src 'self' https://api.moolre.com https://rmp.hubtel.com https://payproxyapi.hubtel.com https://www.google-analytics.com https://region1.google-analytics.com https://www.googletagmanager.com https://analytics.google.com ws: wss:",
       "form-action 'self' https://checkout.hubtel.com https://pay.hubtel.com",
       "frame-src 'self'",
       "child-src 'self'",
