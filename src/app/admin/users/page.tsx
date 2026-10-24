@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { requirePermission } from "@/server/auth/authorize";
 import { listAdminUsers } from "@/server/reporting/service";
-import { adminButton, AdminPageHeader, AdminTable, MobileCards, staffJobLabel, StatusPill } from "@/components/admin/ui";
+import { adminButton, AdminGlance, AdminPageHeader, AdminTable, MobileCards, staffJobLabel, StatusPill } from "@/components/admin/ui";
 
 export default async function UsersPage() {
   const [, users] = await Promise.all([requirePermission("users.write"), listAdminUsers()]);
@@ -15,6 +15,13 @@ export default async function UsersPage() {
             Add staff
           </Link>
         }
+      />
+      <AdminGlance
+        items={[
+          { label: "Staff", value: users.length },
+          { label: "Can sign in", value: users.filter((u) => u.is_active).length },
+          { label: "Blocked", value: users.filter((u) => !u.is_active).length, warn: users.some((u) => !u.is_active) },
+        ]}
       />
       <MobileCards className="mt-6">
         {users.map((u) => (

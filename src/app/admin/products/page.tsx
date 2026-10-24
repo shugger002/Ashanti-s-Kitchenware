@@ -4,7 +4,7 @@ import { listAdminProducts } from "@/server/catalog/queries";
 import { formatGhs } from "@/lib/money";
 import { archiveProductAction } from "@/app/admin/products/actions";
 import { ProductCsvForm } from "@/app/admin/products/csv-form";
-import { adminButton, AdminPageHeader, AdminTable, EmptyState, MobileCards, Toolbar } from "@/components/admin/ui";
+import { adminButton, AdminGlance, AdminPageHeader, AdminTable, EmptyState, MobileCards, Toolbar } from "@/components/admin/ui";
 import { hasPermission } from "@/server/auth/types";
 
 const LOW_STOCK_ALERT = 5;
@@ -21,30 +21,11 @@ export default async function AdminProductsPage({
   ]);
   const canWrite = hasPermission(user.roles, "products.write");
   const low = items.filter((p) => p.available > 0 && p.available <= LOW_STOCK_ALERT);
+  const out = items.filter((p) => p.available <= 0);
+  const onPromo = items.filter((p) => p.salePrice);
 
   return (
     <div>
-      {low.length > 0 ? (
-        <div className="admin-panel mb-6">
-          <h2 className="text-sm font-medium">
-            Running low: {low.length} piece{low.length === 1 ? "" : "s"} with {LOW_STOCK_ALERT} or fewer left
-          </h2>
-          <ul className="mt-3 space-y-2 text-sm">
-            {low.map((p) => (
-              <li key={p.id} className="flex min-h-11 items-center justify-between gap-3">
-                <span>
-                  {p.name}
-                  <span className="ml-2 text-muted">{p.available} left</span>
-                </span>
-                <Link href="/admin/inventory" className="text-sm text-accent">
-                  Restock
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </div>
-      ) : null}
-
       <AdminPageHeader
         title="Products"
         description="Names, codes, prices in Cedis, and how many you have. Same as the container sheet."
@@ -56,6 +37,16 @@ export default async function AdminProductsPage({
           ) : undefined
         }
       />
+      {items.length > 0 ? (
+        <AdminGlance
+          items={[
+            { label: "Products", value: items.length },
+            { href: "/admin/inventory", label: "Low stock", value: low.length, warn: low.length > 0 },
+            { href: "/admin/inventory", label: "Out of stock", value: out.length, warn: out.length > 0 },
+            { href: "/admin/promotions", label: "On promo", value: onPromo.length },
+          ]}
+        />
+      ) : null}
       {canWrite ? (
         <div className="mt-6">
           <ProductCsvForm />
@@ -100,7 +91,10 @@ export default async function AdminProductsPage({
               <Link href={`/admin/products/${p.id}`} className="block">
                 <p className="font-medium">{p.name}</p>
                 <p className="mt-0.5 text-xs uppercase text-muted">{p.categoryName ?? "No category"}</p>
-                <p className="mt-2 tabular-nums">
+                <p className="mt-1 text-xs text-muted">
+                  {p.sku} · {p.available} to sell
+                </p>
+                <p className="mt-2 font-serif tabular-nums">
                   {p.salePrice ? (
                     <>
                       <span className="mr-2 text-muted line-through">{formatGhs(Number(p.price))}</span>
@@ -132,8 +126,10 @@ export default async function AdminProductsPage({
             <tr className="border-b border-border bg-surface text-xs text-muted">
               <th className="px-4 py-3 font-medium">S/N</th>
               <th className="px-4 py-3 font-medium">Name</th>
+              <th className="px-4 py-3 font-medium">Code</th>
               <th className="px-4 py-3 font-medium">Category</th>
               <th className="px-4 py-3 font-medium">Price</th>
+              <th className="px-4 py-3 font-medium">To sell</th>
               <th className="px-4 py-3 font-medium">Actions</th>
             </tr>
           </thead>
@@ -144,8 +140,9 @@ export default async function AdminProductsPage({
                 <td className="px-4 py-3 font-medium">
                   <Link href={`/admin/products/${p.id}`}>{p.name}</Link>
                 </td>
+                <td className="px-4 py-3 text-muted">{p.sku}</td>
                 <td className="px-4 py-3 uppercase text-muted">{p.categoryName ?? "-"}</td>
-                <td className="px-4 py-3 tabular-nums">
+                <td className="px-4 py-3 font-serif tabular-nums">
                   {p.salePrice ? (
                     <>
                       <span className="mr-2 text-muted line-through">{formatGhs(Number(p.price))}</span>
@@ -154,6 +151,9 @@ export default async function AdminProductsPage({
                   ) : (
                     formatGhs(Number(p.price))
                   )}
+                </td>
+                <td className={`px-4 py-3 font-serif tabular-nums ${p.available <= LOW_STOCK_ALERT ? "text-accent" : ""}`}>
+                  {p.available}
                 </td>
                 <td className="px-4 py-3">
                   <div className="flex flex-wrap gap-2 text-sm">

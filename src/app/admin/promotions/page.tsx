@@ -3,7 +3,7 @@ import { listAdminProducts } from "@/server/catalog/queries";
 import { setProductSalePrice } from "@/server/catalog/admin";
 import { formatGhs, parseMoney } from "@/lib/money";
 import { revalidatePath } from "next/cache";
-import { adminButton, AdminPageHeader, AdminTable, EmptyState, MobileCards } from "@/components/admin/ui";
+import { adminButton, AdminGlance, AdminPageHeader, AdminTable, EmptyState, MobileCards } from "@/components/admin/ui";
 
 async function applyDiscount(formData: FormData) {
   "use server";
@@ -42,6 +42,14 @@ export default async function PromotionsPage() {
   return (
     <div>
       <AdminPageHeader title="Discounts" description="Knock a percent off one piece. That is a sale price in Cedis, not a coupon code." />
+      {items.length > 0 ? (
+        <AdminGlance
+          items={[
+            { label: "Products", value: items.length },
+            { label: "On promo", value: items.filter((p) => p.salePrice).length },
+          ]}
+        />
+      ) : null}
       {items.length === 0 ? (
         <div className="mt-6">
           <EmptyState title="No products yet" body="Add a product first, then you can put it on sale." />

@@ -1,7 +1,7 @@
 import { requirePermission } from "@/server/auth/authorize";
 import { listOrders } from "@/server/orders/service";
 import { OrderListCard } from "@/components/admin/order-list-card";
-import { adminButton, AdminPageHeader, AdminStat, EmptyState, Toolbar } from "@/components/admin/ui";
+import { adminButton, AdminGlance, AdminPageHeader, EmptyState, Toolbar } from "@/components/admin/ui";
 
 export default async function AdminOrdersPage({
   searchParams,
@@ -29,17 +29,14 @@ export default async function AdminOrdersPage({
         description="Customer, pieces to pack, address, and WhatsApp on every order. Delivery is quoted on WhatsApp, not at checkout."
       />
       {orders.length > 0 ? (
-        <ul className="mt-8 grid gap-3 sm:grid-cols-3">
-          <li>
-            <AdminStat label="On this list" value={orders.length} hint={filtered ? "Matching the filter" : "Latest 100"} />
-          </li>
-          <li>
-            <AdminStat label="Waiting on payment" value={waitingPay} warn={waitingPay > 0} />
-          </li>
-          <li>
-            <AdminStat label="Ready to pack" value={toPack} hint={`${pieces} pieces on this list`} warn={toPack > 0} />
-          </li>
-        </ul>
+        <AdminGlance
+          items={[
+            { label: filtered ? "Matching" : "On this list", value: orders.length },
+            { href: "/admin/orders?status=pending_payment", label: "Waiting on payment", value: waitingPay, warn: waitingPay > 0 },
+            { href: "/admin/orders?status=paid", label: "Ready to pack", value: toPack, warn: toPack > 0 },
+            { label: "Pieces", value: pieces },
+          ]}
+        />
       ) : null}
       <Toolbar>
         <form className="flex w-full flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center" method="get">

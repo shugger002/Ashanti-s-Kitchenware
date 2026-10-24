@@ -2,7 +2,7 @@ import { requirePermission } from "@/server/auth/authorize";
 import { listCategories } from "@/server/catalog/queries";
 import { upsertCategory } from "@/server/catalog/admin";
 import { revalidatePath } from "next/cache";
-import { adminButton, AdminPageHeader, AdminTable, EmptyState, MobileCards } from "@/components/admin/ui";
+import { adminButton, AdminGlance, AdminPageHeader, AdminTable, EmptyState, MobileCards } from "@/components/admin/ui";
 
 async function saveCategory(formData: FormData) {
   "use server";
@@ -26,6 +26,15 @@ export default async function CategoriesPage() {
         title="Categories"
         description="Shop aisles such as Cookware. Turn one off and it disappears from the shop menu."
       />
+      {categories.length > 0 ? (
+        <AdminGlance
+          items={[
+            { label: "Aisles", value: categories.length },
+            { label: "On the shop", value: categories.filter((c) => c.isActive).length },
+            { label: "Hidden", value: categories.filter((c) => !c.isActive).length, warn: categories.some((c) => !c.isActive) },
+          ]}
+        />
+      ) : null}
       {categories.length === 0 ? (
         <div className="mt-6">
           <EmptyState title="No categories yet" body="Add an aisle below, like Cookware. You can hide it from the shop later." />

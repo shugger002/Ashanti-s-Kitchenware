@@ -7,6 +7,7 @@ import { hasPermission } from "@/server/auth/types";
 import { OrderWhatsAppLink } from "@/components/admin/whatsapp-link";
 import {
   adminButton,
+  AdminGlance,
   AdminPageHeader,
   AdminSection,
   AdminStat,
@@ -150,18 +151,7 @@ export default async function AdminHomePage() {
 
       <section className="mt-8">
         <h2 className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted">Today and stock</h2>
-        <ul className="mt-3 grid grid-cols-2 gap-px overflow-hidden rounded-[4px] border border-[color-mix(in_srgb,var(--accent)_12%,#eadfd4)] bg-[color-mix(in_srgb,var(--accent)_12%,#eadfd4)] sm:grid-cols-4">
-          {glance.map((item) => (
-            <li key={item.label} className="bg-[#fffdf8]">
-              <Link href={item.href} className="flex min-h-16 flex-col justify-center px-4 py-3 sm:px-5">
-                <span className="text-[11px] uppercase tracking-[0.14em] text-muted">{item.label}</span>
-                <span className={`mt-1 font-serif text-xl tabular-nums ${item.warn ? "text-accent" : "text-foreground"}`}>
-                  {item.value}
-                </span>
-              </Link>
-            </li>
-          ))}
-        </ul>
+        <AdminGlance className="mt-3" items={glance} />
       </section>
 
       <AdminSection

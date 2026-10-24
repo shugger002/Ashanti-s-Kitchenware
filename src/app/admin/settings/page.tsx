@@ -2,7 +2,7 @@ import { requirePermission } from "@/server/auth/authorize";
 import { shopMap } from "@/config/brand";
 import { getStorefrontConfig, updateSetting } from "@/server/store/settings";
 import { revalidatePath } from "next/cache";
-import { adminButton, AdminPageHeader } from "@/components/admin/ui";
+import { adminButton, AdminPageHeader, AdminSection } from "@/components/admin/ui";
 
 async function saveContact(formData: FormData) {
   "use server";
@@ -71,8 +71,8 @@ export default async function SettingsPage() {
         title="Settings"
         description="Shop name, phone, address, and the words on the homepage. Delivery is still quoted on WhatsApp."
       />
-      <form action={saveContact} className="max-w-xl space-y-4 admin-panel">
-        <h2 className="font-serif text-xl">Contact</h2>
+      <AdminSection className="max-w-xl" title="Contact">
+      <form action={saveContact} className="space-y-4">
         <Field name="legalName" label="Legal name" defaultValue={config.contact.legalName} />
         <Field name="tradingName" label="Trading name" defaultValue={config.contact.tradingName} />
         <Field name="email" label="Email" defaultValue={config.contact.email} />
@@ -89,8 +89,9 @@ export default async function SettingsPage() {
           Save contact
         </button>
       </form>
-      <form action={saveHero} className="max-w-xl space-y-4 admin-panel">
-        <h2 className="font-serif text-xl">Homepage words</h2>
+      </AdminSection>
+      <AdminSection className="max-w-xl" title="Homepage words">
+      <form action={saveHero} className="space-y-4">
         <p className="text-sm leading-relaxed text-muted">
           These sit under the utensils photo. The announcement is the thin strip at the very top of the shop.
         </p>
@@ -107,24 +108,7 @@ export default async function SettingsPage() {
           Save homepage
         </button>
       </form>
-      <section className="max-w-xl admin-panel">
-        <h2 className="text-xl">Other desk pages</h2>
-        <p className="mt-2 text-sm leading-relaxed text-muted">Stock, categories, customers, and delivery are on their own pages.</p>
-        <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-          <a href="/admin/inventory" className={adminButton()}>
-            Stock
-          </a>
-          <a href="/admin/categories" className="inline-flex h-12 items-center justify-center text-sm text-muted hover:text-foreground sm:px-3">
-            Categories
-          </a>
-          <a href="/admin/customers" className="inline-flex h-12 items-center justify-center text-sm text-muted hover:text-foreground sm:px-3">
-            Customers
-          </a>
-          <a href="/admin/delivery" className="inline-flex h-12 items-center justify-center text-sm text-muted hover:text-foreground sm:px-3">
-            Delivery
-          </a>
-        </div>
-      </section>
+      </AdminSection>
     </div>
   );
 }

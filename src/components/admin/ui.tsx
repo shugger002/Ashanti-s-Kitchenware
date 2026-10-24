@@ -83,6 +83,48 @@ export function AdminSection({
   );
 }
 
+export function AdminGlance({
+  items,
+  className,
+}: {
+  items: { href?: string; label: string; value: string | number; warn?: boolean }[];
+  className?: string;
+}) {
+  const cols =
+    items.length === 3 ? "sm:grid-cols-3" : items.length <= 2 ? "sm:grid-cols-2" : "sm:grid-cols-4";
+  return (
+    <ul
+      className={cn(
+        "mt-8 grid grid-cols-2 gap-px overflow-hidden rounded-[4px] border border-[color-mix(in_srgb,var(--accent)_12%,#eadfd4)] bg-[color-mix(in_srgb,var(--accent)_12%,#eadfd4)]",
+        cols,
+        className,
+      )}
+    >
+      {items.map((item) => {
+        const inner = (
+          <>
+            <span className="text-[11px] uppercase tracking-[0.14em] text-muted">{item.label}</span>
+            <span className={cn("mt-1 font-serif text-xl tabular-nums", item.warn ? "text-accent" : "text-foreground")}>
+              {item.value}
+            </span>
+          </>
+        );
+        return (
+          <li key={item.label} className="bg-[#fffdf8]">
+            {item.href ? (
+              <Link href={item.href} className="flex min-h-16 flex-col justify-center px-4 py-3 sm:px-5">
+                {inner}
+              </Link>
+            ) : (
+              <div className="flex min-h-16 flex-col justify-center px-4 py-3 sm:px-5">{inner}</div>
+            )}
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
+
 export function AdminStat({
   href,
   label,

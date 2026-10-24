@@ -2,7 +2,7 @@ import { requirePermission } from "@/server/auth/authorize";
 import { createCoupon, listCoupons, setCouponActive } from "@/server/coupons/service";
 import { formatGhs } from "@/lib/money";
 import { revalidatePath } from "next/cache";
-import { adminButton, AdminPageHeader, AdminSection, AdminStat, AdminTable, EmptyState, MobileCards, StatusPill } from "@/components/admin/ui";
+import { adminButton, AdminGlance, AdminPageHeader, AdminSection, AdminTable, EmptyState, MobileCards, StatusPill } from "@/components/admin/ui";
 
 async function addCoupon(formData: FormData) {
   "use server";
@@ -44,17 +44,13 @@ export default async function CouponsPage() {
         description="Checkout codes that take money off the basket. They do not make delivery free. Delivery stays on WhatsApp."
       />
 
-      <ul className="mt-8 grid gap-3 sm:grid-cols-3">
-        <li>
-          <AdminStat label="Coupons" value={coupons.length} />
-        </li>
-        <li>
-          <AdminStat label="Turned on" value={active} />
-        </li>
-        <li>
-          <AdminStat label="Times used" value={uses} />
-        </li>
-      </ul>
+      <AdminGlance
+        items={[
+          { label: "Coupons", value: coupons.length },
+          { label: "Turned on", value: active },
+          { label: "Times used", value: uses },
+        ]}
+      />
 
       {coupons.length === 0 ? (
         <div className="mt-6">

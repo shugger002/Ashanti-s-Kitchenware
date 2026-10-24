@@ -8,6 +8,7 @@ import { formatGhs } from "@/lib/money";
 import { revalidatePath } from "next/cache";
 import {
   adminButton,
+  AdminGlance,
   AdminPageHeader,
   AdminTable,
   EmptyState,
@@ -57,6 +58,14 @@ export default async function DeliveryPage() {
       <AdminPageHeader
         title="Delivery"
         description="Do not charge delivery at checkout. Agree the fee on WhatsApp, then move the order: received, packing, out, delivered. Shop pickup is Ready at the shop, then Collected."
+      />
+      <AdminGlance
+        items={[
+          { label: "Coverage", value: fulfillment.coverage === "nationwide" ? "Nationwide" : "Accra" },
+          { label: "Shop pickup", value: fulfillment.collectionEnabled ? "On" : "Off" },
+          { label: "Delivery", value: fulfillment.deliveryEnabled ? "WhatsApp quote" : "Off" },
+          { label: "Staff notes", value: rates.length },
+        ]}
       />
 
       <form action={saveFulfillment} className="max-w-xl admin-panel space-y-4">

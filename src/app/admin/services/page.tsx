@@ -4,7 +4,7 @@ import { sql } from "@/server/db/sql";
 import { isProduction } from "@/server/env";
 import { isHubtelConfigured } from "@/server/payments/hubtel";
 import { isMoolreConfigured } from "@/server/payments/moolre";
-import { adminButton, AdminPageHeader } from "@/components/admin/ui";
+import { adminButton, AdminGlance, AdminPageHeader, AdminSection } from "@/components/admin/ui";
 import { isMailConfigured, sendEmail } from "@/server/notifications/email";
 import { getAnalyticsMeasurementId } from "@/server/env";
 import { getStorefrontConfig } from "@/server/store/settings";
@@ -71,6 +71,12 @@ export default async function ServiceHealthPage({
         title="Connections"
         description="Can this shop talk to the database, send mail, store photos, and take payment. Keys are not shown here."
       />
+      <AdminGlance
+        items={[
+          { label: "Working", value: rows.filter((row) => row.ok).length },
+          { label: "Needs a key", value: rows.filter((row) => !row.ok).length, warn: rows.some((row) => !row.ok) },
+        ]}
+      />
       <ul className="admin-panel admin-panel-flush mt-8 divide-y divide-border overflow-hidden">
         {rows.map((row) => (
           <li key={row.label} className="flex min-h-14 items-center justify-between gap-4 px-5 py-4 text-sm">
@@ -79,9 +85,8 @@ export default async function ServiceHealthPage({
           </li>
         ))}
       </ul>
-      <section className="admin-panel mt-8 max-w-xl">
-        <h2 className="font-serif text-xl">Shop email</h2>
-        <p className="mt-2 text-sm leading-relaxed text-muted">
+      <AdminSection className="mt-8 max-w-xl" title="Shop email">
+        <p className="text-sm leading-relaxed text-muted">
           The shop inbox is {config.contact.email}. Contact messages, paid-order notices, and staff password
           resets send from that address when Gmail SMTP is switched on.
         </p>
@@ -98,7 +103,7 @@ export default async function ServiceHealthPage({
         {mail === "fail" ? (
           <p className="mt-3 text-sm text-accent">Test did not send. The mail key needs checking.</p>
         ) : null}
-      </section>
+      </AdminSection>
     </div>
   );
 }

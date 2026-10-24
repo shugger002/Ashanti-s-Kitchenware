@@ -2,7 +2,7 @@ import Link from "next/link";
 import { requirePermission } from "@/server/auth/authorize";
 import { adjustStock, listInventory } from "@/server/inventory/service";
 import { revalidatePath } from "next/cache";
-import { adminButton, AdminPageHeader, AdminStat, AdminTable, EmptyState, MobileCards, StatusPill } from "@/components/admin/ui";
+import { adminButton, AdminGlance, AdminPageHeader, AdminTable, EmptyState, MobileCards, StatusPill } from "@/components/admin/ui";
 import { InventoryCsvForm } from "@/app/admin/inventory/csv-form";
 import { cn } from "@/lib/utils";
 
@@ -45,22 +45,18 @@ export default async function InventoryPage() {
         title="Stock"
         description="How many pieces you have. Upload a spreadsheet to restock many items, or change one row at a time."
       />
+      {rows.length > 0 ? (
+        <AdminGlance
+          items={[
+            { label: "Items", value: rows.length },
+            { label: "Low stock", value: low, warn: low > 0 },
+            { label: "Out of stock", value: out, warn: out > 0 },
+          ]}
+        />
+      ) : null}
       <div className="mt-6">
         <InventoryCsvForm />
       </div>
-      {rows.length > 0 ? (
-        <ul className="mt-6 grid gap-3 sm:grid-cols-3">
-          <li>
-            <AdminStat label="Items" value={rows.length} />
-          </li>
-          <li>
-            <AdminStat label="Low stock" value={low} warn={low > 0} />
-          </li>
-          <li>
-            <AdminStat label="Out of stock" value={out} warn={out > 0} />
-          </li>
-        </ul>
-      ) : null}
       {rows.length === 0 ? (
         <div className="mt-6">
           <EmptyState
@@ -111,7 +107,7 @@ export default async function InventoryPage() {
                     ) : null}
                   </span>
                 </Link>
-                <p className={cn("mt-3 text-sm tabular-nums", tight && "font-medium text-accent")}>
+                <p className={cn("mt-3 font-serif text-sm tabular-nums", tight && "font-medium text-accent")}>
                   {row.available} to sell · {row.onHand} on the shelf · {row.reserved} in unpaid orders
                 </p>
                 <form action={restock} className="mt-3 flex flex-col gap-2">

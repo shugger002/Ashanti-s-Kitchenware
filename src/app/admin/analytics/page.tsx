@@ -2,7 +2,7 @@ import { requirePermission } from "@/server/auth/authorize";
 import { dashboardMetrics, listAuditLogs } from "@/server/reporting/service";
 import { storeVisitSummary } from "@/server/analytics/page-views";
 import { formatGhs } from "@/lib/money";
-import { AdminPageHeader, AdminStat, AdminTable, deskActionLabel, EmptyState, MobileCards } from "@/components/admin/ui";
+import { AdminGlance, AdminPageHeader, AdminSection, AdminTable, deskActionLabel, MobileCards } from "@/components/admin/ui";
 import { getAnalyticsMeasurementId } from "@/server/env";
 
 export default async function AnalyticsPage() {
@@ -23,35 +23,24 @@ export default async function AnalyticsPage() {
         title="Analytics"
         description="Shop visits after someone accepts cookies, plus paid orders and stock from this desk."
       />
-      <ul className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <li>
-          <AdminStat label="Visits today" value={visits.todayViews} hint={`${visits.todayVisitors} people`} />
-        </li>
-        <li>
-          <AdminStat label="Last 7 days" value={visits.weekViews} hint={`${visits.weekVisitors} people`} />
-        </li>
-        <li>
-          <AdminStat label="Orders" value={metrics.total_orders} hint={`Waiting for payment: ${metrics.pending_orders}`} />
-        </li>
-        <li>
-          <AdminStat label="Paid sales" value={formatGhs(Number(metrics.revenue))} hint="Paid orders only" />
-        </li>
-        <li>
-          <AdminStat label="On sale" value={`${coverage}%`} hint={`${promo} of ${totalProducts} products`} />
-        </li>
-        <li>
-          <AdminStat
-            label="Need restock"
-            value={stockRisk}
-            hint={`Low: ${metrics.lowStock} · Finished: ${metrics.outOfStock}`}
-            warn={stockRisk > 0}
-          />
-        </li>
-      </ul>
+      <AdminGlance
+        items={[
+          { label: "Visits today", value: visits.todayViews },
+          { label: "Last 7 days", value: visits.weekViews },
+          { href: "/admin/orders", label: "Orders", value: metrics.total_orders },
+          { label: "Paid sales", value: formatGhs(Number(metrics.revenue)) },
+          { href: "/admin/promotions", label: "On sale", value: `${coverage}%` },
+          { href: "/admin/inventory", label: "Need restock", value: stockRisk, warn: stockRisk > 0 },
+        ]}
+      />
+      <p className="mt-2 text-xs text-muted">
+        {visits.todayVisitors} people today · {visits.weekVisitors} this week
+        {promo ? ` · ${promo} of ${totalProducts} on promo` : ""}
+        {stockRisk > 0 ? ` · low ${metrics.lowStock}, finished ${metrics.outOfStock}` : ""}
+      </p>
       {visits.topPaths.length > 0 ? (
-        <>
-          <h2 className="mt-10 text-lg font-medium">Pages this week</h2>
-          <ul className="admin-panel admin-panel-flush mt-4 divide-y divide-border overflow-hidden">
+        <AdminSection className="mt-8" title="Pages this week">
+          <ul className="-mx-1 divide-y divide-border">
             {visits.topPaths.map((row) => (
               <li key={row.path} className="flex min-h-12 items-center justify-between gap-4 px-5 py-3 text-sm">
                 <span className="truncate">{row.path}</span>
@@ -59,18 +48,18 @@ export default async function AnalyticsPage() {
               </li>
             ))}
           </ul>
-        </>
+        </AdminSection>
       ) : (
         <p className="mt-8 text-sm text-muted">
           Visit counts start after a shopper taps Accept all on the cookie bar.
           {getAnalyticsMeasurementId() ? " Google Analytics is also on for those visits." : ""}
         </p>
       )}
-      <h2 className="mt-10 text-lg font-medium">What staff did</h2>
+      <AdminSection className="mt-8" title="What staff did">
       {logs.length === 0 ? (
-        <div className="mt-4">
-          <EmptyState title="Nothing logged yet" body="When someone edits a product, counts stock, or moves an order, it shows here." />
-        </div>
+        <p className="text-sm leading-relaxed text-muted">
+          When someone edits a product, counts stock, or moves an order, it shows here.
+        </p>
       ) : (
         <>
         <MobileCards>
@@ -104,6 +93,7 @@ export default async function AnalyticsPage() {
         </AdminTable>
         </>
       )}
+      </AdminSection>
     </div>
   );
 }
