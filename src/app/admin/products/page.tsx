@@ -41,8 +41,8 @@ export default async function AdminProductsPage({
         <AdminGlance
           items={[
             { label: "Products", value: items.length },
-            { href: "/admin/inventory", label: "Low stock", value: low.length, warn: low.length > 0 },
-            { href: "/admin/inventory", label: "Out of stock", value: out.length, warn: out.length > 0 },
+            { href: "/admin/inventory?need=low", label: "Low stock", value: low.length, warn: low.length > 0 },
+            { href: "/admin/inventory?need=out", label: "Out of stock", value: out.length, warn: out.length > 0 },
             { href: "/admin/promotions", label: "On promo", value: onPromo.length },
           ]}
         />

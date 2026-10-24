@@ -30,7 +30,7 @@ export default async function AnalyticsPage() {
           { href: "/admin/orders", label: "Orders", value: metrics.total_orders },
           { label: "Paid sales", value: formatGhs(Number(metrics.revenue)) },
           { href: "/admin/promotions", label: "On sale", value: `${coverage}%` },
-          { href: "/admin/inventory", label: "Need restock", value: stockRisk, warn: stockRisk > 0 },
+          { href: "/admin/inventory?need=low", label: "Need restock", value: stockRisk, warn: stockRisk > 0 },
         ]}
       />
       <p className="mt-2 text-xs text-muted">

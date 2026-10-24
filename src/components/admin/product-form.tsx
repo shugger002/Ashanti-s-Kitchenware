@@ -201,7 +201,7 @@ export function ProductForm({
           <p className="mt-4 text-sm">
             <span className="font-serif text-xl tabular-nums">{product.available}</span>
             <span className="ml-2 text-muted">to sell.</span>{" "}
-            <Link href="/admin/inventory" className="text-accent">
+            <Link href={`/admin/inventory?product=${product.id}`} className="text-accent">
               Restock
             </Link>
           </p>

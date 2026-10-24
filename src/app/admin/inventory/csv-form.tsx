@@ -17,12 +17,8 @@ export function InventoryCsvForm() {
   const [state, setState] = useState<InventoryCsvResult | null>(null);
   const [pending, setPending] = useState(false);
   return (
-    <div className="admin-panel">
-      <h2 className="text-lg font-medium">Restock from a file</h2>
-      <p className="mt-1 text-sm leading-relaxed text-muted">
-        Upload a spreadsheet. Need a code or product name column, plus how many arrived, or the new shelf count.
-      </p>
-      <div className="mt-4 flex flex-wrap items-center gap-3">
+    <div>
+      <div className="flex flex-wrap items-center gap-3">
         <button
           type="button"
           className="text-sm text-accent underline-offset-2 hover:underline"

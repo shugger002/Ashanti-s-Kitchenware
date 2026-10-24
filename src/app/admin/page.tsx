@@ -84,10 +84,10 @@ export default async function AdminHomePage() {
       warn: false,
     },
     canInventory
-      ? { href: "/admin/inventory", label: "Low stock", value: String(count(metrics.lowStock)), warn: count(metrics.lowStock) > 0 }
+      ? { href: "/admin/inventory?need=low", label: "Low stock", value: String(count(metrics.lowStock)), warn: count(metrics.lowStock) > 0 }
       : null,
     canInventory
-      ? { href: "/admin/inventory", label: "Out of stock", value: String(count(metrics.outOfStock)), warn: count(metrics.outOfStock) > 0 }
+      ? { href: "/admin/inventory?need=out", label: "Out of stock", value: String(count(metrics.outOfStock)), warn: count(metrics.outOfStock) > 0 }
       : null,
     canProducts
       ? { href: "/admin/products", label: "Sample products", value: String(count(metrics.demoListings)), warn: count(metrics.demoListings) > 0 }

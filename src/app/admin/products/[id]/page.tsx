@@ -37,7 +37,7 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
       <AdminGlance
         className="mt-6 max-w-3xl"
         items={[
-          { href: "/admin/inventory", label: "To sell", value: product.available, warn: product.available <= product.lowStockThreshold },
+          { href: `/admin/inventory?product=${product.id}`, label: "To sell", value: product.available, warn: product.available <= product.lowStockThreshold },
           { label: "Photos", value: product.images.length, warn: product.images.length === 0 },
           { label: "Shop", value: product.isActive ? "On the shop" : "Hidden", warn: !product.isActive },
         ]}
