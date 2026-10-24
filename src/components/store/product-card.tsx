@@ -8,6 +8,7 @@ import { pushToast } from "@/components/store/toast-store";
 import { buttonClass } from "@/components/ui/button";
 import type { ProductCard } from "@/server/catalog/types";
 import { cn, mediaZoomClass } from "@/lib/utils";
+import { OutOfStockOverlay, outOfStockImageClass } from "@/components/store/out-of-stock";
 import { isDemoListing } from "@/lib/listing";
 import { colorsForCard, MAX_VISIBLE_SWATCHES } from "@/lib/product-color";
 import { ColorSwatches } from "@/components/store/color-swatches";
@@ -74,14 +75,15 @@ export function ProductCardView({
             <img
               src={product.primaryImage.url}
               alt={product.primaryImage.alt || product.name}
-              className={cn("h-full w-full", mediaZoomClass)}
+              className={canAdd ? cn("h-full w-full", mediaZoomClass) : outOfStockImageClass()}
             />
           ) : (
             <div className="flex h-full items-center justify-center px-6 text-center text-sm text-muted">
               Photograph not uploaded yet
             </div>
           )}
-          <span className="sr-only">{product.name}</span>
+          {canAdd ? null : <OutOfStockOverlay compact={layout === "list"} />}
+          <span className="sr-only">{canAdd ? product.name : `${product.name}, out of stock`}</span>
         </Link>
         <span className="pointer-events-none absolute left-3 top-3 z-10 flex flex-wrap gap-1">
           {demo ? (
@@ -146,7 +148,7 @@ export function ProductCardView({
             className={buttonClass("primary", "h-11 min-h-11 min-w-0 flex-1 px-3 text-sm")}
             onClick={addLine}
           >
-            {canAdd ? "Add to cart" : "Unavailable"}
+            {canAdd ? "Add to cart" : "Out of stock"}
           </button>
         </div>
       </div>

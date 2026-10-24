@@ -2,14 +2,24 @@
 
 import { useState } from "react";
 import type { ProductImage } from "@/server/catalog/types";
+import { OutOfStockOverlay, outOfStockImageClass } from "@/components/store/out-of-stock";
 
-export function ProductGallery({ images, name }: { images: ProductImage[]; name: string }) {
+export function ProductGallery({
+  images,
+  name,
+  outOfStock = false,
+}: {
+  images: ProductImage[];
+  name: string;
+  outOfStock?: boolean;
+}) {
   const [active, setActive] = useState(0);
   const [zoomed, setZoomed] = useState(false);
   if (images.length === 0) {
     return (
-      <div className="flex aspect-square items-center justify-center bg-background text-sm text-muted">
+      <div className="relative flex aspect-square items-center justify-center overflow-hidden bg-background text-sm text-muted lg:rounded-3xl">
         Photograph not uploaded yet
+        {outOfStock ? <OutOfStockOverlay /> : null}
       </div>
     );
   }
@@ -18,12 +28,19 @@ export function ProductGallery({ images, name }: { images: ProductImage[]; name:
     <div className="-mx-4 lg:mx-0">
       <button
         type="button"
-        onClick={() => setZoomed(true)}
-        className="block aspect-square w-full overflow-hidden bg-background lg:rounded-3xl"
-        aria-label={`Enlarge ${current.alt || name}`}
+        onClick={() => {
+          if (!outOfStock) setZoomed(true);
+        }}
+        className="relative block aspect-square w-full overflow-hidden bg-background lg:rounded-3xl"
+        aria-label={outOfStock ? `${name}, out of stock` : `Enlarge ${current.alt || name}`}
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={current.url} alt={current.alt || name} className="h-full w-full object-cover" />
+        <img
+          src={current.url}
+          alt={current.alt || name}
+          className={outOfStock ? outOfStockImageClass() : "h-full w-full object-cover"}
+        />
+        {outOfStock ? <OutOfStockOverlay /> : null}
       </button>
       {images.length > 1 ? (
         <ul className="mt-3 flex gap-2 overflow-x-auto px-4 pb-1 touch-manipulation lg:px-0">

@@ -97,7 +97,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
         <span>{product.name}</span>
       </nav>
       <div className="mt-6 grid gap-8 lg:mt-8 lg:grid-cols-[1.1fr_0.9fr] lg:gap-10">
-        <ProductGallery images={product.images} name={product.name} />
+        <ProductGallery images={product.images} name={product.name} outOfStock={product.available <= 0} />
         <div>
           {product.categoryName ? <p className="text-xs uppercase tracking-wide text-muted">{product.categoryName}</p> : null}
           <h1 className="mt-2 text-3xl md:text-4xl">{product.name}</h1>

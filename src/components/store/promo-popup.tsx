@@ -7,6 +7,7 @@ import { formatGhs } from "@/lib/money";
 import { isDemoListing } from "@/lib/listing";
 import { SalePriceBubble } from "@/components/store/sale-price";
 import type { ProductCard } from "@/server/catalog/types";
+import { OutOfStockOverlay, outOfStockImageClass } from "@/components/store/out-of-stock";
 
 export const PROMO_POPUP_INTERVAL_MS = 60 * 1000;
 const ROTATE_MS = 5_000;
@@ -92,9 +93,14 @@ export function PromoPopup({ products }: { products: ProductCard[] }) {
                 key={product.id}
                 src={product.primaryImage.url}
                 alt={product.primaryImage.alt || product.name}
-                className="h-full w-full object-cover motion-safe:animate-[ak-promo-in_400ms_ease-out]"
+                className={
+                  product.available > 0
+                    ? "h-full w-full object-cover motion-safe:animate-[ak-promo-in_400ms_ease-out]"
+                    : outOfStockImageClass("motion-safe:animate-[ak-promo-in_400ms_ease-out]")
+                }
               />
             ) : null}
+            {product.available > 0 ? null : <OutOfStockOverlay compact />}
             {discount > 0 ? (
               <span className="absolute left-2 top-2 rounded-full bg-accent px-2 py-0.5 text-[10px] font-bold text-white">
                 {discount}% off

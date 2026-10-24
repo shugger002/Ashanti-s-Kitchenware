@@ -100,7 +100,7 @@ export function AddToCart({ product, sticky = false }: { product: ProductDetail;
           </div>
         ) : null}
         <Button type="submit" disabled={available <= 0} className={sticky ? "h-12 min-h-12 flex-1 sm:flex-none" : "h-12 min-h-12 w-full sm:w-auto"}>
-          Add to cart
+          {available > 0 ? "Add to cart" : "Out of stock"}
         </Button>
         {sticky ? null : (
           <Button
