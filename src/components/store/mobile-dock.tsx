@@ -4,11 +4,13 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Heart, House, Search, ShoppingBag, Store } from "lucide-react";
 import { useCart } from "@/components/store/cart-provider";
+import { useClientMounted } from "@/lib/use-client-mounted";
 import { cn } from "@/lib/utils";
 
 export function MobileDock({ onSearch }: { onSearch: () => void }) {
   const { count, openDrawer } = useCart();
   const pathname = usePathname();
+  const cartCount = useClientMounted() ? count : 0;
   const shopActive =
     pathname === "/shop" ||
     pathname === "/products" ||
@@ -27,15 +29,8 @@ export function MobileDock({ onSearch }: { onSearch: () => void }) {
       </Link>
       <Link
         href="/products"
-        className={cn(
-          item,
-          (pathname === "/shop" ||
-            pathname === "/products" ||
-            pathname.startsWith("/shop/") ||
-            pathname.startsWith("/products/")) &&
-            "text-accent",
-        )}
-        aria-current={pathname === "/shop" || pathname === "/products" || pathname.startsWith("/shop/") || pathname.startsWith("/products/") ? "page" : undefined}
+        className={cn(item, shopActive && "text-accent")}
+        aria-current={shopActive ? "page" : undefined}
       >
         <Store className="h-5 w-5" strokeWidth={1.5} />
         Shop
@@ -58,9 +53,9 @@ export function MobileDock({ onSearch }: { onSearch: () => void }) {
         onClick={openDrawer}
       >
         <ShoppingBag className="h-5 w-5" strokeWidth={1.5} />
-        {count > 0 ? (
+        {cartCount > 0 ? (
           <span className="absolute right-[18%] top-1 min-w-4 rounded-full bg-accent px-1 text-center text-[10px] leading-4 text-white">
-            {count > 99 ? "99+" : count}
+            {cartCount > 99 ? "99+" : cartCount}
           </span>
         ) : null}
         Cart

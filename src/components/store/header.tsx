@@ -10,6 +10,7 @@ import { StoreLogo } from "@/components/store/logo";
 import { ThemeToggle } from "@/components/store/theme-toggle";
 import { useCart } from "@/components/store/cart-provider";
 import { useWishlistCount } from "@/components/store/wishlist-button";
+import { useClientMounted } from "@/lib/use-client-mounted";
 import { cn } from "@/lib/utils";
 
 type CategoryLink = { slug: string; name: string };
@@ -39,6 +40,9 @@ export function StoreHeader({
   const { count, openDrawer } = useCart();
   const pathname = usePathname();
   const wishCount = useWishlistCount();
+  const mounted = useClientMounted();
+  const cartCount = mounted ? count : 0;
+  const savedCount = mounted ? wishCount : 0;
 
   useEffect(() => {
     onMenuOpenChange(false);
@@ -139,22 +143,22 @@ export function StoreHeader({
           <button type="button" aria-label="Search products" className="hidden lg:inline-flex" onClick={onSearch}>
             <Search className="h-5 w-5" strokeWidth={1.5} />
           </button>
-          <Link href="/wishlist" aria-label={`Wishlist, ${wishCount} items`} className="relative hidden lg:inline-flex">
+          <Link href="/wishlist" aria-label={`Wishlist, ${savedCount} items`} className="relative hidden lg:inline-flex">
             <Heart className="h-5 w-5" strokeWidth={1.5} />
-            {wishCount > 0 ? (
+            {savedCount > 0 ? (
               <span className="absolute -right-2 -top-2 min-w-4 rounded-full bg-accent px-1 text-center text-[10px] leading-4 text-white">
-                {wishCount}
+                {savedCount}
               </span>
             ) : null}
           </Link>
           <Link href={signedIn ? "/account" : "/login"} aria-label={signedIn ? "Your account" : "Sign in"} className="hidden lg:inline-flex">
             <User className="h-5 w-5" strokeWidth={1.5} />
           </Link>
-          <button type="button" className="relative inline-flex size-11 items-center justify-center" aria-label={`Cart, ${count} items`} onClick={openDrawer}>
+          <button type="button" className="relative inline-flex size-11 items-center justify-center" aria-label={`Cart, ${cartCount} items`} onClick={openDrawer}>
             <ShoppingBag className="h-5 w-5" strokeWidth={1.5} />
-            {count > 0 ? (
+            {cartCount > 0 ? (
               <span className="absolute -right-2 -top-2 min-w-4 rounded-full bg-accent px-1 text-center text-[10px] leading-4 text-white">
-                {count}
+                {cartCount}
               </span>
             ) : null}
           </button>
