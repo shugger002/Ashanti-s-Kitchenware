@@ -1,16 +1,15 @@
 import { Suspense } from "react";
 import { CartProvider } from "@/components/store/cart-provider";
-import { CookieBanner } from "@/components/store/cookie-banner";
 import { StoreFooter } from "@/components/store/footer";
 import { StoreChrome } from "@/components/store/store-chrome";
 import { StoreFrame } from "@/components/store/store-frame";
 import { WhatsAppButton } from "@/components/store/whatsapp-button";
 import { CartDrawer } from "@/components/store/cart-drawer";
-import { InstallPrompt } from "@/components/store/install-prompt";
-import { PromoPopup } from "@/components/store/promo-popup";
+import { DeferredStoreExtras } from "@/components/store/deferred-store-extras";
 import { Toasts } from "@/components/store/toasts";
+import { WishlistHydrator } from "@/components/store/wishlist-button";
 import { StoreChromeSkeleton } from "@/components/ui/skeleton";
-import { listCategories, searchProducts } from "@/server/catalog/queries";
+import { countOnSaleProducts, listCategories } from "@/server/catalog/queries";
 import { readStoreCustomer } from "@/server/customers/session";
 import { getStorefrontConfig } from "@/server/store/settings";
 import { AnalyticsTracker } from "@/components/store/analytics-tracker";
@@ -19,23 +18,19 @@ import { getAnalyticsMeasurementId } from "@/server/env";
 export const dynamic = "force-dynamic";
 
 async function StoreShell({ children }: { children: React.ReactNode }) {
-  const [config, customer, categories, catalogue, promo] = await Promise.all([
+  const [config, customer, categories, promoCount] = await Promise.all([
     getStorefrontConfig(),
     readStoreCustomer(),
     listCategories(),
-    searchProducts({ pageSize: 16 }),
-    searchProducts({ onSale: true, pageSize: 8 }),
+    countOnSaleProducts(),
   ]);
   const categoryLinks = categories.filter((c) => !c.parentId).map((c) => ({ slug: c.slug, name: c.name }));
-  const searchHints = [
-    ...categoryLinks.map((c) => ({ slug: c.slug, name: c.name, href: `/shop/${c.slug}`, kind: "category" as const })),
-    ...catalogue.items.map((p) => ({
-      slug: p.slug,
-      name: p.name,
-      href: `/products/${p.slug}`,
-      kind: "product" as const,
-    })),
-  ];
+  const searchHints = categoryLinks.map((c) => ({
+    slug: c.slug,
+    name: c.name,
+    href: `/shop/${c.slug}`,
+    kind: "category" as const,
+  }));
   return (
     <StoreFrame
       announcement={
@@ -45,16 +40,16 @@ async function StoreShell({ children }: { children: React.ReactNode }) {
               {config.announcement.text}
             </p>
           ) : null}
-          {promo.total > 0 ? (
+          {promoCount > 0 ? (
             <a
               href="/promo"
               className="block bg-foreground px-3 py-1.5 text-center text-[10px] uppercase leading-snug tracking-[0.12em] text-white sm:px-4 sm:py-2 sm:text-xs sm:tracking-[0.14em]"
             >
               <span className="sm:hidden">
-                Promo: {promo.total} reduced GHS {promo.total === 1 ? "price" : "prices"}
+                Promo: {promoCount} reduced GHS {promoCount === 1 ? "price" : "prices"}
               </span>
               <span className="hidden sm:inline">
-                Promo and discounted: {promo.total} {promo.total === 1 ? "piece has" : "pieces have"} a reduced Ghana
+                Promo and discounted: {promoCount} {promoCount === 1 ? "piece has" : "pieces have"} a reduced Ghana
                 Cedi price.
               </span>
             </a>
@@ -66,10 +61,8 @@ async function StoreShell({ children }: { children: React.ReactNode }) {
       extras={
         <>
           <WhatsAppButton phoneE164={config.contact.whatsappE164} />
-          <InstallPrompt />
-          <PromoPopup products={promo.items} />
           <CartDrawer />
-          <CookieBanner />
+          <DeferredStoreExtras />
         </>
       }
     >
@@ -101,6 +94,7 @@ export default function StoreLayout({ children }: { children: React.ReactNode })
       >
         Skip to main content
       </a>
+      <WishlistHydrator />
       <Suspense fallback={<StoreShellFallback>{children}</StoreShellFallback>}>
         <StoreShell>{children}</StoreShell>
       </Suspense>

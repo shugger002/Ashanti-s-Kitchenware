@@ -1,3 +1,4 @@
+import { unstable_cache } from "next/cache";
 import { query } from "@/server/db/pool";
 import { likeContains, sql, sqlAnd } from "@/server/db/sql";
 import type { Category, ProductCard, ProductColorOption, ProductDetail, ProductImage, ProductVariant } from "@/server/catalog/types";
@@ -17,7 +18,7 @@ function available(onHand: string | number, reserved: string | number): number {
   return Number(onHand) - Number(reserved);
 }
 
-export async function listCategories(activeOnly = true): Promise<Category[]> {
+async function listCategoriesLive(activeOnly: boolean): Promise<Category[]> {
   if (!process.env.DATABASE_URL) return DEMO_CATEGORIES.filter((c) => !activeOnly || c.isActive);
   const result = await query<{
     id: string;
@@ -45,6 +46,36 @@ export async function listCategories(activeOnly = true): Promise<Category[]> {
     parentId: row.parent_id,
   }));
   return mapped.length > 0 ? mapped : DEMO_CATEGORIES.filter((c) => !activeOnly || c.isActive);
+}
+
+export async function listCategories(activeOnly = true): Promise<Category[]> {
+  if (!process.env.DATABASE_URL) return DEMO_CATEGORIES.filter((c) => !activeOnly || c.isActive);
+  return unstable_cache(
+    () => listCategoriesLive(activeOnly),
+    ["list-categories", activeOnly ? "active" : "all"],
+    { revalidate: 60, tags: ["catalog"] },
+  )();
+}
+
+export async function countOnSaleProducts(): Promise<number> {
+  if (!process.env.DATABASE_URL) {
+    return filterDemoProducts({ onSale: true }).length;
+  }
+  return unstable_cache(
+    async () => {
+      const result = await query<{ count: string }>(sql`
+        SELECT count(*)::text AS count
+         FROM products
+         WHERE archived_at IS NULL
+           AND is_active = TRUE
+           AND sale_price IS NOT NULL
+           AND sale_price < price
+      `);
+      return Number(result.rows[0]?.count ?? 0);
+    },
+    ["count-on-sale"],
+    { revalidate: 30, tags: ["catalog"] },
+  )();
 }
 
 function demoSearch(filters: ShopFilters) {
@@ -106,7 +137,40 @@ type ShopFilters = {
   includeInactive?: boolean;
 };
 
+function catalogCacheKey(filters: ShopFilters) {
+  return JSON.stringify({
+    q: filters.q ?? "",
+    category: filters.category ?? "",
+    minPrice: filters.minPrice ?? null,
+    maxPrice: filters.maxPrice ?? null,
+    inStock: Boolean(filters.inStock),
+    sort: filters.sort ?? "",
+    page: filters.page ?? 1,
+    pageSize: filters.pageSize ?? 12,
+    featured: Boolean(filters.featured),
+    isNew: Boolean(filters.isNew),
+    onSale: Boolean(filters.onSale),
+    includeInactive: Boolean(filters.includeInactive),
+  });
+}
+
 export async function searchProducts(filters: ShopFilters): Promise<{
+  items: ProductCard[];
+  total: number;
+  page: number;
+  pageSize: number;
+}> {
+  if (!process.env.DATABASE_URL || filters.includeInactive) {
+    return searchProductsLive(filters);
+  }
+  return unstable_cache(
+    () => searchProductsLive(filters),
+    ["catalog-search", catalogCacheKey(filters)],
+    { revalidate: 30, tags: ["catalog"] },
+  )();
+}
+
+async function searchProductsLive(filters: ShopFilters): Promise<{
   items: ProductCard[];
   total: number;
   page: number;
@@ -141,9 +205,10 @@ export async function searchProducts(filters: ShopFilters): Promise<{
   if (filters.isNew) where.push(sql`p.is_new = TRUE`);
   if (filters.onSale) where.push(sql`p.sale_price IS NOT NULL AND p.sale_price < p.price`);
   if (filters.inStock) {
-    where.push(sql`COALESCE((
-      SELECT SUM(GREATEST(i.on_hand - i.reserved, 0)) FROM inventory i WHERE i.product_id = p.id
-    ), 0) > 0`);
+    where.push(sql`EXISTS (
+      SELECT 1 FROM inventory i
+      WHERE i.product_id = p.id AND i.on_hand > i.reserved
+    )`);
   }
 
   const order =
@@ -191,26 +256,32 @@ export async function searchProducts(filters: ShopFilters): Promise<{
     SELECT p.id, p.slug, p.name, p.sku, p.price::text, p.sale_price::text, p.currency,
             p.is_new, p.is_featured, p.is_active, c.slug AS category_slug, c.name AS category_name,
             img.id AS image_id, img.url AS image_url, img.alt AS image_alt, img.storage_key,
-            COALESCE((
-              SELECT SUM(GREATEST(i.on_hand - i.reserved, 0)) FROM inventory i WHERE i.product_id = p.id
-            ), 0)::text AS available,
-            COALESCE((
-              SELECT json_agg(json_build_object(
-                'variantId', v.id,
-                'name', COALESCE(v.attributes->>'color', v.name),
-                'hex', COALESCE(NULLIF(v.attributes->>'hex', ''), '#888888')
-              ) ORDER BY v.name)
-              FROM product_variants v
-              WHERE v.product_id = p.id AND v.is_active = TRUE
-            ), '[]'::json) AS colors,
-            COALESCE((
-              SELECT COUNT(*)::text FROM product_reviews r
-              WHERE r.product_id = p.id AND r.is_published = TRUE
-            ), '0') AS review_count,
-            (SELECT AVG(r.rating)::text FROM product_reviews r
-             WHERE r.product_id = p.id AND r.is_published = TRUE) AS rating_average
+            COALESCE(inv.available, 0)::text AS available,
+            COALESCE(pal.colors, '[]'::json) AS colors,
+            COALESCE(rev.review_count, 0)::text AS review_count,
+            rev.rating_average::text AS rating_average
      FROM products p
      LEFT JOIN categories c ON c.id = p.category_id
+     LEFT JOIN (
+       SELECT product_id, SUM(GREATEST(on_hand - reserved, 0)) AS available
+        FROM inventory
+        GROUP BY product_id
+     ) inv ON inv.product_id = p.id
+     LEFT JOIN (
+       SELECT product_id, COUNT(*)::int AS review_count, AVG(rating) AS rating_average
+        FROM product_reviews
+        WHERE is_published = TRUE
+        GROUP BY product_id
+     ) rev ON rev.product_id = p.id
+     LEFT JOIN LATERAL (
+       SELECT COALESCE(json_agg(json_build_object(
+         'variantId', v.id,
+         'name', COALESCE(v.attributes->>'color', v.name),
+         'hex', COALESCE(NULLIF(v.attributes->>'hex', ''), '#888888')
+       ) ORDER BY v.name), '[]'::json) AS colors
+        FROM product_variants v
+        WHERE v.product_id = p.id AND v.is_active = TRUE
+     ) pal ON TRUE
      LEFT JOIN LATERAL (
        SELECT * FROM product_images pi
        WHERE pi.product_id = p.id

@@ -12,8 +12,9 @@ import { OutOfStockOverlay, outOfStockImageClass } from "@/components/store/out-
 export const PROMO_POPUP_INTERVAL_MS = 60 * 1000;
 const ROTATE_MS = 5_000;
 
-export function PromoPopup({ products }: { products: ProductCard[] }) {
+export function PromoPopup() {
   const titleId = useId();
+  const [products, setProducts] = useState<ProductCard[]>([]);
   const saleItems = products.filter((item) => item.salePrice && Number(item.salePrice) < Number(item.price));
   const [open, setOpen] = useState(false);
   const [index, setIndex] = useState(0);
@@ -22,6 +23,24 @@ export function PromoPopup({ products }: { products: ProductCard[] }) {
   useEffect(() => {
     const path = window.location.pathname;
     if (path === "/login" || path === "/register" || path === "/account" || path.startsWith("/admin")) return;
+    let cancelled = false;
+    const timer = window.setTimeout(() => {
+      void fetch("/api/store/promo")
+        .then((response) => (response.ok ? response.json() : { items: [] }))
+        .then((payload: { items?: ProductCard[] }) => {
+          if (!cancelled) setProducts(Array.isArray(payload.items) ? payload.items : []);
+        })
+        .catch(() => {
+          if (!cancelled) setProducts([]);
+        });
+    }, 8_000);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
+  }, []);
+
+  useEffect(() => {
     if (saleItems.length === 0 || open) return;
     const timer = window.setTimeout(() => setOpen(true), PROMO_POPUP_INTERVAL_MS);
     return () => window.clearTimeout(timer);

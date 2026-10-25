@@ -14,11 +14,15 @@ import {
 } from "@/components/store/wishlist-store";
 import { cn } from "@/lib/utils";
 
-export function WishlistButton({ item, className }: { item: WishlistItem; className?: string }) {
-  const list = useSyncExternalStore(subscribeWishlist, getWishlist, getServerWishlist);
+export function WishlistHydrator() {
   useEffect(() => {
     hydrateWishlist();
   }, []);
+  return null;
+}
+
+export function WishlistButton({ item, className }: { item: WishlistItem; className?: string }) {
+  const list = useSyncExternalStore(subscribeWishlist, getWishlist, getServerWishlist);
   const on = list.some((entry) => entry.productId === item.productId);
 
   return (

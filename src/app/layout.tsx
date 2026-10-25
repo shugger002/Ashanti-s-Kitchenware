@@ -8,11 +8,13 @@ import "./globals.css";
 const figtree = Figtree({
   variable: "--font-figtree",
   subsets: ["latin"],
+  display: "swap",
 });
 
 const newsreader = Newsreader({
   variable: "--font-newsreader",
   subsets: ["latin"],
+  display: "swap",
 });
 
 export const viewport: Viewport = {
@@ -56,8 +58,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Script id="ak-theme" strategy="beforeInteractive">
           {`try{if(localStorage.getItem("ak_theme")==="dark")document.documentElement.classList.add("dark")}catch(e){}
 window.__akDeferredPrompt=null;
-window.addEventListener("beforeinstallprompt",function(e){e.preventDefault();window.__akDeferredPrompt=e;});
-if("serviceWorker" in navigator && location.pathname.indexOf("/admin")!==0){navigator.serviceWorker.register("/sw.js").catch(function(){})}`}
+window.addEventListener("beforeinstallprompt",function(e){e.preventDefault();window.__akDeferredPrompt=e;});`}
+        </Script>
+        <Script id="ak-sw" strategy="lazyOnload">
+          {`if("serviceWorker" in navigator && location.pathname.indexOf("/admin")!==0){navigator.serviceWorker.register("/sw.js").catch(function(){})}`}
         </Script>
         {children}
       </body>

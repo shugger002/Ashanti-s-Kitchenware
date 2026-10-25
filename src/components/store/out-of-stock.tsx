@@ -16,7 +16,9 @@ export function OutOfStockOverlay({ compact = false }: { compact?: boolean }) {
       <span
         className={cn(
           "rounded-full bg-[#16181d] font-medium tracking-wide text-white shadow-[0_10px_28px_rgba(15,18,24,0.38)]",
-          compact ? "px-2.5 py-1 text-[10px]" : "px-5 py-2.5 text-[13px] sm:px-6 sm:py-2.5 sm:text-sm",
+          compact
+            ? "px-2.5 py-1 text-[10px]"
+            : "px-5 py-2.5 text-[13px] group-data-[layout=list]/catalog:px-2.5 group-data-[layout=list]/catalog:py-1 group-data-[layout=list]/catalog:text-[10px] sm:px-6 sm:py-2.5 sm:text-sm",
         )}
       >
         Out of Stock

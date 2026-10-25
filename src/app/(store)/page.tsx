@@ -42,6 +42,10 @@ export default async function HomePage() {
         <img
           src="/demo/hero.jpg?v=2"
           alt="Kitchen utensils hung on a wall and arranged on a counter (layout photograph)"
+          width={1470}
+          height={1420}
+          fetchPriority="high"
+          decoding="async"
           className="h-[min(42dvh,18rem)] w-full object-cover object-[center_42%] md:h-[min(85dvh,calc(100vw*710/735))]"
         />
       </section>

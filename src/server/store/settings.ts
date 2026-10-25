@@ -1,3 +1,4 @@
+import { unstable_cache } from "next/cache";
 import { query } from "@/server/db/pool";
 import { sql } from "@/server/db/sql";
 import { defaultContact } from "@/config/brand";
@@ -90,7 +91,7 @@ async function readJson<T>(key: string, fallbackValue: T): Promise<T> {
   }
 }
 
-export async function getStorefrontConfig(): Promise<StorefrontConfig> {
+async function readStorefrontConfig(): Promise<StorefrontConfig> {
   const [contact, hero, announcement, social, storedFulfillment] = await Promise.all([
     readJson("contact", fallback.contact),
     readJson("hero", fallback.hero),
@@ -132,6 +133,13 @@ export async function getStorefrontConfig(): Promise<StorefrontConfig> {
     tiktok: social.tiktok?.trim() || fallback.social.tiktok,
   };
   return { contact: liveContact, hero: liveHero, announcement: liveAnnouncement, social: liveSocial, fulfillment };
+}
+
+export async function getStorefrontConfig(): Promise<StorefrontConfig> {
+  return unstable_cache(readStorefrontConfig, ["storefront-config"], {
+    revalidate: 60,
+    tags: ["storefront"],
+  })();
 }
 
 export async function updateSetting(key: string, value: unknown): Promise<void> {
