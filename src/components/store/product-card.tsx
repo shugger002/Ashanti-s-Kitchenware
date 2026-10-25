@@ -138,7 +138,7 @@ export function ProductCardView({
           />
         </div>
         {demo ? <p className="mt-1 text-xs text-muted">Layout sample, not an offer for sale.</p> : null}
-        <div className="mt-3 flex items-center gap-2 md:mt-4">
+        <div className={cn("mt-3 items-center gap-2 md:mt-4", layout === "list" ? "flex" : "hidden md:flex")}>
           <div className="hidden md:block">
             <QuantityStepper size="sm" value={qty} onChange={setQty} min={1} max={Math.max(product.available, 1)} />
           </div>

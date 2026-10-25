@@ -64,7 +64,7 @@ export async function CatalogPage({
             : "Store";
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-5 pb-24 lg:px-8 lg:py-10 lg:pb-12">
+    <div className="mx-auto max-w-6xl px-4 py-4 pb-24 lg:px-8 lg:py-10 lg:pb-12">
       <nav className="hidden text-sm text-muted md:block">
         <Link href="/">Home</Link>
         {" / "}
@@ -76,7 +76,12 @@ export async function CatalogPage({
           </>
         ) : null}
       </nav>
-      <h1 className="text-pretty text-3xl md:mt-3 md:text-4xl">{title}</h1>
+      <div className="flex items-baseline justify-between gap-3 md:mt-3">
+        <h1 className="text-pretty text-2xl md:text-4xl">{title}</h1>
+        {items.length > 0 ? (
+          <p className="shrink-0 text-sm tabular-nums text-muted">{total} pieces</p>
+        ) : null}
+      </div>
       {params.sale === "1" ? (
         <p className="mt-2 max-w-2xl text-pretty text-sm text-muted">
           Pieces with a sale price staff entered below the regular Ghana Cedi price.
@@ -91,7 +96,7 @@ export async function CatalogPage({
         category={params.category}
       />
 
-      <ul className="-mx-4 mt-3 flex flex-nowrap gap-2 overflow-x-auto px-4 text-sm touch-manipulation [scrollbar-width:none] md:mx-0 md:flex-wrap md:overflow-visible md:px-0 [&::-webkit-scrollbar]:hidden">
+      <ul className="-mx-4 mt-2 flex flex-nowrap gap-2 overflow-x-auto px-4 text-sm touch-manipulation [scrollbar-width:none] md:mx-0 md:mt-3 md:flex-wrap md:overflow-visible md:px-0 [&::-webkit-scrollbar]:hidden">
         <li>
           <Link
             href="/shop"
@@ -138,8 +143,8 @@ export async function CatalogPage({
           )}
         </div>
       ) : (
-        <div className="mt-5">
-          <ProductGrid products={items} countLabel={`${total} pieces`} />
+        <div className="mt-4">
+          <ProductGrid products={items} />
         </div>
       )}
 

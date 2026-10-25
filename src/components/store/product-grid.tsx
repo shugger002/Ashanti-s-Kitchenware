@@ -15,8 +15,8 @@ export function ProductGrid({
   const [layout, setLayout] = useState<"grid" | "list">("grid");
   return (
     <div>
-      <div className="mb-4 flex items-center justify-between gap-3">
-        {countLabel ? <p className="text-sm tabular-nums text-muted">{countLabel}</p> : <span />}
+      <div className={countLabel ? "mb-4 flex items-center justify-between gap-3" : "mb-4 hidden items-center justify-end gap-3 md:flex"}>
+        {countLabel ? <p className="text-sm tabular-nums text-muted">{countLabel}</p> : null}
         <div className="flex gap-1">
           <button
             type="button"
