@@ -29,16 +29,15 @@ export function ProductGridSkeleton({ count = 8 }: { count?: number }) {
 
 export function CatalogPageSkeleton() {
   return (
-    <div className="mx-auto max-w-6xl px-5 py-10 lg:px-8 lg:py-12" aria-busy="true" aria-label="Loading catalogue">
-      <Skeleton className="h-4 w-28" />
-      <Skeleton className="mt-4 h-10 w-48" />
-      <Skeleton className="mt-3 h-4 w-full max-w-xl" />
-      <div className="mt-6 flex flex-wrap gap-2">
+    <div className="mx-auto max-w-6xl px-4 py-5 lg:px-8 lg:py-10" aria-busy="true" aria-label="Loading catalogue">
+      <Skeleton className="h-9 w-36" />
+      <Skeleton className="mt-4 h-11 w-full" />
+      <div className="mt-3 flex gap-2 overflow-hidden">
         {Array.from({ length: 5 }, (_, index) => (
-          <Skeleton key={index} className="h-11 w-24 rounded-full" />
+          <Skeleton key={index} className="h-11 w-24 shrink-0 rounded-full" />
         ))}
       </div>
-      <div className="mt-10">
+      <div className="mt-5">
         <ProductGridSkeleton />
       </div>
     </div>

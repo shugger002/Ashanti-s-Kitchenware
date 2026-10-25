@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { ProductGrid } from "@/components/store/product-grid";
-import { buttonClass } from "@/components/ui/button";
+import { CatalogToolbar } from "@/components/store/catalog-toolbar";
 import { listCategories, searchProducts } from "@/server/catalog/queries";
+import { cn } from "@/lib/utils";
 
 export type CatalogSearch = {
   q?: string;
@@ -19,9 +20,11 @@ export type CatalogSearch = {
 export async function CatalogPage({
   params,
   basePath,
+  heading,
 }: {
   params: CatalogSearch;
   basePath: "/shop" | "/products";
+  heading?: string;
 }) {
   const page = Math.max(1, Number(params.page ?? 1) || 1);
   const sort =
@@ -48,105 +51,100 @@ export async function CatalogPage({
     searchProducts({ featured: true, pageSize: 4 }),
   ]);
   const pages = Math.max(1, Math.ceil(total / pageSize));
-  const title = params.q
-    ? `Results for “${params.q}”`
-    : params.sale === "1"
-      ? "On promo"
-      : params.featured === "1"
-        ? "Featured"
-        : params.new === "1"
-          ? "New arrivals"
-          : "Store";
+  const title = heading
+    ? heading
+    : params.q
+      ? `Results for “${params.q}”`
+      : params.sale === "1"
+        ? "On promo"
+        : params.featured === "1"
+          ? "Featured"
+          : params.new === "1"
+            ? "New arrivals"
+            : "Store";
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-6 pb-24 lg:px-8 lg:py-12 lg:pb-12">
-      <nav className="text-sm text-muted">
-        <Link href="/">Home</Link> / <span>Store</span>
+    <div className="mx-auto max-w-6xl px-4 py-5 pb-24 lg:px-8 lg:py-10 lg:pb-12">
+      <nav className="hidden text-sm text-muted md:block">
+        <Link href="/">Home</Link>
+        {" / "}
+        <Link href="/shop">Store</Link>
+        {heading ? (
+          <>
+            {" / "}
+            <span>{heading}</span>
+          </>
+        ) : null}
       </nav>
-      <h1 className="mt-3 text-3xl md:mt-4 md:text-4xl">{title}</h1>
-      <p className="mt-2 max-w-2xl text-sm text-muted">
-        {params.sale === "1"
-          ? "Pieces with a sale price staff entered below the regular Ghana Cedi price. Demo listings stay labelled and are not for sale."
-          : "Priced in Ghana Cedis. Demo listings are labelled and are not for sale. Filter by what you can use this week."}
-      </p>
-      <p className="mt-2 text-sm text-muted">{total} products</p>
-      <ul className="-mx-4 mt-6 flex flex-nowrap gap-2 overflow-x-auto px-4 text-sm touch-manipulation [scrollbar-width:none] md:mx-0 md:flex-wrap md:overflow-visible md:px-0 [&::-webkit-scrollbar]:hidden">
+      <h1 className="text-pretty text-3xl md:mt-3 md:text-4xl">{title}</h1>
+      {params.sale === "1" ? (
+        <p className="mt-2 max-w-2xl text-pretty text-sm text-muted">
+          Pieces with a sale price staff entered below the regular Ghana Cedi price.
+        </p>
+      ) : null}
+
+      <CatalogToolbar
+        params={params}
+        sort={sort}
+        extraOpen={extraOpen}
+        basePath={basePath}
+        category={params.category}
+      />
+
+      <ul className="-mx-4 mt-3 flex flex-nowrap gap-2 overflow-x-auto px-4 text-sm touch-manipulation [scrollbar-width:none] md:mx-0 md:flex-wrap md:overflow-visible md:px-0 [&::-webkit-scrollbar]:hidden">
+        <li>
+          <Link
+            href="/shop"
+            className={cn(
+              "inline-flex min-h-11 shrink-0 items-center whitespace-nowrap rounded-full border px-3",
+              params.category
+                ? "border-border bg-background"
+                : "border-accent bg-accent text-white",
+            )}
+          >
+            All
+          </Link>
+        </li>
         {categories.map((c) => (
           <li key={c.id} id={c.slug}>
             {c.slug === "cookware" ? <span id="cooking-ware" className="sr-only" /> : null}
             {c.slug === "storage-insulation" ? <span id="insulations" className="sr-only" /> : null}
             <Link
               href={`/shop/${c.slug}`}
-              className="inline-flex min-h-11 shrink-0 items-center whitespace-nowrap rounded-full border border-border bg-background px-3"
+              className={cn(
+                "inline-flex min-h-11 shrink-0 items-center whitespace-nowrap rounded-full border px-3",
+                params.category === c.slug
+                  ? "border-accent bg-accent text-white"
+                  : "border-border bg-background",
+              )}
             >
               {c.name}
             </Link>
           </li>
         ))}
       </ul>
-      <form className="mt-8 space-y-3" method="get" action={basePath}>
-        {params.featured === "1" ? <input type="hidden" name="featured" value="1" /> : null}
-        {params.new === "1" ? <input type="hidden" name="new" value="1" /> : null}
-        {params.sale === "1" ? <input type="hidden" name="sale" value="1" /> : null}
-        <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-          <input name="q" defaultValue={params.q} placeholder="Search" className="input w-full sm:max-w-xs sm:flex-1" />
-          <select name="category" defaultValue={params.category ?? ""} className="input w-full sm:max-w-48">
-            <option value="">All categories</option>
-            {categories.map((c) => (
-              <option key={c.id} value={c.slug}>
-                {c.name}
-              </option>
-            ))}
-          </select>
-          <select name="sort" defaultValue={sort} className="input w-full sm:max-w-48">
-            <option value="featured">Featured</option>
-            <option value="newest">Newest</option>
-            <option value="price_asc">Price: low to high</option>
-            <option value="price_desc">Price: high to low</option>
-          </select>
-          <div className="flex items-center gap-3">
-            <button className={buttonClass("primary", "h-12 w-full sm:w-auto")} type="submit">
-              Apply
-            </button>
-            <Link href={basePath} className="inline-flex min-h-12 items-center text-sm text-muted">
-              Reset
-            </Link>
-          </div>
-        </div>
-        <details className="rounded-2xl border border-border bg-surface p-4 text-sm" open={extraOpen || undefined}>
-          <summary className="flex min-h-11 cursor-pointer items-center font-medium">Price and availability</summary>
-          <div className="mt-3 flex flex-wrap items-center gap-2">
-            <input name="min" defaultValue={params.min} placeholder="Min GHS" className="input max-w-32" />
-            <input name="max" defaultValue={params.max} placeholder="Max GHS" className="input max-w-32" />
-            <label className="flex items-center gap-2">
-              <input type="checkbox" name="stock" value="1" defaultChecked={params.stock === "1"} />
-              In stock
-            </label>
-          </div>
-        </details>
-      </form>
 
       {items.length === 0 ? (
-        <div className="mt-16">
-          <p className="text-muted">We couldn’t find that. Featured pieces from the catalogue are below.</p>
+        <div className="mt-8">
+          <p className="text-pretty text-muted">Nothing matched. Featured pieces from the catalogue are below.</p>
           {popular.items.length > 0 ? (
-            <div className="mt-8">
-              <ProductGrid products={popular.items} />
+            <div className="mt-6">
+              <ProductGrid products={popular.items} countLabel={`${popular.items.length} featured`} />
             </div>
           ) : (
-            <Link href={basePath} className="mt-4 inline-block text-sm text-accent">
+            <Link href={basePath} className="mt-4 inline-block min-h-11 text-sm text-accent">
               Clear filters
             </Link>
           )}
         </div>
       ) : (
-        <div className="mt-10">
-          <ProductGrid products={items} />
+        <div className="mt-5">
+          <ProductGrid products={items} countLabel={`${total} pieces`} />
         </div>
       )}
 
       {pages > 1 ? (
-        <nav className="mt-12 flex flex-wrap gap-2" aria-label="Pagination">
+        <nav className="mt-10 flex flex-wrap gap-2" aria-label="Pagination">
           {Array.from({ length: pages }, (_, i) => i + 1).map((n) => (
             <Link
               key={n}
