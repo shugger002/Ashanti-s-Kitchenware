@@ -112,8 +112,8 @@ export default async function AdminProductsPage({
   return (
     <div>
       <AdminPageHeader
-        title="Products"
-        description="What is on the shop, what is hidden, and Ghana Cedi prices. Hide a piece without deleting it."
+        title="Edit products"
+        description="Open a piece to change its name, price, photos, or stock. You do not add it again."
         action={
           canWrite ? (
             <Link href="/admin/products/new" className={adminButton()}>
@@ -207,13 +207,13 @@ export default async function AdminProductsPage({
                   </div>
                 </Link>
                 {canWrite ? (
-                  <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
-                    <Link href={`/admin/products/${p.id}`} className="inline-flex min-h-11 items-center text-muted hover:text-foreground">
-                      Edit
+                  <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
+                    <Link href={`/admin/products/${p.id}`} className={adminButton()}>
+                      Edit this piece
                     </Link>
                     <ShopToggle id={p.id} isActive={p.isActive} next={next} />
                     {p.isActive ? (
-                      <Link href={`/products/${p.slug}`} className="inline-flex min-h-11 items-center text-muted hover:text-foreground">
+                      <Link href={`/products/${p.slug}`} className="inline-flex h-12 min-h-12 items-center justify-center text-sm text-muted hover:text-foreground">
                         View on shop
                       </Link>
                     ) : null}
@@ -258,9 +258,9 @@ export default async function AdminProductsPage({
                     <StatusPill value={p.isActive ? "On the shop" : "Hidden"} tone={p.isActive ? "ok" : "muted"} />
                   </td>
                   <td className="px-4 py-3">
-                    <div className="flex flex-wrap gap-x-3 gap-y-1 text-sm">
-                      <Link href={`/admin/products/${p.id}`} className="inline-flex min-h-11 items-center text-muted hover:text-foreground">
-                        Edit
+                    <div className="flex flex-wrap items-center gap-2 text-sm">
+                      <Link href={`/admin/products/${p.id}`} className={adminButton("h-11 min-h-11 px-4")}>
+                        Edit this piece
                       </Link>
                       {canWrite ? <ShopToggle id={p.id} isActive={p.isActive} next={next} /> : null}
                       {p.isActive ? (

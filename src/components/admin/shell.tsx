@@ -43,7 +43,7 @@ const groups: { label: string; items: NavItem[] }[] = [
     items: [
       { href: "/admin", label: "Home", permission: "orders.read", icon: Home, exact: true },
       { href: "/admin/orders", label: "Orders", permission: "orders.read", icon: ClipboardList },
-      { href: "/admin/products", label: "Products", permission: "products.read", icon: Package },
+      { href: "/admin/products", label: "Edit products", permission: "products.read", icon: Package },
       { href: "/admin/products/new", label: "Add product", permission: "products.write", icon: Plus, exact: true },
       { href: "/admin/inventory", label: "Stock", permission: "inventory.write", icon: Warehouse },
       { href: "/admin/categories", label: "Categories", permission: "products.write", icon: FolderTree },

@@ -33,8 +33,8 @@ export default async function EditProductPage({
     <div>
       <BackLink href="/admin/products">All products</BackLink>
       <AdminPageHeader
-        title={product.name}
-        description={`Sheet code ${product.sku}`}
+        title={`Edit ${product.name}`}
+        description={`Sheet code ${product.sku}. Change only what you need — this is the same listing, not a new one.`}
         action={
           <span className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center">
             <StatusPill value={product.isActive ? "On the shop" : "Hidden"} tone={product.isActive ? "ok" : "muted"} />

@@ -157,6 +157,11 @@ export function ProductForm({
           {errorCopy}
         </p>
       ) : null}
+      {product ? (
+        <p className="text-sm leading-relaxed text-muted">
+          Name, price, and photos below are already saved. Change a field and tap Save changes.
+        </p>
+      ) : null}
       <AdminSection
         step="01"
         title="On the shop"

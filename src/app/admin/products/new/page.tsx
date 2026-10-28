@@ -20,11 +20,11 @@ export default async function NewProductPage({
         description="Name it, price it in Cedis, and say how many are on the shelf. Photos can wait."
       />
       <p className="mt-4 max-w-xl text-sm leading-relaxed text-muted">
-        To load the whole container list, use{" "}
+        To change a piece that is already on the desk, open{" "}
         <Link href="/admin/products" className="text-accent">
-          All products
+          Edit products
         </Link>
-        .
+        . To load the whole container list, use that same list.
       </p>
       <ProductForm categories={categories} error={error} />
     </div>
