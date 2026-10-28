@@ -45,10 +45,13 @@ export type OrderListItem = {
   items: OrderPackLine[];
 };
 
+export type OrderNeedFilter = "work" | "out" | "done";
+
 export async function listOrders(filters: {
   q?: string;
   status?: string;
   paymentStatus?: string;
+  need?: OrderNeedFilter;
 }): Promise<OrderListItem[]> {
   const where = [];
   if (filters.q) {
@@ -59,6 +62,12 @@ export async function listOrders(filters: {
   }
   if (filters.status && filters.status in ORDER_TRANSITIONS) {
     where.push(sql`status = ${filters.status}`);
+  } else if (filters.need === "work") {
+    where.push(sql`status NOT IN ('delivered', 'collected', 'cancelled', 'refunded')`);
+  } else if (filters.need === "out") {
+    where.push(sql`status IN ('shipped', 'ready_for_collection')`);
+  } else if (filters.need === "done") {
+    where.push(sql`status IN ('delivered', 'collected')`);
   }
   if (filters.paymentStatus && ["pending", "unpaid", "paid", "failed", "successful"].includes(filters.paymentStatus)) {
     where.push(sql`payment_status = ${filters.paymentStatus}`);
@@ -135,6 +144,42 @@ export async function listOrders(filters: {
     createdAt: row.created_at.toISOString(),
     items: parsePackLines(row.items),
   }));
+}
+
+export async function countOrderGlance(): Promise<{
+  waitingPay: number;
+  toPack: number;
+  packing: number;
+  out: number;
+  done: number;
+  work: number;
+}> {
+  const result = await query<{
+    waiting_pay: string;
+    to_pack: string;
+    packing: string;
+    out: string;
+    done: string;
+    work: string;
+  }>(sql`
+    SELECT
+      count(*) FILTER (WHERE status = 'pending_payment')::text AS waiting_pay,
+      count(*) FILTER (WHERE status = 'paid')::text AS to_pack,
+      count(*) FILTER (WHERE status = 'packing')::text AS packing,
+      count(*) FILTER (WHERE status IN ('shipped', 'ready_for_collection'))::text AS out,
+      count(*) FILTER (WHERE status IN ('delivered', 'collected'))::text AS done,
+      count(*) FILTER (WHERE status NOT IN ('delivered', 'collected', 'cancelled', 'refunded'))::text AS work
+     FROM orders
+  `);
+  const row = result.rows[0];
+  return {
+    waitingPay: Number(row?.waiting_pay ?? 0),
+    toPack: Number(row?.to_pack ?? 0),
+    packing: Number(row?.packing ?? 0),
+    out: Number(row?.out ?? 0),
+    done: Number(row?.done ?? 0),
+    work: Number(row?.work ?? 0),
+  };
 }
 
 function parsePackLines(value: OrderPackLine[] | string | null | undefined): OrderPackLine[] {

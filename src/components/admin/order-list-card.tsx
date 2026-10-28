@@ -2,20 +2,23 @@ import Link from "next/link";
 import { formatGhs } from "@/lib/money";
 import { formatAccraWhen } from "@/lib/accra-time";
 import { customerWhatsAppHref } from "@/lib/order-whatsapp";
-import { ORDER_STATUS_LABEL } from "@/lib/order-status";
-import type { OrderListItem } from "@/server/orders/service";
+import { ORDER_STATUS_LABEL, forwardOrderSteps, staffNextLabel } from "@/lib/order-status";
+import { ORDER_TRANSITIONS, type OrderListItem } from "@/server/orders/service";
+import { transitionOrderAction } from "@/app/admin/orders/actions";
 import { OrderWhatsAppLink } from "@/components/admin/whatsapp-link";
-import { orderTone, paymentLabel, paymentTone, StatusPill } from "@/components/admin/ui";
+import { adminButton, orderTone, paymentLabel, paymentTone, StatusPill } from "@/components/admin/ui";
+import { buttonClass } from "@/components/ui/button";
 
 function addressLine(order: OrderListItem) {
   return [order.addressLine1, order.addressLine2, order.city, order.region].filter(Boolean).join(", ");
 }
 
-export function OrderListCard({ order }: { order: OrderListItem }) {
+export function OrderListCard({ order, canWrite }: { order: OrderListItem; canWrite?: boolean }) {
   const pieces = order.items.reduce((sum, item) => sum + item.quantity, 0);
   const collection = order.deliveryMethod === "collection";
   const shipping = Number(order.shippingAmount);
   const address = addressLine(order);
+  const nextStep = forwardOrderSteps(order.status, order.deliveryMethod, ORDER_TRANSITIONS)[0];
   const wa = customerWhatsAppHref({
     phone: order.phone,
     publicRef: order.publicRef,
@@ -102,11 +105,20 @@ export function OrderListCard({ order }: { order: OrderListItem }) {
 
       <p className="text-sm text-muted">Now: {ORDER_STATUS_LABEL[order.status] ?? order.status}</p>
 
-      <div className="flex flex-wrap items-center gap-3">
-        {wa ? <OrderWhatsAppLink href={wa} /> : <p className="text-xs text-muted">No WhatsApp number on this order.</p>}
-        <Link href={`/admin/orders/${order.id}`} className="inline-flex min-h-11 items-center text-sm font-medium text-accent">
+      <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
+        <Link href={`/admin/orders/${order.id}`} className={adminButton()}>
           Open this order
         </Link>
+        {canWrite && nextStep ? (
+          <form action={transitionOrderAction}>
+            <input type="hidden" name="orderId" value={order.id} />
+            <input type="hidden" name="toStatus" value={nextStep} />
+            <button type="submit" className={buttonClass("secondary", "h-12 min-h-12 w-full sm:w-auto")}>
+              {staffNextLabel(nextStep)}
+            </button>
+          </form>
+        ) : null}
+        {wa ? <OrderWhatsAppLink href={wa} /> : <p className="text-xs text-muted">No WhatsApp number on this order.</p>}
       </div>
     </article>
   );

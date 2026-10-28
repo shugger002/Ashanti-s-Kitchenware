@@ -1,15 +1,14 @@
 import { notFound } from "next/navigation";
 import { requirePermission } from "@/server/auth/authorize";
 import { hasPermission } from "@/server/auth/types";
-import { addOrderNote, getOrderById, ORDER_TRANSITIONS, transitionOrder } from "@/server/orders/service";
-import { recordManualPayment } from "@/server/checkout/service";
+import { getOrderById, ORDER_TRANSITIONS } from "@/server/orders/service";
+import { addOrderNoteAction, capturePaymentAction, transitionOrderAction } from "@/app/admin/orders/actions";
 import { formatGhs } from "@/lib/money";
 import { formatAccraWhen } from "@/lib/accra-time";
 import { ghanaInternationalMsisdn } from "@/lib/phone-gh";
 import { customerWhatsAppHref } from "@/lib/order-whatsapp";
 import { OrderWhatsAppLink } from "@/components/admin/whatsapp-link";
-import { CUSTOMER_TRACK_STEPS, customerTrackIndex, ORDER_STATUS_LABEL } from "@/lib/order-status";
-import { revalidatePath } from "next/cache";
+import { CUSTOMER_TRACK_STEPS, customerTrackIndex, forwardOrderSteps, ORDER_STATUS_LABEL, staffNextLabel } from "@/lib/order-status";
 import { buttonClass } from "@/components/ui/button";
 import {
   adminButton,
@@ -30,17 +29,6 @@ function text(value: unknown) {
 function money(value: unknown) {
   return formatGhs(Number(value ?? 0));
 }
-
-const STAFF_NEXT: Record<string, string> = {
-  paid: "Mark as paid",
-  packing: "Start packing",
-  shipped: "Send out for delivery",
-  ready_for_collection: "Ready at the shop",
-  delivered: "Mark as delivered",
-  collected: "Customer collected it",
-  cancelled: "Cancel this order",
-  refunded: "Mark as refunded",
-};
 
 function nextStepHint(status: string, method: string) {
   if (status === "paid") {
@@ -74,6 +62,7 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
     if (method === "delivery" && (value === "ready_for_collection" || value === "collected")) return false;
     return true;
   });
+  const forward = forwardOrderSteps(status, method, ORDER_TRANSITIONS);
   const address = [order.address_line1, order.address_line2, order.city, order.region, order.country]
     .map(text)
     .filter(Boolean)
@@ -81,7 +70,6 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
   const shippingAmount = Number(order.shipping_amount ?? 0);
   const customerStep = customerTrackIndex(status);
   const pieceCount = data.items.reduce((sum, item) => sum + item.quantity, 0);
-  const forward = allowed.filter((value) => value !== "cancelled" && value !== "refunded");
   const danger = allowed.filter((value) => value === "cancelled" || value === "refunded");
   const primaryStep = forward[0];
   const laterSteps = forward.slice(1);
@@ -97,41 +85,9 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
     deliveryNote: text(order.delivery_instructions) || undefined,
   });
 
-  async function changeStatus(formData: FormData) {
-    "use server";
-    const actor = await requirePermission("orders.write");
-    await transitionOrder({
-      orderId: String(formData.get("orderId")),
-      toStatus: String(formData.get("toStatus")),
-      actorUserId: actor.id,
-      note: String(formData.get("note") ?? ""),
-      trackingNumber: String(formData.get("trackingNumber") || "") || undefined,
-    });
-    revalidatePath(`/admin/orders/${String(formData.get("orderId"))}`);
-  }
-
-  async function capture(formData: FormData) {
-    "use server";
-    const actor = await requirePermission("payments.capture");
-    await recordManualPayment({
-      orderId: String(formData.get("orderId")),
-      providerRef: String(formData.get("providerRef")),
-      actorUserId: actor.id,
-      note: String(formData.get("note") ?? "Manual capture"),
-    });
-    revalidatePath(`/admin/orders/${String(formData.get("orderId"))}`);
-  }
-
-  async function note(formData: FormData) {
-    "use server";
-    const actor = await requirePermission("orders.write");
-    await addOrderNote(String(formData.get("orderId")), actor.id, String(formData.get("note")));
-    revalidatePath(`/admin/orders/${String(formData.get("orderId"))}`);
-  }
-
   return (
     <div className="space-y-6">
-      <BackLink href="/admin/orders">All orders</BackLink>
+      <BackLink href="/admin/orders">Work now</BackLink>
       <AdminPageHeader
         title={text(order.public_ref)}
         description={`${text(order.full_name)} · ${text(order.phone)} · Placed ${order.created_at ? formatAccraWhen(String(order.created_at)) : ""}`}
@@ -151,6 +107,60 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
           { label: "Total", value: money(order.total) },
         ]}
       />
+
+      <div className="flex max-w-xl flex-col gap-2 lg:hidden">
+        {waDigits.length >= 11 ? (
+          <a href={`tel:+${waDigits}`} className={adminButton()}>
+            Call customer
+          </a>
+        ) : null}
+        {waHref ? <OrderWhatsAppLink href={waHref} labeled /> : null}
+      </div>
+
+      {canWrite && allowed.length > 0 ? (
+        <form action={transitionOrderAction} className="max-w-xl">
+          <AdminSection title="Next step" hint={nextStepHint(status, method)}>
+            <input type="hidden" name="orderId" value={id} />
+            <label className="block text-sm">
+              Rider note (staff only)
+              <input name="trackingNumber" className="input mt-1" placeholder="Customers do not see this" />
+            </label>
+            <div className="mt-4 flex flex-col gap-2">
+              {primaryStep ? (
+                <button className={adminButton()} type="submit" name="toStatus" value={primaryStep}>
+                  {staffNextLabel(primaryStep)}
+                </button>
+              ) : null}
+              {laterSteps.map((value) => (
+                <button
+                  key={value}
+                  className={buttonClass("secondary", "h-12 min-h-12 w-full sm:w-auto")}
+                  type="submit"
+                  name="toStatus"
+                  value={value}
+                >
+                  {staffNextLabel(value)}
+                </button>
+              ))}
+              {danger.map((value) => (
+                <button
+                  key={value}
+                  className={buttonClass("ghost", "h-12 min-h-12 w-full text-accent sm:w-auto")}
+                  type="submit"
+                  name="toStatus"
+                  value={value}
+                >
+                  {staffNextLabel(value)}
+                </button>
+              ))}
+            </div>
+          </AdminSection>
+        </form>
+      ) : canWrite ? (
+        <AdminSection title="This order">
+          <p className="text-sm text-muted">Nothing left to move. It is finished, cancelled, or refunded.</p>
+        </AdminSection>
+      ) : null}
 
       {customerStep < 0 ? (
         <p className="text-sm text-muted">{ORDER_STATUS_LABEL[status] ?? status}</p>
@@ -178,7 +188,7 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
           <AdminSection title="Reach them">
             <p className="text-base">{text(order.full_name)}</p>
             <p className="mt-1 text-sm">{text(order.phone)}</p>
-            <div className="mt-4 flex flex-col gap-2">
+            <div className="mt-4 hidden flex-col gap-2 lg:flex">
               {waDigits.length >= 11 ? (
                 <a href={`tel:+${waDigits}`} className={adminButton()}>
                   Call customer
@@ -192,55 +202,8 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
             </div>
           </AdminSection>
 
-          {canWrite ? (
-            allowed.length > 0 ? (
-              <form action={changeStatus}>
-                <AdminSection title="Next step" hint={nextStepHint(status, method)}>
-                  <input type="hidden" name="orderId" value={id} />
-                  <label className="block text-sm">
-                    Rider note (staff only)
-                    <input name="trackingNumber" className="input mt-1" placeholder="Customers do not see this" />
-                  </label>
-                  <div className="mt-4 flex flex-col gap-2">
-                    {primaryStep ? (
-                      <button className={adminButton()} type="submit" name="toStatus" value={primaryStep}>
-                        {STAFF_NEXT[primaryStep] ?? ORDER_STATUS_LABEL[primaryStep] ?? primaryStep.replaceAll("_", " ")}
-                      </button>
-                    ) : null}
-                    {laterSteps.map((value) => (
-                      <button
-                        key={value}
-                        className={buttonClass("secondary", "h-12 min-h-12 w-full sm:w-auto")}
-                        type="submit"
-                        name="toStatus"
-                        value={value}
-                      >
-                        {STAFF_NEXT[value] ?? ORDER_STATUS_LABEL[value] ?? value.replaceAll("_", " ")}
-                      </button>
-                    ))}
-                    {danger.map((value) => (
-                      <button
-                        key={value}
-                        className={buttonClass("ghost", "h-12 min-h-12 w-full text-accent sm:w-auto")}
-                        type="submit"
-                        name="toStatus"
-                        value={value}
-                      >
-                        {STAFF_NEXT[value] ?? ORDER_STATUS_LABEL[value] ?? value.replaceAll("_", " ")}
-                      </button>
-                    ))}
-                  </div>
-                </AdminSection>
-              </form>
-            ) : (
-              <AdminSection title="This order">
-                <p className="text-sm text-muted">Nothing left to move. It is finished, cancelled, or refunded.</p>
-              </AdminSection>
-            )
-          ) : null}
-
           {canCapture && paymentStatus !== "paid" ? (
-            <form action={capture}>
+            <form action={capturePaymentAction}>
               <AdminSection
                 title="Mark as paid"
                 hint="Use this only if you can see the real payment on Hubtel, Moolre, or the bank. Type the payment number from there."
@@ -299,7 +262,7 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
             </AdminSection>
           ) : null}
 
-          <form action={note}>
+          <form action={addOrderNoteAction}>
             <AdminSection title="Staff notes">
               {canWrite ? (
                 <>
