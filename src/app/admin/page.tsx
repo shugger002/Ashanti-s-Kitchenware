@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { requirePermission } from "@/server/auth/authorize";
 import { dashboardMetrics } from "@/server/reporting/service";
+import { dashboardGrowth } from "@/server/reporting/growth";
+import { HomeGrowth } from "@/components/admin/home-growth";
 import { formatGhs } from "@/lib/money";
 import { customerWhatsAppHref, formatOrderAddress, packLines } from "@/lib/order-whatsapp";
 import { hasPermission } from "@/server/auth/types";
@@ -32,7 +34,11 @@ function accraDateLabel() {
 }
 
 export default async function AdminHomePage() {
-  const [metrics, user] = await Promise.all([dashboardMetrics(), requirePermission("orders.read")]);
+  const [metrics, growth, user] = await Promise.all([
+    dashboardMetrics(),
+    dashboardGrowth(),
+    requirePermission("orders.read"),
+  ]);
   const firstName = (user?.fullName ?? "").trim().split(/\s+/)[0] || "";
   const greeting = /^(store|admin|staff|owner)$/i.test(firstName) ? "Accra desk" : `${firstName || "Staff"}, Accra desk`;
   const canProducts = hasPermission(user.roles, "products.read");
@@ -101,7 +107,7 @@ export default async function AdminHomePage() {
     <div>
       <AdminPageHeader
         title={greeting}
-        description={`${accraDateLabel()}. Orders to pack, stock that is low, and anything still waiting.`}
+        description={`${accraDateLabel()}. Paid takings, what is moving, and the orders still waiting on this desk.`}
         action={
           <>
             {canAddProduct ? (
@@ -115,6 +121,8 @@ export default async function AdminHomePage() {
           </>
         }
       />
+
+      <HomeGrowth growth={growth} canReports={canReports} />
 
       <section className="mt-8">
         <h2 className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted">Work now</h2>
@@ -203,24 +211,6 @@ export default async function AdminHomePage() {
         )}
       </AdminSection>
 
-      {metrics.bestSellers.length > 0 ? (
-        <section className="mt-10">
-          <h2 className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted">Best sellers</h2>
-          <ul className="mt-3 space-y-0">
-            {metrics.bestSellers.map((row) => (
-              <li
-                key={row.product_name}
-                className="flex items-baseline justify-between gap-3 border-b border-[color-mix(in_srgb,var(--accent)_10%,#eadfd4)] py-2.5 text-sm last:border-0"
-              >
-                <span className="min-w-0 truncate">{row.product_name}</span>
-                <span className="shrink-0 font-serif tabular-nums text-foreground">
-                  {row.units} · {formatGhs(Number(row.revenue))}
-                </span>
-              </li>
-            ))}
-          </ul>
-        </section>
-      ) : null}
     </div>
   );
 }
