@@ -1,5 +1,6 @@
 import { query } from "@/server/db/pool";
 import { likeContains, sql, sqlAnd } from "@/server/db/sql";
+import { isUuid } from "@/lib/utils";
 
 const MATCHES_CUSTOMER = sql`(
   o.customer_id = c.id
@@ -181,6 +182,7 @@ export async function getCustomerDesk(id: string): Promise<{
   orders: CustomerOrderRow[];
   openItems: { name: string; quantity: number; sku: string }[];
 } | null> {
+  if (!isUuid(id)) return null;
   const person = await query<{
     id: string;
     full_name: string;

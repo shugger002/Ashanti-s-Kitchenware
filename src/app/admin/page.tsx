@@ -61,10 +61,10 @@ export default async function AdminHomePage() {
       hint: "Being packed",
     },
     {
-      href: "/admin/orders?status=shipped",
-      label: "Out for delivery",
+      href: "/admin/orders?need=out",
+      label: "Out",
       value: count(metrics.out_for_delivery),
-      hint: "On the way",
+      hint: "Sent out or ready at the shop",
     },
   ];
 
@@ -76,7 +76,7 @@ export default async function AdminHomePage() {
       value: formatGhs(Number(metrics.today_revenue)),
       warn: false,
     },
-    { href: "/admin/orders", label: "Delivered today", value: String(count(metrics.fulfilled_today)), warn: false },
+    { href: "/admin/orders?need=done", label: "Delivered today", value: String(count(metrics.fulfilled_today)), warn: false },
     {
       href: canCustomers ? "/admin/customers?need=new" : "/admin",
       label: "New customers",

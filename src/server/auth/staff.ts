@@ -3,6 +3,7 @@ import { likeContains, sql, sqlAnd } from "@/server/db/sql";
 import { hashPassword } from "@/server/auth/password";
 import { writeAuditLog } from "@/server/auth/audit";
 import { PERMISSIONS, ROLE_SLUGS, type RoleSlug } from "@/server/auth/types";
+import { isUuid } from "@/lib/utils";
 
 export type StaffNeedFilter = "on" | "pack" | "paid" | "stock" | "blocked" | "all";
 
@@ -106,6 +107,7 @@ export async function countStaffGlance(): Promise<{
 }
 
 export async function getStaffById(id: string): Promise<StaffListItem | null> {
+  if (!isUuid(id)) return null;
   const result = await query<{
     id: string;
     email: string;

@@ -2,6 +2,7 @@ import { query, withTransaction } from "@/server/db/pool";
 import { likeContains, sql, sqlAnd } from "@/server/db/sql";
 import { writeAuditLog } from "@/server/auth/audit";
 import { hitRateLimit } from "@/server/auth/rate-limit";
+import { isUuid } from "@/lib/utils";
 
 export const ORDER_TRANSITIONS: Record<string, string[]> = {
   pending_payment: ["cancelled", "paid"],
@@ -196,6 +197,7 @@ function parsePackLines(value: OrderPackLine[] | string | null | undefined): Ord
 }
 
 export async function getOrderById(id: string) {
+  if (!isUuid(id)) return null;
   const order = await query<Record<string, unknown>>(sql`SELECT * FROM orders WHERE id = ${id}`);
   if (!order.rows[0]) return null;
   const items = await query<{
