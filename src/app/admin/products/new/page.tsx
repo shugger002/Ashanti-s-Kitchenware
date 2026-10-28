@@ -4,8 +4,13 @@ import { requirePermission } from "@/server/auth/authorize";
 import { listCategories } from "@/server/catalog/queries";
 import { AdminPageHeader, BackLink } from "@/components/admin/ui";
 
-export default async function NewProductPage() {
+export default async function NewProductPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string }>;
+}) {
   await requirePermission("products.write");
+  const { error } = await searchParams;
   const categories = await listCategories(false);
   return (
     <div>
@@ -21,7 +26,7 @@ export default async function NewProductPage() {
         </Link>
         .
       </p>
-      <ProductForm categories={categories} />
+      <ProductForm categories={categories} error={error} />
     </div>
   );
 }

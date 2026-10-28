@@ -1,3 +1,4 @@
+import { revalidatePath, revalidateTag } from "next/cache";
 import { NextResponse } from "next/server";
 import { readSessionUser } from "@/server/auth/session";
 import { hasPermission } from "@/server/auth/types";
@@ -18,6 +19,12 @@ export async function POST(request: Request) {
   }
   try {
     await saveProductPhoto({ productId, file, alt, isPrimary });
+    revalidateTag("catalog", { expire: 0 });
+    revalidatePath(`/admin/products/${productId}`);
+    revalidatePath("/admin/products");
+    revalidatePath("/");
+    revalidatePath("/products");
+    revalidatePath("/shop");
     return NextResponse.json({ ok: true });
   } catch (error) {
     return NextResponse.json(

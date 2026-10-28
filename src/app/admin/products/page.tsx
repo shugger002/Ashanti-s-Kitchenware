@@ -1,34 +1,119 @@
 import Link from "next/link";
 import { requirePermission } from "@/server/auth/authorize";
-import { listAdminProducts } from "@/server/catalog/queries";
+import { listAdminProducts, type AdminProductShopFilter } from "@/server/catalog/queries";
 import { formatGhs } from "@/lib/money";
-import { archiveProductAction } from "@/app/admin/products/actions";
+import { setProductActiveAction } from "@/app/admin/products/actions";
 import { ProductCsvForm } from "@/app/admin/products/csv-form";
-import { adminButton, AdminGlance, AdminPageHeader, AdminTable, EmptyState, MobileCards, Toolbar } from "@/components/admin/ui";
+import {
+  adminButton,
+  AdminGlance,
+  AdminPageHeader,
+  AdminTable,
+  EmptyState,
+  MobileCards,
+  StatusPill,
+  Toolbar,
+} from "@/components/admin/ui";
 import { hasPermission } from "@/server/auth/types";
+import { buttonClass } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 const LOW_STOCK_ALERT = 5;
+
+function parseShop(value?: string): AdminProductShopFilter | "" {
+  return value === "on" || value === "hidden" || value === "nophoto" ? value : "";
+}
+
+function listHref(q?: string, shop?: string) {
+  const params = new URLSearchParams();
+  if (q?.trim()) params.set("q", q.trim());
+  if (shop) params.set("shop", shop);
+  const query = params.toString();
+  return query ? `/admin/products?${query}` : "/admin/products";
+}
+
+function ProductPrice({ price, salePrice }: { price: string; salePrice: string | null }) {
+  if (salePrice) {
+    return (
+      <>
+        <span className="mr-2 text-muted line-through">{formatGhs(Number(price))}</span>
+        {formatGhs(Number(salePrice))}
+      </>
+    );
+  }
+  return <>{formatGhs(Number(price))}</>;
+}
+
+function ProductThumb({ name, imageUrl }: { name: string; imageUrl: string | null }) {
+  if (imageUrl) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img src={imageUrl} alt={name} className="size-14 shrink-0 object-cover" />
+    );
+  }
+  return (
+    <span className="flex size-14 shrink-0 items-center justify-center bg-surface text-center text-[10px] leading-tight text-muted">
+      No photo
+    </span>
+  );
+}
+
+function ShopToggle({
+  id,
+  isActive,
+  next,
+}: {
+  id: string;
+  isActive: boolean;
+  next: string;
+}) {
+  return (
+    <form action={setProductActiveAction}>
+      <input type="hidden" name="id" value={id} />
+      <input type="hidden" name="active" value={isActive ? "false" : "true"} />
+      <input type="hidden" name="next" value={next} />
+      <button type="submit" className="inline-flex min-h-11 items-center text-accent">
+        {isActive ? "Hide" : "Show"}
+      </button>
+    </form>
+  );
+}
 
 export default async function AdminProductsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string }>;
+  searchParams: Promise<{ q?: string; shop?: string }>;
 }) {
-  const { q } = await searchParams;
-  const [user, items] = await Promise.all([
+  const params = await searchParams;
+  const q = params.q;
+  const shop = parseShop(params.shop);
+  const [user, items, snapshot] = await Promise.all([
     requirePermission("products.read"),
-    listAdminProducts(q),
+    listAdminProducts({ q, shop: shop || undefined }),
+    shop ? listAdminProducts({ q }) : Promise.resolve(null),
   ]);
   const canWrite = hasPermission(user.roles, "products.write");
-  const low = items.filter((p) => p.available > 0 && p.available <= LOW_STOCK_ALERT);
-  const out = items.filter((p) => p.available <= 0);
-  const onPromo = items.filter((p) => p.salePrice);
+  const counts = snapshot ?? items;
+  const low = counts.filter((p) => p.available > 0 && p.available <= LOW_STOCK_ALERT);
+  const out = counts.filter((p) => p.available <= 0);
+  const onPromo = counts.filter((p) => p.salePrice);
+  const hidden = counts.filter((p) => !p.isActive);
+  const noPhoto = counts.filter((p) => !p.imageUrl);
+  const onShop = counts.filter((p) => p.isActive);
+  const next = listHref(q, shop);
+
+  const chips: { href: string; label: string; active: boolean }[] = [
+    { href: listHref(q), label: "All", active: !shop },
+    { href: listHref(q, "on"), label: "On the shop", active: shop === "on" },
+    { href: listHref(q, "hidden"), label: "Hidden", active: shop === "hidden" },
+    { href: listHref(q, "nophoto"), label: "No photo", active: shop === "nophoto" },
+  ];
 
   return (
     <div>
       <AdminPageHeader
         title="Products"
-        description="Names, codes, prices in Cedis, and how many you have. Same as the container sheet."
+        description="What is on the shop, what is hidden, and Ghana Cedi prices. Hide a piece without deleting it."
         action={
           canWrite ? (
             <Link href="/admin/products/new" className={adminButton()}>
@@ -37,23 +122,22 @@ export default async function AdminProductsPage({
           ) : undefined
         }
       />
-      {items.length > 0 ? (
+      {counts.length > 0 ? (
         <AdminGlance
           items={[
-            { label: "Products", value: items.length },
+            { href: "/admin/products", label: "Products", value: counts.length },
+            { href: listHref(undefined, "on"), label: "On the shop", value: onShop.length },
+            { href: listHref(undefined, "hidden"), label: "Hidden", value: hidden.length, warn: hidden.length > 0 },
+            { href: listHref(undefined, "nophoto"), label: "No photo", value: noPhoto.length, warn: noPhoto.length > 0 },
             { href: "/admin/inventory?need=low", label: "Low stock", value: low.length, warn: low.length > 0 },
             { href: "/admin/inventory?need=out", label: "Out of stock", value: out.length, warn: out.length > 0 },
             { href: "/admin/promotions", label: "On promo", value: onPromo.length },
           ]}
         />
       ) : null}
-      {canWrite ? (
-        <div className="mt-6">
-          <ProductCsvForm />
-        </div>
-      ) : null}
       <Toolbar>
-        <form method="get" className="flex w-full flex-col gap-2 sm:flex-row sm:items-center">
+        <form method="get" className="flex w-full flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
+          {shop ? <input type="hidden" name="shop" value={shop} /> : null}
           <label htmlFor="product-q" className="sr-only">
             Search products
           </label>
@@ -69,11 +153,29 @@ export default async function AdminProductsPage({
           </button>
         </form>
       </Toolbar>
+      <div className="mt-3 flex flex-wrap gap-2">
+        {chips.map((chip) => (
+          <Link
+            key={chip.label}
+            href={chip.href}
+            className={cn(
+              buttonClass("ghost", "h-10 min-h-10 px-3 text-sm"),
+              chip.active && "bg-foreground text-background hover:bg-foreground",
+            )}
+          >
+            {chip.label}
+          </Link>
+        ))}
+      </div>
       {items.length === 0 ? (
         <div className="mt-6">
           <EmptyState
-            title={q ? "Nothing matched" : "No products yet"}
-            body={q ? "Try another name or code." : "Add a piece with a Ghana Cedi price. A photo can come later."}
+            title={q || shop ? "Nothing matched" : "No products yet"}
+            body={
+              q || shop
+                ? "Try another name, code, or filter."
+                : "Add a piece with a Ghana Cedi price. A photo can come later."
+            }
             action={
               canWrite ? (
                 <Link href="/admin/products/new" className={adminButton()}>
@@ -85,97 +187,100 @@ export default async function AdminProductsPage({
         </div>
       ) : (
         <>
-        <MobileCards>
-          {items.map((p) => (
-            <li key={p.id} className="admin-panel p-4">
-              <Link href={`/admin/products/${p.id}`} className="block">
-                <p className="font-medium">{p.name}</p>
-                <p className="mt-0.5 text-xs uppercase text-muted">{p.categoryName ?? "No category"}</p>
-                <p className="mt-1 text-xs text-muted">
-                  {p.sku} · {p.available} to sell
-                </p>
-                <p className="mt-2 font-serif tabular-nums">
-                  {p.salePrice ? (
-                    <>
-                      <span className="mr-2 text-muted line-through">{formatGhs(Number(p.price))}</span>
-                      {formatGhs(Number(p.salePrice))}
-                    </>
-                  ) : (
-                    formatGhs(Number(p.price))
-                  )}
-                </p>
-              </Link>
-              {canWrite ? (
-                <div className="mt-3 flex flex-col gap-2 sm:flex-row">
-                  <Link href={`/admin/products/${p.id}`} className={adminButton()}>
-                    Edit
-                  </Link>
-                  <form action={archiveProductAction}>
-                    <input type="hidden" name="id" value={p.id} />
-                    <button type="submit" className="inline-flex h-12 w-full items-center justify-center text-sm text-accent">
-                      Remove
-                    </button>
-                  </form>
-                </div>
-              ) : null}
-            </li>
-          ))}
-        </MobileCards>
-        <AdminTable className="mt-4">
-          <thead>
-            <tr className="border-b border-border bg-surface text-xs text-muted">
-              <th className="px-4 py-3 font-medium">S/N</th>
-              <th className="px-4 py-3 font-medium">Name</th>
-              <th className="px-4 py-3 font-medium">Code</th>
-              <th className="px-4 py-3 font-medium">Category</th>
-              <th className="px-4 py-3 font-medium">Price</th>
-              <th className="px-4 py-3 font-medium">To sell</th>
-              <th className="px-4 py-3 font-medium">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {items.map((p, index) => (
-              <tr key={p.id} className="border-b border-border last:border-0 hover:bg-surface">
-                <td className="px-4 py-3 tabular-nums text-muted">{index + 1}</td>
-                <td className="px-4 py-3 font-medium">
-                  <Link href={`/admin/products/${p.id}`}>{p.name}</Link>
-                </td>
-                <td className="px-4 py-3 text-muted">{p.sku}</td>
-                <td className="px-4 py-3 uppercase text-muted">{p.categoryName ?? "-"}</td>
-                <td className="px-4 py-3 font-serif tabular-nums">
-                  {p.salePrice ? (
-                    <>
-                      <span className="mr-2 text-muted line-through">{formatGhs(Number(p.price))}</span>
-                      {formatGhs(Number(p.salePrice))}
-                    </>
-                  ) : (
-                    formatGhs(Number(p.price))
-                  )}
-                </td>
-                <td className={`px-4 py-3 font-serif tabular-nums ${p.available <= LOW_STOCK_ALERT ? "text-accent" : ""}`}>
-                  {p.available}
-                </td>
-                <td className="px-4 py-3">
-                  <div className="flex flex-wrap gap-2 text-sm">
+          <MobileCards>
+            {items.map((p) => (
+              <li key={p.id} className="admin-panel p-4">
+                <Link href={`/admin/products/${p.id}`} className="flex gap-3">
+                  <ProductThumb name={p.name} imageUrl={p.imageUrl} />
+                  <div className="min-w-0 flex-1">
+                    <p className="font-medium">{p.name}</p>
+                    <p className="mt-0.5 text-xs text-muted">
+                      {p.sku} · {p.available} to sell
+                    </p>
+                    <p className="mt-2 font-serif tabular-nums">
+                      <ProductPrice price={p.price} salePrice={p.salePrice} />
+                    </p>
+                    <div className="mt-2 flex flex-wrap gap-1">
+                      <StatusPill value={p.isActive ? "On the shop" : "Hidden"} tone={p.isActive ? "ok" : "muted"} />
+                      {p.isFeatured ? <StatusPill value="Homepage" tone="attention" /> : null}
+                    </div>
+                  </div>
+                </Link>
+                {canWrite ? (
+                  <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
                     <Link href={`/admin/products/${p.id}`} className="inline-flex min-h-11 items-center text-muted hover:text-foreground">
                       Edit
                     </Link>
-                    {canWrite ? (
-                      <form action={archiveProductAction}>
-                        <input type="hidden" name="id" value={p.id} />
-                        <button type="submit" className="inline-flex min-h-11 items-center text-accent">
-                          Remove
-                        </button>
-                      </form>
+                    <ShopToggle id={p.id} isActive={p.isActive} next={next} />
+                    {p.isActive ? (
+                      <Link href={`/products/${p.slug}`} className="inline-flex min-h-11 items-center text-muted hover:text-foreground">
+                        View on shop
+                      </Link>
                     ) : null}
                   </div>
-                </td>
-              </tr>
+                ) : p.isActive ? (
+                  <Link href={`/products/${p.slug}`} className="mt-2 inline-flex min-h-11 items-center text-sm text-muted">
+                    View on shop
+                  </Link>
+                ) : null}
+              </li>
             ))}
-          </tbody>
-        </AdminTable>
+          </MobileCards>
+          <AdminTable className="mt-4">
+            <thead>
+              <tr className="border-b border-border bg-surface text-xs text-muted">
+                <th className="px-4 py-3 font-medium">Photo</th>
+                <th className="px-4 py-3 font-medium">Name</th>
+                <th className="px-4 py-3 font-medium">Code</th>
+                <th className="px-4 py-3 font-medium">Price</th>
+                <th className="px-4 py-3 font-medium">To sell</th>
+                <th className="px-4 py-3 font-medium">Shop</th>
+                <th className="px-4 py-3 font-medium">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {items.map((p) => (
+                <tr key={p.id} className="border-b border-border last:border-0 hover:bg-surface">
+                  <td className="px-4 py-3">
+                    <ProductThumb name={p.name} imageUrl={p.imageUrl} />
+                  </td>
+                  <td className="px-4 py-3 font-medium">
+                    <Link href={`/admin/products/${p.id}`}>{p.name}</Link>
+                  </td>
+                  <td className="px-4 py-3 text-muted">{p.sku}</td>
+                  <td className="px-4 py-3 font-serif tabular-nums">
+                    <ProductPrice price={p.price} salePrice={p.salePrice} />
+                  </td>
+                  <td className={`px-4 py-3 font-serif tabular-nums ${p.available <= LOW_STOCK_ALERT ? "text-accent" : ""}`}>
+                    {p.available}
+                  </td>
+                  <td className="px-4 py-3">
+                    <StatusPill value={p.isActive ? "On the shop" : "Hidden"} tone={p.isActive ? "ok" : "muted"} />
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex flex-wrap gap-x-3 gap-y-1 text-sm">
+                      <Link href={`/admin/products/${p.id}`} className="inline-flex min-h-11 items-center text-muted hover:text-foreground">
+                        Edit
+                      </Link>
+                      {canWrite ? <ShopToggle id={p.id} isActive={p.isActive} next={next} /> : null}
+                      {p.isActive ? (
+                        <Link href={`/products/${p.slug}`} className="inline-flex min-h-11 items-center text-muted hover:text-foreground">
+                          View on shop
+                        </Link>
+                      ) : null}
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </AdminTable>
         </>
       )}
+      {canWrite ? (
+        <div className="mt-10">
+          <ProductCsvForm />
+        </div>
+      ) : null}
     </div>
   );
 }

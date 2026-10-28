@@ -12,7 +12,7 @@ type ColorRow = { id?: string; name: string; hex: string; stock: number };
 function NewProductPhotos() {
   const [names, setNames] = useState<string[]>([]);
   return (
-    <AdminSection step="03" title="Photos" hint="The first picture is the main one. You can add more after you save.">
+    <AdminSection step="04" title="Photos" hint="The first picture is the main one. You can add more after you save.">
       <label className="admin-drop">
         <input
           name="images"
@@ -130,20 +130,55 @@ function ColorOptionsEditor({ product, step }: { product?: ProductDetail; step: 
 export function ProductForm({
   categories,
   product,
+  error,
 }: {
   categories: Category[];
   product?: ProductDetail;
+  error?: "sku" | "slug" | string;
 }) {
   const specText = product
     ? Object.entries(product.specifications)
         .map(([k, v]) => `${k}: ${v}`)
         .join("\n")
     : "";
+  const errorCopy =
+    error === "sku"
+      ? "That sheet code is already on another product. Use a different code."
+      : error === "slug"
+        ? "That shop page address is already used. Change it or leave it blank."
+        : error
+          ? error
+          : null;
   return (
     <form action={saveProduct} className="mt-8 max-w-3xl space-y-5">
       {product ? <input type="hidden" name="id" value={product.id} /> : null}
+      {errorCopy ? (
+        <p className="border border-accent/30 bg-accent/10 px-4 py-3 text-sm text-accent" role="alert">
+          {errorCopy}
+        </p>
+      ) : null}
       <AdminSection
         step="01"
+        title="On the shop"
+        hint="Tick what customers should see. Hide leaves the piece on this desk."
+      >
+        <div className="divide-y divide-[color-mix(in_srgb,var(--accent)_10%,#eadfd4)]">
+          <label className="flex min-h-12 items-center justify-between gap-3 py-3 text-sm">
+            Show on the shop
+            <input type="checkbox" name="isActive" defaultChecked={product ? product.isActive : true} className="size-5 accent-[#c8102e]" />
+          </label>
+          <label className="flex min-h-12 items-center justify-between gap-3 py-3 text-sm">
+            Show on the homepage
+            <input type="checkbox" name="isFeatured" defaultChecked={product?.isFeatured} className="size-5 accent-[#c8102e]" />
+          </label>
+          <label className="flex min-h-12 items-center justify-between gap-3 py-3 text-sm">
+            Mark as new
+            <input type="checkbox" name="isNew" defaultChecked={product?.isNew} className="size-5 accent-[#c8102e]" />
+          </label>
+        </div>
+      </AdminSection>
+      <AdminSection
+        step="02"
         title="What is this piece?"
         hint="Name it the way you would say it across the counter."
       >
@@ -180,7 +215,7 @@ export function ProductForm({
           <textarea name="description" defaultValue={product?.description} rows={6} className="input mt-1" />
         </label>
       </AdminSection>
-      <AdminSection step="02" title="Price and stock" hint="Prices in Ghana Cedis. Sale price is optional.">
+      <AdminSection step="03" title="Price and stock" hint="Prices in Ghana Cedis. Sale price is optional.">
         <div className="grid grid-cols-2 gap-4">
           <label className="block text-sm">
             Price (GH₵)
@@ -213,23 +248,9 @@ export function ProductForm({
         </label>
       </AdminSection>
       {!product ? <NewProductPhotos /> : null}
-      <ColorOptionsEditor product={product} step={product ? "03" : "04"} />
-      <AdminSection step={product ? "04" : "05"} title="On the shop" hint="Tick what customers should see.">
-        <div className="divide-y divide-[color-mix(in_srgb,var(--accent)_10%,#eadfd4)]">
-          <label className="flex min-h-12 items-center justify-between gap-3 py-3 text-sm">
-            Show on the shop
-            <input type="checkbox" name="isActive" defaultChecked={product ? product.isActive : true} className="size-5 accent-[#c8102e]" />
-          </label>
-          <label className="flex min-h-12 items-center justify-between gap-3 py-3 text-sm">
-            Show on the homepage
-            <input type="checkbox" name="isFeatured" defaultChecked={product?.isFeatured} className="size-5 accent-[#c8102e]" />
-          </label>
-          <label className="flex min-h-12 items-center justify-between gap-3 py-3 text-sm">
-            Mark as new
-            <input type="checkbox" name="isNew" defaultChecked={product?.isNew} className="size-5 accent-[#c8102e]" />
-          </label>
-        </div>
-        <label className="mt-4 block text-sm">
+      <ColorOptionsEditor product={product} step={product ? "04" : "05"} />
+      <AdminSection step={product ? "05" : "06"} title="Google" hint="Optional. Leave blank to use the product name.">
+        <label className="block text-sm">
           Google title
           <span className="mt-0.5 block text-xs text-muted">Optional. Leave blank to use the product name.</span>
           <input name="seoTitle" defaultValue={product?.seoTitle ?? ""} className="input mt-1" />

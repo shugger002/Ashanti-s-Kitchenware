@@ -1,9 +1,11 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ImageUpload } from "@/components/admin/image-upload";
 import { ProductForm } from "@/components/admin/product-form";
+import { ArchiveProductButton } from "@/components/admin/archive-product-button";
 import {
-  archiveProductAction,
   deleteProductImageAction,
+  setProductActiveAction,
   setProductImagePrimaryAction,
   setReviewPublishedAction,
 } from "@/app/admin/products/actions";
@@ -12,9 +14,15 @@ import { listCategories, getProductById } from "@/server/catalog/queries";
 import { adminButton, AdminGlance, AdminPageHeader, AdminSection, BackLink, StatusPill } from "@/components/admin/ui";
 import { listProductReviewsForAdmin } from "@/server/reviews/service";
 
-export default async function EditProductPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function EditProductPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ error?: string }>;
+}) {
   await requirePermission("products.write");
-  const { id } = await params;
+  const [{ id }, { error }] = await Promise.all([params, searchParams]);
   const [product, categories, reviews] = await Promise.all([
     getProductById(id),
     listCategories(false),
@@ -28,9 +36,22 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
         title={product.name}
         description={`Sheet code ${product.sku}`}
         action={
-          <span className="flex flex-wrap gap-1">
+          <span className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center">
             <StatusPill value={product.isActive ? "On the shop" : "Hidden"} tone={product.isActive ? "ok" : "muted"} />
             {product.isFeatured ? <StatusPill value="On homepage" tone="attention" /> : null}
+            {product.isActive ? (
+              <Link href={`/products/${product.slug}`} className={adminButton("px-4")}>
+                View on shop
+              </Link>
+            ) : null}
+            <form action={setProductActiveAction}>
+              <input type="hidden" name="id" value={product.id} />
+              <input type="hidden" name="active" value={product.isActive ? "false" : "true"} />
+              <input type="hidden" name="next" value={`/admin/products/${product.id}`} />
+              <button type="submit" className={adminButton("px-4")}>
+                {product.isActive ? "Hide from the shop" : "Show on the shop"}
+              </button>
+            </form>
           </span>
         }
       />
@@ -79,7 +100,7 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
         )}
         <ImageUpload productId={product.id} productName={product.name} />
       </AdminSection>
-      <ProductForm categories={categories} product={product} />
+      <ProductForm categories={categories} product={product} error={error} />
       <AdminSection
         className="mt-8 max-w-3xl"
         title="Reviews"
@@ -108,12 +129,7 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
           </ul>
         )}
       </AdminSection>
-      <form action={archiveProductAction} className="mt-10 max-w-2xl">
-        <input type="hidden" name="id" value={product.id} />
-        <button type="submit" className="text-sm text-accent">
-          Remove from the shop
-        </button>
-      </form>
+      <ArchiveProductButton productId={product.id} name={product.name} />
     </div>
   );
 }

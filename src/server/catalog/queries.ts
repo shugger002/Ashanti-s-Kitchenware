@@ -340,25 +340,42 @@ export type AdminProductRow = {
   id: string;
   name: string;
   sku: string;
+  slug: string;
   price: string;
   salePrice: string | null;
   categoryName: string | null;
   available: number;
   isActive: boolean;
+  isFeatured: boolean;
+  imageUrl: string | null;
 };
 
-export async function listAdminProducts(q?: string): Promise<AdminProductRow[]> {
+export type AdminProductShopFilter = "on" | "hidden" | "nophoto";
+
+export async function listAdminProducts(filters: {
+  q?: string;
+  shop?: AdminProductShopFilter | "";
+} = {}): Promise<AdminProductRow[]> {
+  const q = filters.q;
+  const shop = filters.shop ?? "";
   if (!process.env.DATABASE_URL) {
-    return demoSearch({ q, includeInactive: true, pageSize: 80 }).items.map((item) => ({
+    let items = demoSearch({ q, includeInactive: true, pageSize: 80 }).items.map((item) => ({
       id: item.id,
       name: item.name,
       sku: item.sku,
+      slug: item.slug,
       price: item.price,
       salePrice: item.salePrice,
       categoryName: item.categoryName,
       available: item.available,
       isActive: item.isActive,
+      isFeatured: item.isFeatured,
+      imageUrl: item.primaryImage?.url ?? null,
     }));
+    if (shop === "on") items = items.filter((item) => item.isActive);
+    if (shop === "hidden") items = items.filter((item) => !item.isActive);
+    if (shop === "nophoto") items = items.filter((item) => !item.imageUrl);
+    return items;
   }
   const where = [sql`p.archived_at IS NULL`];
   if (q?.trim()) {
@@ -367,23 +384,38 @@ export async function listAdminProducts(q?: string): Promise<AdminProductRow[]> 
       sql`(p.name ILIKE ${pattern} ESCAPE E'\\\\' OR p.sku ILIKE ${pattern} ESCAPE E'\\\\')`,
     );
   }
+  if (shop === "on") where.push(sql`p.is_active = TRUE`);
+  if (shop === "hidden") where.push(sql`p.is_active = FALSE`);
+  if (shop === "nophoto") {
+    where.push(sql`NOT EXISTS (SELECT 1 FROM product_images pi WHERE pi.product_id = p.id)`);
+  }
   const result = await query<{
     id: string;
     name: string;
     sku: string;
+    slug: string;
     price: string;
     sale_price: string | null;
     category_name: string | null;
     available: string;
     is_active: boolean;
+    is_featured: boolean;
+    image_url: string | null;
   }>(sql`
-    SELECT p.id, p.name, p.sku, p.price::text, p.sale_price::text, p.is_active,
+    SELECT p.id, p.name, p.sku, p.slug, p.price::text, p.sale_price::text, p.is_active, p.is_featured,
             c.name AS category_name,
+            img.url AS image_url,
             COALESCE((
               SELECT SUM(GREATEST(i.on_hand - i.reserved, 0)) FROM inventory i WHERE i.product_id = p.id
             ), 0)::text AS available
      FROM products p
      LEFT JOIN categories c ON c.id = p.category_id
+     LEFT JOIN LATERAL (
+       SELECT url FROM product_images pi
+       WHERE pi.product_id = p.id
+       ORDER BY pi.is_primary DESC, pi.sort_order ASC
+       LIMIT 1
+     ) img ON TRUE
      WHERE ${sqlAnd(where)}
      ORDER BY p.name ASC
      LIMIT 200
@@ -392,11 +424,14 @@ export async function listAdminProducts(q?: string): Promise<AdminProductRow[]> 
     id: row.id,
     name: row.name,
     sku: row.sku,
+    slug: row.slug,
     price: row.price,
     salePrice: row.sale_price,
     categoryName: row.category_name,
     available: Number(row.available),
     isActive: row.is_active,
+    isFeatured: row.is_featured,
+    imageUrl: row.image_url,
   }));
 }
 

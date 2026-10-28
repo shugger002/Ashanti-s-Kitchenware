@@ -1,14 +1,40 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import { requirePermission } from "@/server/auth/authorize";
-import { archiveProduct, deleteProductImage, setProductImagePrimary, upsertProduct } from "@/server/catalog/admin";
+import {
+  archiveProduct,
+  deleteProductImage,
+  DuplicateSkuError,
+  setProductActive,
+  setProductImagePrimary,
+  upsertProduct,
+} from "@/server/catalog/admin";
 import { saveProductPhoto } from "@/server/catalog/images";
 import { setReviewPublished } from "@/server/reviews/service";
 
 function bool(formData: FormData, name: string): boolean {
   return formData.get(name) === "on" || formData.get(name) === "true";
+}
+
+function touchCatalog(productId?: string) {
+  revalidateTag("catalog", { expire: 0 });
+  revalidatePath("/admin/products");
+  if (productId) revalidatePath(`/admin/products/${productId}`);
+  revalidatePath("/");
+  revalidatePath("/products");
+  revalidatePath("/shop");
+}
+
+function uniqueKind(error: unknown): "sku" | "slug" | null {
+  if (error instanceof DuplicateSkuError) return "sku";
+  if (!error || typeof error !== "object") return null;
+  const rec = error as { code?: string; constraint?: string; message?: string };
+  if (rec.code !== "23505") return null;
+  const hay = `${rec.constraint ?? ""} ${rec.message ?? ""}`.toLowerCase();
+  if (hay.includes("slug")) return "slug";
+  return "sku";
 }
 
 export async function saveProduct(formData: FormData) {
@@ -31,28 +57,38 @@ export async function saveProduct(formData: FormData) {
           stock: Number(formData.getAll("colorStock")[index] ?? 0),
         }))
       : undefined;
-  const savedId = await upsertProduct(
-    {
-      name: String(formData.get("name") ?? ""),
-      sku: String(formData.get("sku") ?? ""),
-      slug: String(formData.get("slug") ?? "") || undefined,
-      description: String(formData.get("description") ?? ""),
-      categoryId: String(formData.get("categoryId") || "") || null,
-      price: Number(formData.get("price")),
-      salePrice: formData.get("salePrice") ? Number(formData.get("salePrice")) : null,
-      specifications,
-      isActive: bool(formData, "isActive"),
-      isFeatured: bool(formData, "isFeatured"),
-      isNew: bool(formData, "isNew"),
-      lowStockThreshold: Number(formData.get("lowStockThreshold") ?? 3),
-      seoTitle: String(formData.get("seoTitle") || "") || null,
-      seoDescription: String(formData.get("seoDescription") || "") || null,
-      initialStock: formData.get("initialStock") ? Number(formData.get("initialStock")) : 0,
-      colors,
-    },
-    user.id,
-    id,
-  );
+  let savedId: string;
+  try {
+    savedId = await upsertProduct(
+      {
+        name: String(formData.get("name") ?? ""),
+        sku: String(formData.get("sku") ?? ""),
+        slug: String(formData.get("slug") ?? "") || undefined,
+        description: String(formData.get("description") ?? ""),
+        categoryId: String(formData.get("categoryId") || "") || null,
+        price: Number(formData.get("price")),
+        salePrice: formData.get("salePrice") ? Number(formData.get("salePrice")) : null,
+        specifications,
+        isActive: bool(formData, "isActive"),
+        isFeatured: bool(formData, "isFeatured"),
+        isNew: bool(formData, "isNew"),
+        lowStockThreshold: Number(formData.get("lowStockThreshold") ?? 3),
+        seoTitle: String(formData.get("seoTitle") || "") || null,
+        seoDescription: String(formData.get("seoDescription") || "") || null,
+        initialStock: formData.get("initialStock") ? Number(formData.get("initialStock")) : 0,
+        colors,
+      },
+      user.id,
+      id,
+    );
+  } catch (error) {
+    const kind = uniqueKind(error);
+    if (kind) {
+      const dest = id ? `/admin/products/${id}` : "/admin/products/new";
+      redirect(`${dest}?error=${kind}`);
+    }
+    throw error;
+  }
   const photos = formData.getAll("images").filter((item): item is File => item instanceof File && item.size > 0);
   for (const [index, file] of photos.entries()) {
     await saveProductPhoto({
@@ -62,12 +98,18 @@ export async function saveProduct(formData: FormData) {
       isPrimary: !id && index === 0,
     });
   }
-  revalidatePath("/admin/products");
-  revalidatePath(`/admin/products/${savedId}`);
-  revalidatePath("/");
-  revalidatePath("/products");
-  revalidatePath("/shop");
+  touchCatalog(savedId);
   redirect(`/admin/products/${savedId}`);
+}
+
+export async function setProductActiveAction(formData: FormData) {
+  const user = await requirePermission("products.write");
+  const id = String(formData.get("id") ?? "");
+  const active = formData.get("active") === "true";
+  await setProductActive(id, active, user.id);
+  touchCatalog(id);
+  const next = String(formData.get("next") ?? "").trim();
+  if (next.startsWith("/admin/products")) redirect(next);
 }
 
 export async function setReviewPublishedAction(formData: FormData) {
@@ -79,35 +121,27 @@ export async function setReviewPublishedAction(formData: FormData) {
     published: formData.get("published") === "true",
     actorUserId: user.id,
   });
-  revalidatePath(`/admin/products/${productId}`);
-  revalidatePath("/");
-  revalidatePath("/products");
-  revalidatePath("/shop");
+  touchCatalog(productId);
 }
 
 export async function setProductImagePrimaryAction(formData: FormData) {
   await requirePermission("products.write");
   const productId = String(formData.get("productId") ?? "");
   await setProductImagePrimary(productId, String(formData.get("imageId") ?? ""));
-  revalidatePath(`/admin/products/${productId}`);
-  revalidatePath("/");
-  revalidatePath("/products");
-  revalidatePath("/shop");
+  touchCatalog(productId);
 }
 
 export async function deleteProductImageAction(formData: FormData) {
   await requirePermission("products.write");
   const productId = String(formData.get("productId") ?? "");
   await deleteProductImage(productId, String(formData.get("imageId") ?? ""));
-  revalidatePath(`/admin/products/${productId}`);
-  revalidatePath("/");
-  revalidatePath("/products");
-  revalidatePath("/shop");
+  touchCatalog(productId);
 }
 
 export async function archiveProductAction(formData: FormData) {
   const user = await requirePermission("products.write");
-  await archiveProduct(String(formData.get("id")), user.id);
-  revalidatePath("/admin/products");
+  const id = String(formData.get("id"));
+  await archiveProduct(id, user.id);
+  touchCatalog(id);
   redirect("/admin/products");
 }

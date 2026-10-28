@@ -24,17 +24,32 @@ export type ProductInput = {
   colors?: { id?: string; name: string; hex: string; stock: number }[];
 };
 
+export class DuplicateSkuError extends Error {
+  constructor(public sku: string) {
+    super(`Sheet code ${sku} is already on the desk.`);
+    this.name = "DuplicateSkuError";
+  }
+}
+
 export async function upsertProduct(input: ProductInput, actorId: string, existingId?: string): Promise<string> {
   const slug = input.slug?.trim() || slugify(input.name);
   const price = parseMoney(input.price);
   const salePrice = input.salePrice == null ? null : parseMoney(input.salePrice);
+  const sku = input.sku.trim();
 
   return withTransaction(async (db) => {
+    const clash = existingId
+      ? await db.query<{ id: string }>(
+          sql`SELECT id FROM products WHERE lower(sku) = lower(${sku}) AND id <> ${existingId} LIMIT 1`,
+        )
+      : await db.query<{ id: string }>(sql`SELECT id FROM products WHERE lower(sku) = lower(${sku}) LIMIT 1`);
+    if (clash.rows[0]) throw new DuplicateSkuError(sku);
+
     let id = existingId;
     if (id) {
       await db.query(sql`
         UPDATE products SET
-           name=${input.name}, sku=${input.sku.trim()}, slug=${slug}, description=${input.description},
+           name=${input.name}, sku=${sku}, slug=${slug}, description=${input.description},
            category_id=${input.categoryId}, price=${price}, sale_price=${salePrice},
            specifications=${JSON.stringify(input.specifications)}::jsonb, is_active=${input.isActive},
            is_featured=${input.isFeatured}, is_new=${input.isNew},
@@ -47,7 +62,7 @@ export async function upsertProduct(input: ProductInput, actorId: string, existi
         INSERT INTO products (
            name, sku, slug, description, category_id, price, sale_price, specifications,
            is_active, is_featured, is_new, low_stock_threshold, seo_title, seo_description
-         ) VALUES (${input.name},${input.sku.trim()},${slug},${input.description},${input.categoryId},${price},${salePrice},${JSON.stringify(input.specifications)}::jsonb,${input.isActive},${input.isFeatured},${input.isNew},${input.lowStockThreshold},${input.seoTitle},${input.seoDescription})
+         ) VALUES (${input.name},${sku},${slug},${input.description},${input.categoryId},${price},${salePrice},${JSON.stringify(input.specifications)}::jsonb,${input.isActive},${input.isFeatured},${input.isNew},${input.lowStockThreshold},${input.seoTitle},${input.seoDescription})
          RETURNING id
       `);
       id = inserted.rows[0].id;
@@ -71,7 +86,7 @@ export async function upsertProduct(input: ProductInput, actorId: string, existi
       }
     }
     if (input.colors) {
-      await syncProductColours(db, id!, input.sku.trim(), input.colors, input.lowStockThreshold);
+      await syncProductColours(db, id!, sku, input.colors, input.lowStockThreshold);
     }
     await writeAuditLog(
       {
@@ -249,6 +264,18 @@ export async function importProductsFromCsv(input: {
     }
   }
   return { created, skipped, errors };
+}
+
+export async function setProductActive(id: string, isActive: boolean, actorId: string): Promise<void> {
+  await query(
+    sql`UPDATE products SET is_active = ${isActive}, updated_at = now() WHERE id = ${id} AND archived_at IS NULL`,
+  );
+  await writeAuditLog({
+    actorUserId: actorId,
+    action: isActive ? "product.show" : "product.hide",
+    entityType: "product",
+    entityId: id,
+  });
 }
 
 export async function archiveProduct(id: string, actorId: string): Promise<void> {
