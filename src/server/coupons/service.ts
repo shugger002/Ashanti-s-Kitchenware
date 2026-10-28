@@ -26,31 +26,69 @@ export async function listCoupons() {
   return result.rows;
 }
 
-export async function createCoupon(
-  input: {
-    code: string;
-    description: string;
-    discountType: "percent" | "fixed";
-    discountValue: number;
-    maxDiscount: number | null;
-    minSpend: number;
-    maxUses: number | null;
-  },
-  actorId: string,
-) {
+export class DuplicateCouponError extends Error {
+  constructor(public code: string) {
+    super(`Code ${code} is already on the desk.`);
+    this.name = "DuplicateCouponError";
+  }
+}
+
+type CouponWrite = {
+  description: string;
+  discountType: "percent" | "fixed";
+  discountValue: number;
+  maxDiscount: number | null;
+  minSpend: number;
+  maxUses: number | null;
+};
+
+function isUniqueCodeError(error: unknown) {
+  if (!error || typeof error !== "object") return false;
+  const rec = error as { code?: string; constraint?: string; message?: string };
+  if (rec.code !== "23505") return false;
+  const hay = `${rec.constraint ?? ""} ${rec.message ?? ""}`.toLowerCase();
+  return hay.includes("code") || hay.includes("coupons");
+}
+
+export async function createCoupon(input: CouponWrite & { code: string }, actorId: string) {
   const code = input.code.trim().toUpperCase();
-  const result = await query<{ id: string }>(sql`
+  try {
+    const result = await query<{ id: string }>(sql`
     INSERT INTO coupons (code, description, discount_type, discount_value, max_discount, min_spend, max_uses)
      VALUES (${code},${input.description.trim()},${input.discountType},${input.discountValue},${input.maxDiscount},${input.minSpend},${input.maxUses})
      RETURNING id
   `);
-  const id = result.rows[0]?.id;
+    const id = result.rows[0]?.id;
+    await writeAuditLog({
+      actorUserId: actorId,
+      action: "coupon.create",
+      entityType: "coupon",
+      entityId: id,
+      metadata: { code },
+    });
+  } catch (error) {
+    if (error instanceof DuplicateCouponError) throw error;
+    if (isUniqueCodeError(error)) throw new DuplicateCouponError(code);
+    throw error;
+  }
+}
+
+export async function updateCoupon(id: string, input: CouponWrite, actorId: string) {
+  await query(sql`
+    UPDATE coupons SET
+      description = ${input.description.trim()},
+      discount_type = ${input.discountType},
+      discount_value = ${input.discountValue},
+      max_discount = ${input.maxDiscount},
+      min_spend = ${input.minSpend},
+      max_uses = ${input.maxUses}
+     WHERE id = ${id}
+  `);
   await writeAuditLog({
     actorUserId: actorId,
-    action: "coupon.create",
+    action: "coupon.update",
     entityType: "coupon",
     entityId: id,
-    metadata: { code },
   });
 }
 

@@ -193,6 +193,7 @@ export function deskActionLabel(action: string) {
     "order.transition": "Moved an order",
     "payments.capture": "Marked an order paid",
     "coupon.create": "Added a coupon",
+    "coupon.update": "Changed a coupon",
     "coupon.activate": "Turned a coupon on",
     "coupon.deactivate": "Turned a coupon off",
     "review.publish": "Published a review",
