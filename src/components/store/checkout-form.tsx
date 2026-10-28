@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ChevronDown } from "lucide-react";
-import { useCart } from "@/components/store/cart-provider";
+import { useAfterHydrate, useCart } from "@/components/store/cart-provider";
 import { submitCheckout } from "@/app/(store)/checkout/actions";
 import { formatGhs } from "@/lib/money";
 import { Button, buttonClass } from "@/components/ui/button";
@@ -55,6 +55,7 @@ export function CheckoutForm({
   whatsappE164: string;
 }) {
   const { items, clear } = useCart();
+  const live = useAfterHydrate();
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
@@ -74,6 +75,10 @@ export function CheckoutForm({
   const idempotencyKey = useMemo(() => crypto.randomUUID(), []);
   const subtotal = items.reduce((sum, line) => sum + line.unitPrice * line.quantity, 0);
   const total = subtotal;
+
+  if (!live) {
+    return <p className="px-4 py-16 text-center text-muted">Loading checkout…</p>;
+  }
 
   if (items.length === 0) {
     return (

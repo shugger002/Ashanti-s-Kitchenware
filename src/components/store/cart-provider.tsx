@@ -88,3 +88,10 @@ export function useCart(): CartContextValue {
   if (!ctx) throw new Error("useCart must be used within CartProvider");
   return ctx;
 }
+
+/** First paint matches the server (empty localStorage). Use before reading the cart. */
+export function useAfterHydrate() {
+  const [live, setLive] = useState(false);
+  useEffect(() => setLive(true), []);
+  return live;
+}

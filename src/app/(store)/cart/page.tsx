@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect } from "react";
-import { useCart } from "@/components/store/cart-provider";
+import { useAfterHydrate, useCart } from "@/components/store/cart-provider";
 import { hydrateWishlist, toggleWishlist } from "@/components/store/wishlist-store";
 import { RecentlyViewed } from "@/components/store/recently-viewed";
 import { formatGhs } from "@/lib/money";
@@ -12,6 +12,7 @@ import { QuantityStepper } from "@/components/store/quantity-stepper";
 
 export default function CartPage() {
   const { items, update, remove, clear } = useCart();
+  const live = useAfterHydrate();
   useEffect(() => {
     hydrateWishlist();
   }, []);
@@ -20,7 +21,9 @@ export default function CartPage() {
   return (
     <div className="mx-auto max-w-4xl px-4 py-6 pb-36 lg:px-8 lg:py-12 lg:pb-12">
       <h1 className="text-3xl md:text-4xl">Cart</h1>
-      {items.length === 0 ? (
+      {!live ? (
+        <p className="mt-10 text-muted">Loading cart…</p>
+      ) : items.length === 0 ? (
         <p className="mt-10 text-muted">
           Your cart is empty.{" "}
           <Link href="/shop" className="text-accent">

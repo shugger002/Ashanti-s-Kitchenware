@@ -50,6 +50,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html
       lang="en-GH"
+      data-scroll-behavior="smooth"
       suppressHydrationWarning
       className={`${figtree.variable} ${newsreader.variable} h-full antialiased`}
     >

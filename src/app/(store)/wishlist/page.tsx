@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useSyncExternalStore } from "react";
-import { useCart } from "@/components/store/cart-provider";
+import { useAfterHydrate, useCart } from "@/components/store/cart-provider";
 import {
   getServerWishlist,
   getWishlist,
@@ -16,6 +16,7 @@ import { buttonClass } from "@/components/ui/button";
 export default function WishlistPage() {
   const items = useSyncExternalStore(subscribeWishlist, getWishlist, getServerWishlist);
   const { add } = useCart();
+  const live = useAfterHydrate();
   useEffect(() => {
     hydrateWishlist();
   }, []);
@@ -24,7 +25,9 @@ export default function WishlistPage() {
     <div className="mx-auto max-w-4xl px-4 py-6 pb-24 lg:px-8 lg:py-12 lg:pb-12">
       <h1 className="text-3xl md:text-4xl">Wishlist</h1>
       <p className="mt-2 text-sm text-muted">Saved on this device. Sign in is not required.</p>
-      {items.length === 0 ? (
+      {!live ? (
+        <p className="mt-10 text-muted">Loading saved items…</p>
+      ) : items.length === 0 ? (
         <p className="mt-10 text-muted">
           Nothing saved yet.{" "}
           <Link href="/shop" className="text-accent">
