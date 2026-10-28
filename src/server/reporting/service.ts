@@ -183,6 +183,125 @@ export const dashboardMetrics = cache(async () => {
   };
 });
 
+export type AnalyticsPeriod = "today" | "week";
+
+function accraCreatedWindow(period: AnalyticsPeriod) {
+  if (period === "week") {
+    return sql`(o.created_at AT TIME ZONE 'Africa/Accra')::date >= (CURRENT_TIMESTAMP AT TIME ZONE 'Africa/Accra')::date - 6`;
+  }
+  return sql`(o.created_at AT TIME ZONE 'Africa/Accra')::date = (CURRENT_TIMESTAMP AT TIME ZONE 'Africa/Accra')::date`;
+}
+
+const PAID_OK = sql`payment_status = 'paid' AND status NOT IN ('cancelled', 'refunded')`;
+
+export async function countAnalyticsGlance(): Promise<{
+  paidToday: string;
+  ordersToday: number;
+  deliveredToday: number;
+  paidAll: string;
+}> {
+  const result = await query<{
+    paid_today: string;
+    orders_today: string;
+    delivered_today: string;
+    paid_all: string;
+  }>(sql`
+    SELECT
+      COALESCE(SUM(total) FILTER (
+        WHERE ${PAID_OK}
+          AND (created_at AT TIME ZONE 'Africa/Accra')::date = (CURRENT_TIMESTAMP AT TIME ZONE 'Africa/Accra')::date
+      ), 0)::text AS paid_today,
+      count(*) FILTER (
+        WHERE (created_at AT TIME ZONE 'Africa/Accra')::date = (CURRENT_TIMESTAMP AT TIME ZONE 'Africa/Accra')::date
+      )::int AS orders_today,
+      count(*) FILTER (
+        WHERE status IN ('delivered', 'collected')
+          AND (updated_at AT TIME ZONE 'Africa/Accra')::date = (CURRENT_TIMESTAMP AT TIME ZONE 'Africa/Accra')::date
+      )::int AS delivered_today,
+      COALESCE(SUM(total) FILTER (WHERE ${PAID_OK}), 0)::text AS paid_all
+     FROM orders
+  `);
+  const row = result.rows[0];
+  return {
+    paidToday: row?.paid_today ?? "0",
+    ordersToday: Number(row?.orders_today ?? 0),
+    deliveredToday: Number(row?.delivered_today ?? 0),
+    paidAll: row?.paid_all ?? "0",
+  };
+}
+
+export type PaidDeskOrder = {
+  id: string;
+  publicRef: string;
+  fullName: string;
+  phone: string;
+  total: string;
+  status: string;
+  paymentStatus: string;
+  deliveryMethod: string;
+  createdAt: string;
+  items: { name: string; quantity: number }[];
+};
+
+export async function listPaidOrders(period: AnalyticsPeriod): Promise<PaidDeskOrder[]> {
+  const result = await query<{
+    id: string;
+    public_ref: string;
+    full_name: string;
+    phone: string;
+    total: string;
+    status: string;
+    payment_status: string;
+    delivery_method: string;
+    created_at: Date;
+    items: { name: string; quantity: number }[] | string | null;
+  }>(sql`
+    SELECT o.id, o.public_ref, o.full_name, o.phone, o.total::text, o.status, o.payment_status,
+            o.delivery_method, o.created_at,
+            COALESCE(
+              (
+                SELECT json_agg(json_build_object('name', oi.product_name, 'quantity', oi.quantity) ORDER BY oi.product_name)
+                 FROM order_items oi WHERE oi.order_id = o.id
+              ),
+              '[]'::json
+            ) AS items
+     FROM orders o
+     WHERE o.payment_status = 'paid'
+       AND o.status NOT IN ('cancelled', 'refunded')
+       AND ${accraCreatedWindow(period)}
+     ORDER BY o.created_at DESC
+     LIMIT 50
+  `);
+  return result.rows.map((row) => ({
+    id: row.id,
+    publicRef: row.public_ref,
+    fullName: row.full_name,
+    phone: row.phone,
+    total: row.total,
+    status: row.status,
+    paymentStatus: row.payment_status,
+    deliveryMethod: row.delivery_method,
+    createdAt: row.created_at.toISOString(),
+    items: asRows(row.items),
+  }));
+}
+
+export async function listBestSellers(period: AnalyticsPeriod): Promise<BestSeller[]> {
+  const result = await query<BestSeller>(sql`
+    SELECT oi.product_name, SUM(oi.quantity)::int AS units, SUM(oi.line_total)::text AS revenue
+     FROM order_items oi
+     JOIN orders o ON o.id = oi.order_id
+     WHERE o.payment_status = 'paid'
+       AND o.status NOT IN ('cancelled', 'refunded')
+       AND ${accraCreatedWindow(period)}
+     GROUP BY oi.product_name
+     HAVING SUM(oi.quantity) > 0
+     ORDER BY SUM(oi.quantity) DESC
+     LIMIT 20
+  `);
+  return result.rows;
+}
+
 export async function listAuditLogs() {
   const result = await query<{
     id: string;

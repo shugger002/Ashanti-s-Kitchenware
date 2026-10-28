@@ -71,7 +71,7 @@ export default async function AdminHomePage() {
   const glance = [
     { href: "/admin/orders", label: "Orders today", value: String(count(metrics.today_orders)), warn: false },
     {
-      href: canReports ? "/admin/analytics" : "/admin/orders",
+      href: canReports ? "/admin/analytics?need=today" : "/admin/orders",
       label: "Paid today",
       value: formatGhs(Number(metrics.today_revenue)),
       warn: false,
