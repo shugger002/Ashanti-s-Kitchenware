@@ -7,6 +7,9 @@ export type InventoryRow = {
   productId: string;
   productName: string;
   sku: string;
+  slug: string;
+  isActive: boolean;
+  isDemo: boolean;
   variantId: string | null;
   variantName: string | null;
   imageUrl: string | null;
@@ -17,12 +20,27 @@ export type InventoryRow = {
   lowStockThreshold: number;
 };
 
+export function isStockOut(row: Pick<InventoryRow, "available">) {
+  return row.available <= 0;
+}
+
+export function isStockLow(row: Pick<InventoryRow, "available" | "lowStockThreshold">) {
+  return row.available > 0 && row.available <= row.lowStockThreshold;
+}
+
+export function isStockTight(row: Pick<InventoryRow, "available" | "lowStockThreshold">) {
+  return isStockOut(row) || isStockLow(row);
+}
+
 export async function listInventory(): Promise<InventoryRow[]> {
   const result = await query<{
     id: string;
     product_id: string;
     product_name: string;
     sku: string;
+    slug: string;
+    is_active: boolean;
+    is_demo: boolean;
     variant_id: string | null;
     variant_name: string | null;
     image_url: string | null;
@@ -32,6 +50,8 @@ export async function listInventory(): Promise<InventoryRow[]> {
     low_stock_threshold: number;
   }>(sql`
     SELECT i.id, i.product_id, p.name AS product_name, COALESCE(v.sku, p.sku) AS sku,
+            p.slug, p.is_active,
+            (COALESCE(v.sku, p.sku) ILIKE 'DEMO-%' OR p.slug ILIKE 'demo-%') AS is_demo,
             i.variant_id, v.name AS variant_name, img.url AS image_url, img.alt AS image_alt,
             i.on_hand::text, i.reserved::text, i.low_stock_threshold
      FROM inventory i
@@ -51,6 +71,9 @@ export async function listInventory(): Promise<InventoryRow[]> {
     productId: row.product_id,
     productName: row.product_name,
     sku: row.sku,
+    slug: row.slug,
+    isActive: row.is_active,
+    isDemo: row.is_demo,
     variantId: row.variant_id,
     variantName: row.variant_name,
     imageUrl: row.image_url,
@@ -60,6 +83,48 @@ export async function listInventory(): Promise<InventoryRow[]> {
     available: Number(row.on_hand) - Number(row.reserved),
     lowStockThreshold: row.low_stock_threshold,
   }));
+}
+
+export async function countStockGlance(): Promise<{
+  work: number;
+  low: number;
+  out: number;
+  items: number;
+}> {
+  const result = await query<{
+    work: string;
+    low: string;
+    out: string;
+    items: string;
+  }>(sql`
+    SELECT
+      count(*) FILTER (
+        WHERE NOT is_demo AND (
+          on_hand - reserved <= 0
+          OR (on_hand - reserved > 0 AND on_hand - reserved <= low_stock_threshold)
+        )
+      )::text AS work,
+      count(*) FILTER (
+        WHERE NOT is_demo AND on_hand - reserved > 0 AND on_hand - reserved <= low_stock_threshold
+      )::text AS low,
+      count(*) FILTER (WHERE NOT is_demo AND on_hand - reserved <= 0)::text AS out,
+      count(*) FILTER (WHERE NOT is_demo)::text AS items
+     FROM (
+       SELECT i.on_hand, i.reserved, i.low_stock_threshold,
+              (COALESCE(v.sku, p.sku) ILIKE 'DEMO-%' OR p.slug ILIKE 'demo-%') AS is_demo
+        FROM inventory i
+        JOIN products p ON p.id = i.product_id
+        LEFT JOIN product_variants v ON v.id = i.variant_id
+        WHERE p.archived_at IS NULL
+     ) s
+  `);
+  const row = result.rows[0];
+  return {
+    work: Number(row?.work ?? 0),
+    low: Number(row?.low ?? 0),
+    out: Number(row?.out ?? 0),
+    items: Number(row?.items ?? 0),
+  };
 }
 
 export async function adjustStock(input: {

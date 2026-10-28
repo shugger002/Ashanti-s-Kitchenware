@@ -81,9 +81,19 @@ export const dashboardMetrics = cache(async () => {
     ),
     stock_agg AS (
       SELECT
-        count(*) FILTER (WHERE on_hand - reserved > 0 AND on_hand - reserved <= low_stock_threshold)::text AS low,
-        count(*) FILTER (WHERE on_hand - reserved <= 0)::text AS out
-      FROM inventory
+        count(*) FILTER (
+          WHERE NOT (COALESCE(v.sku, p.sku) ILIKE 'DEMO-%' OR p.slug ILIKE 'demo-%')
+            AND i.on_hand - i.reserved > 0
+            AND i.on_hand - i.reserved <= i.low_stock_threshold
+        )::text AS low,
+        count(*) FILTER (
+          WHERE NOT (COALESCE(v.sku, p.sku) ILIKE 'DEMO-%' OR p.slug ILIKE 'demo-%')
+            AND i.on_hand - i.reserved <= 0
+        )::text AS out
+      FROM inventory i
+      JOIN products p ON p.id = i.product_id
+      LEFT JOIN product_variants v ON v.id = i.variant_id
+      WHERE p.archived_at IS NULL
     ),
     catalogue_agg AS (
       SELECT

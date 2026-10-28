@@ -2,7 +2,7 @@ import { applyInventoryCsv, listInventory } from "@/server/inventory/service";
 import { assertTableUploadSize, extractSpreadsheetText } from "@/lib/table-upload";
 import { parseInventoryCsv } from "@/server/inventory/csv";
 import type { InventoryCsvResult } from "@/lib/desk-import";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import type { AdminUser } from "@/server/auth/types";
 
 export type { InventoryCsvResult };
@@ -55,6 +55,8 @@ export async function runInventoryCsvImport(formData: FormData, user: AdminUser)
   const result = await applyInventoryCsv({ rows: parsed.rows, actorUserId: user.id });
   revalidatePath("/admin/inventory");
   revalidatePath("/admin/products");
+  revalidatePath("/admin");
+  revalidateTag("catalog", { expire: 0 });
   const errors = [...parsed.errors, ...result.errors];
   const applied = result.updated.length;
   return {

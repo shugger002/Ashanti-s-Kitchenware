@@ -1,7 +1,13 @@
 import Link from "next/link";
 import { requirePermission } from "@/server/auth/authorize";
-import { adjustStock, listInventory, type InventoryRow } from "@/server/inventory/service";
-import { revalidatePath } from "next/cache";
+import {
+  countStockGlance,
+  isStockLow,
+  isStockOut,
+  listInventory,
+  type InventoryRow,
+} from "@/server/inventory/service";
+import { StockListCard, StockTableRow } from "@/components/admin/stock-list-card";
 import {
   adminButton,
   AdminGlance,
@@ -10,98 +16,34 @@ import {
   AdminTable,
   EmptyState,
   MobileCards,
-  StatusPill,
   Toolbar,
 } from "@/components/admin/ui";
 import { InventoryCsvForm } from "@/app/admin/inventory/csv-form";
 import { buttonClass } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-async function adjust(formData: FormData) {
-  "use server";
-  const user = await requirePermission("inventory.write");
-  await adjustStock({
-    inventoryId: String(formData.get("inventoryId")),
-    deltaOnHand: Number(formData.get("delta")),
-    reason: String(formData.get("reason") ?? "Adjustment"),
-    notes: String(formData.get("notes") ?? ""),
-    actorUserId: user.id,
-  });
-  revalidatePath("/admin/inventory");
+type StockNeed = "work" | "low" | "out" | "all" | "demo";
+
+function parseNeed(value?: string): StockNeed | "" {
+  return value === "work" || value === "low" || value === "out" || value === "all" || value === "demo" ? value : "";
 }
 
-async function restock(formData: FormData) {
-  "use server";
-  const user = await requirePermission("inventory.write");
-  const qty = Math.max(0, Number(formData.get("qty")));
-  if (qty <= 0) return;
-  await adjustStock({
-    inventoryId: String(formData.get("inventoryId")),
-    deltaOnHand: qty,
-    reason: "Restock",
-    notes: String(formData.get("notes") ?? ""),
-    actorUserId: user.id,
-    source: "restock",
-  });
-  revalidatePath("/admin/inventory");
+function listHref(opts: { q?: string; need?: string; product?: string }) {
+  const params = new URLSearchParams();
+  if (opts.q?.trim()) params.set("q", opts.q.trim());
+  if (opts.need) params.set("need", opts.need);
+  if (opts.product) params.set("product", opts.product);
+  const query = params.toString();
+  return query ? `/admin/inventory?${query}` : "/admin/inventory";
 }
 
-function isOut(row: InventoryRow) {
-  return row.available <= 0;
-}
-
-function isLow(row: InventoryRow) {
-  return row.available > 0 && row.available <= row.lowStockThreshold;
-}
-
-function isTight(row: InventoryRow) {
-  return isOut(row) || isLow(row);
-}
-
-function RestockForm({ row, compact }: { row: InventoryRow; compact?: boolean }) {
-  return (
-    <form action={restock} className={cn("flex gap-2", compact ? "flex-wrap items-center" : "flex-col")}>
-      <input type="hidden" name="inventoryId" value={row.id} />
-      <input
-        name="qty"
-        type="number"
-        min={1}
-        required
-        placeholder={compact ? "Arrived" : "How many arrived"}
-        aria-label={`Restock ${row.productName}`}
-        className={cn("input", compact && "w-20")}
-      />
-      <button className={adminButton(compact ? "px-3 py-2" : undefined)} type="submit">
-        Restock
-      </button>
-    </form>
-  );
-}
-
-function AdjustForm({ row, compact }: { row: InventoryRow; compact?: boolean }) {
-  return (
-    <form action={adjust} className={cn("flex gap-2", compact ? "flex-wrap items-center" : "flex-col")}>
-      <input type="hidden" name="inventoryId" value={row.id} />
-      <input
-        name="delta"
-        type="number"
-        required
-        placeholder={compact ? "Fix count" : "Fix the count (+ or −)"}
-        aria-label={`Adjust ${row.productName}`}
-        className={cn("input", compact && "w-24")}
-      />
-      <input
-        name="reason"
-        required
-        placeholder={compact ? "Why" : "Why, like breakage or recount"}
-        aria-label={`Reason for ${row.productName}`}
-        className={cn("input", compact && "min-w-40 flex-1")}
-      />
-      <button className={buttonClass("secondary", compact ? "h-12 min-h-12 px-3 py-2" : "h-12 min-h-12 w-full sm:w-auto")} type="submit">
-        Save count
-      </button>
-    </form>
-  );
+function matchesNeed(row: InventoryRow, need: StockNeed | undefined) {
+  if (!need) return true;
+  if (need === "all") return !row.isDemo;
+  if (need === "demo") return row.isDemo;
+  if (need === "low") return !row.isDemo && isStockLow(row);
+  if (need === "out") return !row.isDemo && isStockOut(row);
+  return !row.isDemo && (isStockLow(row) || isStockOut(row));
 }
 
 export default async function InventoryPage({
@@ -110,47 +52,57 @@ export default async function InventoryPage({
   searchParams: Promise<{ q?: string; need?: string; product?: string }>;
 }) {
   const params = await searchParams;
-  const [, rows] = await Promise.all([requirePermission("inventory.write"), listInventory()]);
-  const out = rows.filter(isOut).length;
-  const low = rows.filter(isLow).length;
-  const q = params.q?.trim().toLowerCase() ?? "";
-  const need = params.need === "low" || params.need === "out" ? params.need : "";
+  const q = params.q?.trim() ?? "";
+  const searching = Boolean(q);
   const productId = params.product?.trim() ?? "";
+  const needParam = parseNeed(params.need);
+  const need: StockNeed | undefined = productId ? undefined : needParam || (searching ? undefined : "work");
+  const [, rows, glance] = await Promise.all([
+    requirePermission("inventory.write"),
+    listInventory(),
+    countStockGlance(),
+  ]);
 
-  let displayed = rows;
+  let displayed = rows.filter((row) => matchesNeed(row, need));
   if (productId) displayed = displayed.filter((row) => row.productId === productId);
-  if (need === "low") displayed = displayed.filter(isLow);
-  if (need === "out") displayed = displayed.filter(isOut);
   if (q) {
+    const needle = q.toLowerCase();
     displayed = displayed.filter(
-      (row) => row.productName.toLowerCase().includes(q) || row.sku.toLowerCase().includes(q),
+      (row) => row.productName.toLowerCase().includes(needle) || row.sku.toLowerCase().includes(needle),
     );
   }
   displayed = [...displayed].sort((a, b) => {
-    const rank = (row: InventoryRow) => (isOut(row) ? 0 : isLow(row) ? 1 : 2);
+    const rank = (row: InventoryRow) => (isStockOut(row) ? 0 : isStockLow(row) ? 1 : 2);
     const diff = rank(a) - rank(b);
     if (diff !== 0) return diff;
     return a.productName.localeCompare(b.productName);
   });
 
-  const filtered = Boolean(q || need || productId);
+  const filtered = Boolean(searching || needParam || productId);
+  const workNowActive = need === "work" && !searching && !productId;
+  const chips: { href: string; label: string; active: boolean }[] = [
+    { href: listHref({ q, need: "work" }), label: "Work now", active: workNowActive },
+    { href: listHref({ q, need: "low" }), label: "Low", active: need === "low" },
+    { href: listHref({ q, need: "out" }), label: "Out", active: need === "out" },
+    { href: listHref({ q, need: "all" }), label: "All pieces", active: need === "all" },
+    { href: listHref({ q, need: "demo" }), label: "Samples", active: need === "demo" },
+  ];
   const focusedName = productId ? rows.find((row) => row.productId === productId)?.productName : null;
 
   return (
     <div>
       <AdminPageHeader
         title="Stock"
-        description="Low and finished pieces first. Restock what arrived. Fix a count only when the shelf does not match."
+        description="Work now is low or finished shop pieces, not sample DEMO codes. Restock what arrived. Fix a count only when the shelf does not match."
       />
-      {rows.length > 0 ? (
-        <AdminGlance
-          items={[
-            { href: "/admin/inventory", label: "Items", value: rows.length },
-            { href: "/admin/inventory?need=low", label: "Low stock", value: low, warn: low > 0 },
-            { href: "/admin/inventory?need=out", label: "Out of stock", value: out, warn: out > 0 },
-          ]}
-        />
-      ) : null}
+      <AdminGlance
+        items={[
+          { href: "/admin/inventory", label: "Work now", value: glance.work, warn: glance.work > 0 },
+          { href: "/admin/inventory?need=low", label: "Low stock", value: glance.low, warn: glance.low > 0 },
+          { href: "/admin/inventory?need=out", label: "Out of stock", value: glance.out, warn: glance.out > 0 },
+          { href: "/admin/inventory?need=all", label: "Items", value: glance.items },
+        ]}
+      />
 
       {rows.length > 0 ? (
         <Toolbar>
@@ -166,10 +118,12 @@ export default async function InventoryPage({
               placeholder="Search name or code"
               className="input w-full sm:max-w-sm"
             />
-            <select name="need" defaultValue={need} className="input w-full sm:max-w-48" aria-label="Stock that needs work">
-              <option value="">All pieces</option>
+            <select name="need" defaultValue={needParam || (searching ? "all" : need ?? "work")} className="input w-full sm:max-w-48" aria-label="Stock that needs work">
+              <option value="work">Work now</option>
               <option value="low">Low stock</option>
               <option value="out">Out of stock</option>
+              <option value="all">All pieces</option>
+              <option value="demo">Samples</option>
             </select>
             <button className={adminButton()} type="submit">
               Filter
@@ -182,6 +136,21 @@ export default async function InventoryPage({
           </form>
         </Toolbar>
       ) : null}
+
+      <div className="mt-3 flex flex-wrap gap-2">
+        {chips.map((chip) => (
+          <Link
+            key={chip.label}
+            href={chip.href}
+            className={cn(
+              buttonClass("ghost", "h-10 min-h-10 px-3 text-sm"),
+              chip.active && "bg-foreground text-background hover:bg-foreground",
+            )}
+          >
+            {chip.label}
+          </Link>
+        ))}
+      </div>
 
       {focusedName ? (
         <p className="mt-4 text-sm text-muted">
@@ -206,54 +175,19 @@ export default async function InventoryPage({
         </div>
       ) : displayed.length === 0 ? (
         <div className="mt-6">
-          <EmptyState title="Nothing matched" body="Clear the filter or try another name or code." />
+          <EmptyState
+            title={filtered ? "Nothing matched" : "Nothing to restock"}
+            body={filtered ? "Clear the filter or try another name or code." : "Low and finished pieces show here. Samples stay on the Samples chip."}
+          />
         </div>
       ) : (
         <>
           <MobileCards>
-            {displayed.map((row) => {
-              const tight = isTight(row);
-              return (
-                <li key={row.id} className={cn("admin-panel", tight && "warn")}>
-                  <Link href={`/admin/products/${row.productId}`} className="flex items-start gap-3">
-                    {row.imageUrl ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={row.imageUrl}
-                        alt={row.imageAlt || row.productName}
-                        className="h-14 w-14 shrink-0 object-cover"
-                      />
-                    ) : (
-                      <span className="flex h-14 w-14 shrink-0 items-center justify-center border border-border bg-white text-[10px] text-muted">
-                        No photo
-                      </span>
-                    )}
-                    <span className="min-w-0">
-                      <span className="font-medium">{row.productName}</span>
-                      {row.variantName ? <span className="mt-0.5 block text-xs text-muted">{row.variantName}</span> : null}
-                      <span className="mt-1 block text-xs text-muted">{row.sku}</span>
-                      {tight ? (
-                        <span className="mt-1 inline-block">
-                          <StatusPill value={isOut(row) ? "Out" : "Low"} tone="attention" />
-                        </span>
-                      ) : null}
-                    </span>
-                  </Link>
-                  <p className={cn("mt-3 font-serif text-sm tabular-nums", tight && "font-medium text-accent")}>
-                    {row.available} to sell · {row.onHand} on the shelf · {row.reserved} in unpaid orders
-                  </p>
-                  <div className="mt-3">
-                    <RestockForm row={row} />
-                  </div>
-                  <details className="mt-3 border-t border-border pt-3">
-                    <summary className="min-h-11 cursor-pointer text-sm text-muted">Fix the count</summary>
-                    <div className="mt-2">
-                      <AdjustForm row={row} />
-                    </div>
-                  </details>
-                </li>
-              );
-            })}
+            {displayed.map((row) => (
+              <li key={row.id}>
+                <StockListCard row={row} />
+              </li>
+            ))}
           </MobileCards>
           <AdminTable className="mt-4">
             <thead>
@@ -264,57 +198,13 @@ export default async function InventoryPage({
                 <th className="px-4 py-3 font-medium">In orders</th>
                 <th className="px-4 py-3 font-medium">To sell</th>
                 <th className="px-4 py-3 font-medium">Restock</th>
-                <th className="px-4 py-3 font-medium">Fix count</th>
+                <th className="px-4 py-3 font-medium">Piece</th>
               </tr>
             </thead>
             <tbody>
-              {displayed.map((row) => {
-                const tight = isTight(row);
-                return (
-                  <tr
-                    key={row.id}
-                    className={cn("border-b border-border last:border-0 align-top", tight ? "bg-accent/5" : "hover:bg-surface")}
-                  >
-                    <td className="px-4 py-3">
-                      <Link href={`/admin/products/${row.productId}`} className="flex items-start gap-3">
-                        {row.imageUrl ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img
-                            src={row.imageUrl}
-                            alt={row.imageAlt || row.productName}
-                            className="h-14 w-14 shrink-0 object-cover"
-                          />
-                        ) : (
-                          <span className="flex h-14 w-14 shrink-0 items-center justify-center border border-border bg-white text-[10px] text-muted">
-                            No photo
-                          </span>
-                        )}
-                        <span>
-                          <span className="font-medium">{row.productName}</span>
-                          {row.variantName ? <span className="mt-0.5 block text-xs text-muted">{row.variantName}</span> : null}
-                          {tight ? (
-                            <span className="mt-1 inline-block">
-                              <StatusPill value={isOut(row) ? "Out" : "Low"} tone="attention" />
-                            </span>
-                          ) : null}
-                        </span>
-                      </Link>
-                    </td>
-                    <td className="px-4 py-3 text-muted">{row.sku}</td>
-                    <td className="px-4 py-3 font-serif tabular-nums">{row.onHand}</td>
-                    <td className="px-4 py-3 font-serif tabular-nums">{row.reserved}</td>
-                    <td className={cn("px-4 py-3 font-serif tabular-nums", tight && "font-medium text-accent")}>
-                      {row.available}
-                    </td>
-                    <td className="px-4 py-3">
-                      <RestockForm row={row} compact />
-                    </td>
-                    <td className="px-4 py-3">
-                      <AdjustForm row={row} compact />
-                    </td>
-                  </tr>
-                );
-              })}
+              {displayed.map((row) => (
+                <StockTableRow key={row.id} row={row} />
+              ))}
             </tbody>
           </AdminTable>
         </>
