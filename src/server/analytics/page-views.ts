@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import { query } from "@/server/db/pool";
 import { sql } from "@/server/db/sql";
+import type { AnalyticsPeriod } from "@/server/reporting/service";
 
 function cleanPath(raw: string) {
   const path = raw.trim().split("?")[0]?.split("#")[0] ?? "";
@@ -73,4 +74,81 @@ export async function storeVisitSummary() {
     weekVisitors: Number(result.rows[0]?.week_visitors ?? 0),
     topPaths: top.rows.map((row) => ({ path: row.path, views: Number(row.views) })),
   };
+}
+
+function visitCreatedWindow(period: AnalyticsPeriod) {
+  if (period === "week") {
+    return sql`(v.created_at AT TIME ZONE 'Africa/Accra')::date >= (CURRENT_TIMESTAMP AT TIME ZONE 'Africa/Accra')::date - 6`;
+  }
+  if (period === "month") {
+    return sql`(v.created_at AT TIME ZONE 'Africa/Accra')::date >= (CURRENT_TIMESTAMP AT TIME ZONE 'Africa/Accra')::date - 29`;
+  }
+  return sql`(v.created_at AT TIME ZONE 'Africa/Accra')::date = (CURRENT_TIMESTAMP AT TIME ZONE 'Africa/Accra')::date`;
+}
+
+function visitSeriesStart(period: AnalyticsPeriod) {
+  if (period === "week") return sql`(CURRENT_TIMESTAMP AT TIME ZONE 'Africa/Accra')::date - 6`;
+  if (period === "month") return sql`(CURRENT_TIMESTAMP AT TIME ZONE 'Africa/Accra')::date - 29`;
+  return sql`(CURRENT_TIMESTAMP AT TIME ZONE 'Africa/Accra')::date`;
+}
+
+function toIsoDay(value: unknown): string {
+  if (value instanceof Date && !Number.isNaN(value.getTime())) {
+    return value.toISOString().slice(0, 10);
+  }
+  const raw = String(value ?? "");
+  if (/^\d{4}-\d{2}-\d{2}/.test(raw)) return raw.slice(0, 10);
+  const parsed = new Date(raw);
+  return Number.isNaN(parsed.getTime()) ? "" : parsed.toISOString().slice(0, 10);
+}
+
+export async function storeVisitDetail(period: AnalyticsPeriod) {
+  const window = visitCreatedWindow(period);
+  try {
+    const [totals, paths, referrers, days] = await Promise.all([
+      query<{ views: string; people: string }>(sql`
+        SELECT count(*)::text AS views, count(DISTINCT visitor_hash)::text AS people
+         FROM store_page_views v
+         WHERE ${window}
+      `),
+      query<{ path: string; views: string }>(sql`
+        SELECT path, count(*)::text AS views
+         FROM store_page_views v
+         WHERE ${window}
+         GROUP BY path
+         ORDER BY count(*) DESC
+         LIMIT 15
+      `),
+      query<{ referrer: string; views: string }>(sql`
+        SELECT COALESCE(NULLIF(referrer, ''), 'Typed or unknown') AS referrer, count(*)::text AS views
+         FROM store_page_views v
+         WHERE ${window}
+         GROUP BY 1
+         ORDER BY count(*) DESC
+         LIMIT 10
+      `),
+      query<{ day: string; views: string }>(sql`
+        SELECT gs.day::text AS day, count(v.id)::text AS views
+         FROM generate_series(
+           ${visitSeriesStart(period)},
+           (CURRENT_TIMESTAMP AT TIME ZONE 'Africa/Accra')::date,
+           interval '1 day'
+         ) AS gs(day)
+         LEFT JOIN store_page_views v ON (v.created_at AT TIME ZONE 'Africa/Accra')::date = gs.day
+         GROUP BY gs.day
+         ORDER BY gs.day
+      `),
+    ]);
+    return {
+      views: Number(totals.rows[0]?.views ?? 0),
+      people: Number(totals.rows[0]?.people ?? 0),
+      paths: paths.rows.map((row) => ({ path: row.path, views: Number(row.views) })),
+      referrers: referrers.rows.map((row) => ({ host: row.referrer, views: Number(row.views) })),
+      days: days.rows
+        .map((row) => ({ day: toIsoDay(row.day), views: Number(row.views) }))
+        .filter((row) => row.day),
+    };
+  } catch {
+    return { views: 0, people: 0, paths: [], referrers: [], days: [] };
+  }
 }

@@ -183,11 +183,14 @@ export const dashboardMetrics = cache(async () => {
   };
 });
 
-export type AnalyticsPeriod = "today" | "week";
+export type AnalyticsPeriod = "today" | "week" | "month";
 
-function accraCreatedWindow(period: AnalyticsPeriod) {
+export function accraCreatedWindow(period: AnalyticsPeriod) {
   if (period === "week") {
     return sql`(o.created_at AT TIME ZONE 'Africa/Accra')::date >= (CURRENT_TIMESTAMP AT TIME ZONE 'Africa/Accra')::date - 6`;
+  }
+  if (period === "month") {
+    return sql`(o.created_at AT TIME ZONE 'Africa/Accra')::date >= (CURRENT_TIMESTAMP AT TIME ZONE 'Africa/Accra')::date - 29`;
   }
   return sql`(o.created_at AT TIME ZONE 'Africa/Accra')::date = (CURRENT_TIMESTAMP AT TIME ZONE 'Africa/Accra')::date`;
 }
