@@ -22,7 +22,7 @@ export function ProductCsvForm() {
   return (
     <AdminSection
       title="Add many at once"
-      hint="Load the container list, or upload a spreadsheet. Photos can wait. If you add photos now, name the files with the code, like APA-126.jpg."
+      hint="Load the container list, or upload a CSV, Excel file, or PDF with names, codes, and Ghana Cedi prices. Photos can wait. If you add photos now, name the files with the code, like APA-126.jpg."
     >
       <div className="grid gap-4 lg:grid-cols-2">
         <div className="rounded-sm border border-[color-mix(in_srgb,var(--accent)_14%,#eadfd4)] bg-white p-4">
@@ -44,7 +44,7 @@ export function ProductCsvForm() {
         </div>
         <div className="rounded-sm border border-[color-mix(in_srgb,var(--accent)_14%,#eadfd4)] bg-white p-4">
           <p className="font-serif text-lg">From a file</p>
-          <p className="mt-1 text-sm text-muted">Spreadsheet of names, codes, prices, and quantities.</p>
+          <p className="mt-1 text-sm text-muted">CSV, Excel, or a PDF table of names, codes, prices, and quantities.</p>
           <button
             type="button"
             className="mt-2 text-sm font-medium text-accent underline-offset-2 hover:underline"
@@ -65,8 +65,13 @@ export function ProductCsvForm() {
             }}
           >
             <label className="block text-sm">
-              Spreadsheet
-              <input name="file" type="file" className="admin-file mt-1" />
+              CSV, Excel, or PDF
+              <input
+                name="file"
+                type="file"
+                accept=".csv,.xlsx,.xls,.ods,.pdf,text/csv,application/pdf,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                className="admin-file mt-1"
+              />
             </label>
             <label className="block text-sm">
               Photos

@@ -3,7 +3,6 @@ import { requirePermission } from "@/server/auth/authorize";
 import { listAdminProducts, type AdminProductShopFilter } from "@/server/catalog/queries";
 import { formatGhs } from "@/lib/money";
 import { setProductActiveAction } from "@/app/admin/products/actions";
-import { ProductCsvForm } from "@/app/admin/products/csv-form";
 import {
   adminButton,
   AdminGlance,
@@ -122,6 +121,15 @@ export default async function AdminProductsPage({
           ) : undefined
         }
       />
+      {canWrite ? (
+        <p className="mt-4 text-sm text-muted">
+          To load many pieces from a CSV, Excel file, or PDF, open{" "}
+          <Link href="/admin/products/new#add-many" className="text-accent">
+            Add product
+          </Link>
+          .
+        </p>
+      ) : null}
       {counts.length > 0 ? (
         <AdminGlance
           items={[
@@ -276,11 +284,6 @@ export default async function AdminProductsPage({
           </AdminTable>
         </>
       )}
-      {canWrite ? (
-        <div className="mt-10">
-          <ProductCsvForm />
-        </div>
-      ) : null}
     </div>
   );
 }
