@@ -183,28 +183,6 @@ export const dashboardMetrics = cache(async () => {
   };
 });
 
-export async function listCustomers() {
-  const result = await query<{
-    id: string;
-    full_name: string;
-    email: string | null;
-    phone: string;
-    created_at: Date;
-    order_count: number;
-    paid_total: string;
-  }>(sql`
-    SELECT c.id, c.full_name, c.email, c.phone, c.created_at,
-            count(o.id)::int AS order_count,
-            COALESCE(SUM(o.total) FILTER (WHERE o.payment_status = 'paid'), 0)::text AS paid_total
-     FROM customers c
-     LEFT JOIN orders o ON o.customer_id = c.id
-     GROUP BY c.id
-     ORDER BY c.created_at DESC
-     LIMIT 100`,
-  );
-  return result.rows;
-}
-
 export async function listAuditLogs() {
   const result = await query<{
     id: string;

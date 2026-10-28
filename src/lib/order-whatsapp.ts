@@ -65,3 +65,10 @@ export function customerWhatsAppHref(input: {
 
   return `https://wa.me/${digits}?text=${encodeURIComponent(parts.join("\n\n"))}`;
 }
+
+export function customerGreetingWhatsAppHref(phone: string, fullName: string) {
+  const digits = ghanaInternationalMsisdn(phone);
+  if (digits.length < 11) return null;
+  const name = fullName.trim() || "there";
+  return `https://wa.me/${digits}?text=${encodeURIComponent(`Ashanti's Kitchenware\n\nHi ${name},`)}`;
+}

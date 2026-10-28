@@ -78,7 +78,7 @@ export default async function AdminHomePage() {
     },
     { href: "/admin/orders", label: "Delivered today", value: String(count(metrics.fulfilled_today)), warn: false },
     {
-      href: canCustomers ? "/admin/customers" : "/admin",
+      href: canCustomers ? "/admin/customers?need=new" : "/admin",
       label: "New customers",
       value: String(count(metrics.new_customers_today)),
       warn: false,
