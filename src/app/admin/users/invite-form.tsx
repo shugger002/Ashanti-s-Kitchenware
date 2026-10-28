@@ -1,10 +1,13 @@
 import { adminButton } from "@/components/admin/ui";
 import { addStaffUser } from "@/app/admin/users/actions";
 
-export function InviteStaffForm() {
+export function InviteStaffForm({ error }: { error?: string }) {
   return (
     <form action={addStaffUser} className="max-w-md admin-panel space-y-3">
       <h2 className="font-serif text-xl">New staff login</h2>
+      {error === "email" ? (
+        <p className="text-sm text-accent">That email already has a desk login.</p>
+      ) : null}
       <label className="block text-sm">
         Name
         <input name="fullName" required className="input mt-1" />

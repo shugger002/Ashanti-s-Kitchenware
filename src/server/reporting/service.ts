@@ -203,20 +203,3 @@ export async function listAuditLogs() {
   return result.rows;
 }
 
-export async function listAdminUsers() {
-  const result = await query<{
-    id: string;
-    email: string;
-    full_name: string;
-    is_active: boolean;
-    roles: string[] | null;
-  }>(sql`
-    SELECT u.id, u.email, u.full_name, u.is_active,
-            array_remove(array_agg(ur.role_slug), NULL) AS roles
-     FROM users u
-     LEFT JOIN user_roles ur ON ur.user_id = u.id
-     GROUP BY u.id
-     ORDER BY u.email`,
-  );
-  return result.rows;
-}

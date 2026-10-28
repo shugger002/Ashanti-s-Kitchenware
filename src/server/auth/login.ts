@@ -60,6 +60,13 @@ export async function authenticateAdmin(input: {
   return { ok: true, token };
 }
 
+export class DuplicateStaffEmailError extends Error {
+  constructor() {
+    super("That email already has a desk login.");
+    this.name = "DuplicateStaffEmailError";
+  }
+}
+
 export async function createAdminUser(input: {
   email: string;
   password: string;
@@ -70,14 +77,20 @@ export async function createAdminUser(input: {
     throw new Error("Password must be at least 12 characters");
   }
   const passwordHash = await hashPassword(input.password);
-  const inserted = await query<{ id: string }>(sql`
-    INSERT INTO users (email, password_hash, full_name)
-     VALUES (${input.email.trim().toLowerCase()}, ${passwordHash}, ${input.fullName.trim()})
-     RETURNING id
-  `);
-  const id = inserted.rows[0].id;
-  for (const role of input.roles) {
-    await query(sql`INSERT INTO user_roles (user_id, role_slug) VALUES (${id}, ${role})`);
+  try {
+    const inserted = await query<{ id: string }>(sql`
+      INSERT INTO users (email, password_hash, full_name)
+       VALUES (${input.email.trim().toLowerCase()}, ${passwordHash}, ${input.fullName.trim()})
+       RETURNING id
+    `);
+    const id = inserted.rows[0].id;
+    for (const role of input.roles) {
+      await query(sql`INSERT INTO user_roles (user_id, role_slug) VALUES (${id}, ${role})`);
+    }
+    return id;
+  } catch (error) {
+    const code = error && typeof error === "object" && "code" in error ? String((error as { code?: string }).code) : "";
+    if (code === "23505") throw new DuplicateStaffEmailError();
+    throw error;
   }
-  return id;
 }
