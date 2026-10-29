@@ -93,7 +93,7 @@ export default async function InventoryPage({
     <div>
       <AdminPageHeader
         title="Stock"
-        description="Work now is low or finished shop pieces, not sample DEMO codes. Restock what arrived. Fix a count only when the shelf does not match."
+        description="Work now is low or finished shop pieces, not sample DEMO codes. Sold in shop takes a walk-in piece off the site. Restock what arrived. Fix a count only when the shelf does not match."
       />
       <AdminGlance
         items={[
@@ -197,7 +197,7 @@ export default async function InventoryPage({
                 <th className="px-4 py-3 font-medium">On the shelf</th>
                 <th className="px-4 py-3 font-medium">In orders</th>
                 <th className="px-4 py-3 font-medium">To sell</th>
-                <th className="px-4 py-3 font-medium">Restock</th>
+                <th className="px-4 py-3 font-medium">Shop and restock</th>
                 <th className="px-4 py-3 font-medium">Piece</th>
               </tr>
             </thead>

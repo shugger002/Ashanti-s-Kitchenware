@@ -189,6 +189,7 @@ export function deskActionLabel(action: string) {
     "product.archive": "Removed a product",
     "product.sale_price": "Changed a sale price",
     "inventory.adjust": "Changed stock",
+    "inventory.sale": "Sold a piece in the shop",
     "inventory.csv": "Updated stock from a file",
     "order.transition": "Moved an order",
     "payments.capture": "Marked an order paid",

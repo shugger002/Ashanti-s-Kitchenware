@@ -133,7 +133,7 @@ export async function adjustStock(input: {
   reason: string;
   notes: string;
   actorUserId: string;
-  source?: "adjustment" | "restock";
+  source?: "adjustment" | "restock" | "sale";
 }): Promise<void> {
   await withTransaction(async (db) => {
     const locked = await db.query<{ on_hand: number; reserved: number }>(
@@ -154,7 +154,7 @@ export async function adjustStock(input: {
     await writeAuditLog(
       {
         actorUserId: input.actorUserId,
-        action: "inventory.adjust",
+        action: input.source === "sale" ? "inventory.sale" : "inventory.adjust",
         entityType: "inventory",
         entityId: input.inventoryId,
         metadata: { deltaOnHand: input.deltaOnHand, reason: input.reason },
