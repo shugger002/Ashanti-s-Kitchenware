@@ -7,7 +7,7 @@ export function CheckoutShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-full bg-background">
       <header className="sticky top-0 z-40 border-b border-border bg-background">
-        <div className="relative mx-auto flex h-14 max-w-6xl items-center justify-center px-3 lg:h-16 lg:justify-between lg:px-8">
+        <div className="relative mx-auto flex h-16 max-w-6xl items-center justify-center px-3 lg:justify-between lg:px-8">
           <Link
             href="/cart"
             className="absolute left-2 inline-flex min-h-11 items-center gap-0.5 pr-2 text-sm text-muted lg:static lg:left-auto"
@@ -15,8 +15,8 @@ export function CheckoutShell({ children }: { children: React.ReactNode }) {
             <ChevronLeft className="h-5 w-5" strokeWidth={1.75} aria-hidden />
             <span>Cart</span>
           </Link>
-          <Link href="/" className="flex max-w-[9.5rem] items-center lg:max-w-none" aria-label={brand.name}>
-            <StoreLogo className="h-7 w-auto max-w-[9.5rem] lg:h-9 lg:max-w-[13rem]" />
+          <Link href="/" className="flex max-w-[13.5rem] items-center lg:max-w-none" aria-label={brand.name}>
+            <StoreLogo className="h-10 w-auto max-w-[13.5rem] lg:h-11 lg:max-w-[16rem]" />
           </Link>
           <p className="absolute right-3 flex items-center gap-1.5 text-[11px] text-muted lg:static lg:text-xs">
             <Lock className="h-3.5 w-3.5" strokeWidth={1.75} aria-hidden />

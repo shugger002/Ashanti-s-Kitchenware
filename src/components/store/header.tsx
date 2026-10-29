@@ -86,7 +86,7 @@ export function StoreHeader({
 
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-background">
-      <div className="mx-auto flex h-14 max-w-6xl items-center gap-3 px-4 lg:h-16 lg:gap-8 lg:px-8">
+      <div className="mx-auto flex h-16 max-w-6xl items-center gap-3 px-4 lg:gap-8 lg:px-8">
         <button
           type="button"
           className="-ml-1 inline-flex size-11 shrink-0 items-center justify-center"
@@ -98,7 +98,7 @@ export function StoreHeader({
           {menuOpen ? <X className="h-5 w-5" strokeWidth={1.75} /> : <Menu className="h-5 w-5" strokeWidth={1.75} />}
         </button>
         <Link href="/" className="flex min-w-0 flex-1 items-center lg:flex-none" aria-label={brand.name}>
-          <StoreLogo className="h-7 w-auto max-w-[8.5rem] sm:h-8 sm:max-w-[12rem] lg:h-10 lg:max-w-[14rem]" />
+          <StoreLogo className="h-10 w-auto max-w-[min(13.5rem,calc(100vw-8.5rem))] sm:max-w-[14rem] lg:h-11 lg:max-w-[16rem]" />
         </Link>
         <nav className="hidden flex-1 items-center justify-center gap-7 text-[13px] lg:flex" aria-label="Primary">
           {desktop.map((item) => {
@@ -178,7 +178,7 @@ export function StoreHeader({
                 aria-label="Menu"
               >
                 <div className="flex items-center justify-between border-b border-border px-4 py-2">
-                  <StoreLogo className="h-7 w-auto max-w-[10rem]" />
+                  <StoreLogo className="h-10 w-auto max-w-[13rem]" />
                   <button
                     type="button"
                     className="inline-flex size-11 items-center justify-center"

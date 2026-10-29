@@ -138,7 +138,7 @@ function Nav({
       {!collapsed && showLogoCard ? (
         <div className="mx-4 mb-4 rounded-sm bg-white px-3 py-2">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={brand.logoSrc} alt="" className="h-7 w-auto max-w-[9rem] object-contain brightness-0" />
+          <img src={brand.logoSrc} alt="" className="h-10 w-auto max-w-[13rem] object-contain brightness-0" />
         </div>
       ) : null}
       <nav className="flex flex-1 flex-col gap-5 overflow-y-auto px-3 pb-4" aria-label="Admin">
@@ -292,7 +292,7 @@ export function AdminShell({ user, children }: { user: AdminUser; children: Reac
         </div>
       </aside>
       <div className="admin-desk-paper">
-        <header className="sticky top-0 z-30 flex h-14 items-center gap-2 border-b border-border bg-white px-3 lg:hidden">
+        <header className="sticky top-0 z-30 flex h-16 items-center gap-2 border-b border-border bg-white px-3 lg:hidden">
           <button
             type="button"
             className="inline-flex size-11 shrink-0 items-center justify-center"
@@ -303,8 +303,12 @@ export function AdminShell({ user, children }: { user: AdminUser; children: Reac
             <Menu className="h-5 w-5" />
           </button>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={brand.logoSrc} alt={brand.name} className="h-7 w-auto max-w-[8.5rem] object-contain brightness-0" />
-          <Link href="/" className="ml-auto inline-flex min-h-11 items-center text-sm text-accent">
+          <img
+            src={brand.logoSrc}
+            alt={brand.name}
+            className="h-10 w-auto max-w-[min(13.5rem,calc(100vw-8.5rem))] shrink-0 object-contain object-left brightness-0"
+          />
+          <Link href="/" className="ml-auto inline-flex min-h-11 shrink-0 items-center text-sm text-accent">
             Store
           </Link>
         </header>
