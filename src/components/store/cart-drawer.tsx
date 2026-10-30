@@ -24,7 +24,7 @@ export function CartDrawer() {
       <aside className="absolute inset-y-0 right-0 flex h-full w-full max-w-md flex-col bg-background shadow-[var(--shadow)] md:bg-surface">
         <div className="flex items-start justify-between gap-3 border-b border-border px-5 pt-[max(1rem,env(safe-area-inset-top))] pb-4">
           <div className="min-w-0 pt-1">
-            <h2 className="font-serif text-2xl tracking-tight text-pretty">My cart</h2>
+            <h2 className="font-sans text-2xl font-bold uppercase tracking-[0.12em]">My cart</h2>
             <p className="mt-0.5 text-sm text-muted tabular-nums">
               {count === 0 ? "Nothing in the bag yet" : count === 1 ? "1 piece" : `${count} pieces`}
             </p>
