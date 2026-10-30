@@ -24,7 +24,7 @@ export function CartDrawer() {
       <aside className="absolute inset-y-0 right-0 flex h-full w-full max-w-md flex-col bg-background shadow-[var(--shadow)] md:bg-surface">
         <div className="flex items-start justify-between gap-3 border-b border-border px-5 pt-[max(1rem,env(safe-area-inset-top))] pb-4">
           <div className="min-w-0 pt-1">
-            <h2 className="font-serif text-2xl tracking-tight text-pretty">Cart</h2>
+            <h2 className="font-serif text-2xl tracking-tight text-pretty">My cart</h2>
             <p className="mt-0.5 text-sm text-muted tabular-nums">
               {count === 0 ? "Nothing in the bag yet" : count === 1 ? "1 piece" : `${count} pieces`}
             </p>
@@ -41,7 +41,7 @@ export function CartDrawer() {
         <div className="flex-1 overflow-y-auto px-5 py-5">
           {items.length === 0 ? (
             <div className="pt-8">
-              <p className="text-pretty text-muted">Your cart is empty.</p>
+              <p className="text-pretty text-muted">My cart is empty.</p>
               <Link href="/shop" onClick={closeDrawer} className="mt-3 inline-flex min-h-11 items-center text-sm text-accent">
                 Continue shopping
               </Link>

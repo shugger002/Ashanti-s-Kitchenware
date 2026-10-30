@@ -20,12 +20,12 @@ export default function CartPage() {
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-6 pb-36 lg:px-8 lg:py-12 lg:pb-12">
-      <h1 className="text-3xl md:text-4xl">Cart</h1>
+      <h1 className="text-3xl md:text-4xl">My cart</h1>
       {!live ? (
         <p className="mt-10 text-muted">Loading cart…</p>
       ) : items.length === 0 ? (
         <p className="mt-10 text-muted">
-          Your cart is empty.{" "}
+          My cart is empty.{" "}
           <Link href="/shop" className="text-accent">
             Continue shopping
           </Link>

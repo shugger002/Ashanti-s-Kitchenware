@@ -83,7 +83,7 @@ export function CheckoutForm({
   if (items.length === 0) {
     return (
       <p className="px-4 py-16 text-center text-muted">
-        Your cart is empty.{" "}
+        My cart is empty.{" "}
         <Link href="/shop" className="text-accent">
           Continue shopping
         </Link>
