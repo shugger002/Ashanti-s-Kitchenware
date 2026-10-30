@@ -50,14 +50,14 @@ export function ProductCardActions({ product }: { product: ProductCard }) {
           showLabel={false}
         />
       </div>
-      <div className="mt-3 hidden items-center gap-2 group-data-[layout=list]/catalog:flex md:mt-4 md:flex">
+      <div className="mt-3 flex items-center gap-2 md:mt-4">
         <div className="hidden md:block">
           <QuantityStepper size="sm" value={qty} onChange={setQty} min={1} max={Math.max(product.available, 1)} />
         </div>
         <button
           type="button"
           disabled={!canAdd}
-          className={buttonClass("primary", "h-11 min-h-11 min-w-0 flex-1 px-3 text-sm")}
+          className={buttonClass("primary", "h-11 min-h-11 w-full min-w-0 flex-1 px-2 text-xs sm:px-3 sm:text-sm")}
           onClick={addLine}
         >
           {canAdd ? "Add to cart" : "Out of stock"}
