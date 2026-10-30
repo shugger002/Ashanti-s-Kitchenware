@@ -72,7 +72,7 @@ export function CatalogToolbar({
             placeholder="Search this aisle"
             enterKeyHint="search"
             autoComplete="off"
-            className="input w-full appearance-none py-3 pl-10"
+            className="input w-full appearance-none py-3 !pl-11 [&::-webkit-search-decoration]:hidden [&::-webkit-search-cancel-button]:appearance-none"
           />
         </label>
         <button type="submit" className="sr-only">
