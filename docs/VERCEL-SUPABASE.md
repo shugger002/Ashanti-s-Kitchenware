@@ -67,7 +67,7 @@ Leave payment keys empty to keep orders pending until staff record a verified pa
 
 4. After the first deploy, add the custom domain `ashantisakitchenware.com` and set `APP_URL` to `https://ashantisakitchenware.com`. Hubtel and Moolre callbacks must use that host.
 
-Webhook paths are unchanged: `/api/webhooks/hubtel` and the existing Moolre return URLs.
+Webhook paths: `/api/webhooks/hubtel` and `/api/webhooks/moolre`. Moolre also confirms a debit with `POST https://api.moolre.com/open/transact/status` if the callback is slow.
 
 ## 5. What this stack does not use
 

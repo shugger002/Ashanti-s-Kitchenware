@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { CheckoutShell } from "@/components/store/checkout-shell";
+import { MoolreAwait } from "@/components/store/moolre-await";
 import { pageMeta } from "@/lib/seo";
 import { query } from "@/server/db/pool";
 import { sql } from "@/server/db/sql";
@@ -35,6 +36,7 @@ export default async function SuccessPage({
               ? "Approve the Moolre prompt on your phone. This page is not proof of payment. We mark the order paid only after Moolre confirms the debit."
               : "Your order is recorded. It is not marked paid until Hubtel or Moolre confirms it, or the store records a verified payment."}
         </p>
+        {paymentStatus !== "paid" && awaiting === "momo" && ref ? <MoolreAwait publicRef={ref} /> : null}
         {ref ? (
           <p className="mt-4 text-sm">
             Order reference <strong>{ref}</strong>

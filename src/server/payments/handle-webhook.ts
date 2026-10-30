@@ -18,9 +18,6 @@ export async function handlePaymentWebhook(provider: PaymentProvider, request: R
     }
     return NextResponse.json({ received: true });
   } catch (error) {
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Webhook failed" },
-      { status: 400 },
-    );
+    return NextResponse.json({ error: "Webhook rejected" }, { status: 400 });
   }
 }

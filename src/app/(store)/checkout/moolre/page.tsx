@@ -11,9 +11,10 @@ export const metadata = pageMeta({
 export default async function MoolreOtpPage({
   searchParams,
 }: {
-  searchParams: Promise<{ ref?: string }>;
+  searchParams: Promise<{ ref?: string; channel?: string }>;
 }) {
-  const { ref } = await searchParams;
+  const { ref, channel } = await searchParams;
+  const momoChannel = channel === "6" || channel === "7" ? channel : "13";
   return (
     <CheckoutShell>
       <div className="mx-auto max-w-xl px-4 py-12 lg:px-8">
@@ -23,7 +24,7 @@ export default async function MoolreOtpPage({
           Moolre confirms the mobile-money debit.
         </p>
         {ref ? (
-          <MoolreOtpForm publicRef={ref} />
+          <MoolreOtpForm publicRef={ref} momoChannel={momoChannel} />
         ) : (
           <p className="mt-6 text-sm text-muted">Missing order reference. Return to checkout and try again.</p>
         )}

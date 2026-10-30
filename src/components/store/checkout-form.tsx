@@ -250,10 +250,13 @@ export function CheckoutForm({
             required
             name="phone"
             defaultValue={customer?.phone}
-            placeholder="Phone"
+            placeholder={payWith === "moolre" ? "Mobile money number" : "Phone"}
             className="input"
             autoComplete="tel"
           />
+          {payWith === "moolre" ? (
+            <p className="text-xs text-muted">Use the Ghana number that will receive the Moolre prompt (MTN, Telecel, or AT).</p>
+          ) : null}
           {method === "delivery" ? (
             <>
               <input required name="addressLine1" placeholder="Address" className="input" autoComplete="address-line1" />

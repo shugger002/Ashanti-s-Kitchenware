@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { submitMoolreOtp } from "@/app/(store)/checkout/moolre/actions";
 
-export function MoolreOtpForm({ publicRef }: { publicRef: string }) {
+export function MoolreOtpForm({ publicRef, momoChannel }: { publicRef: string; momoChannel: "13" | "6" | "7" }) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
@@ -27,25 +27,11 @@ export function MoolreOtpForm({ publicRef }: { publicRef: string }) {
       }}
     >
       <input type="hidden" name="ref" value={publicRef} />
+      <input type="hidden" name="momoChannel" value={momoChannel} />
       <label className="block text-sm">
         SMS code
         <input name="otp" required inputMode="numeric" autoComplete="one-time-code" className="input mt-1" />
       </label>
-      <fieldset className="space-y-2 text-sm">
-        <legend className="font-medium">Network</legend>
-        <label className="flex gap-2">
-          <input type="radio" name="momoChannel" value="13" defaultChecked />
-          MTN
-        </label>
-        <label className="flex gap-2">
-          <input type="radio" name="momoChannel" value="6" />
-          Telecel
-        </label>
-        <label className="flex gap-2">
-          <input type="radio" name="momoChannel" value="7" />
-          AT
-        </label>
-      </fieldset>
       {error ? <p className="text-sm text-red-800">{error}</p> : null}
       <Button type="submit" disabled={pending}>
         {pending ? "Sending…" : "Continue"}

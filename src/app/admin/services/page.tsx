@@ -3,7 +3,7 @@ import { query } from "@/server/db/pool";
 import { sql } from "@/server/db/sql";
 import { isProduction } from "@/server/env";
 import { isHubtelConfigured } from "@/server/payments/hubtel";
-import { isMoolreConfigured } from "@/server/payments/moolre";
+import { isMoolreConfigured, isMoolreWebhookConfigured, moolreCallbackUrl } from "@/server/payments/moolre";
 import { adminButton, AdminGlance, AdminPageHeader, AdminSection } from "@/components/admin/ui";
 import { isMailConfigured, sendEmail } from "@/server/notifications/email";
 import { getAnalyticsMeasurementId } from "@/server/env";
@@ -51,7 +51,15 @@ export default async function ServiceHealthPage({
     { label: "Shop email", value: smtpReady ? "Ready to send" : "Not set up yet", ok: smtpReady },
     { label: "Product photos", value: objectStorage, ok: photosOk },
     { label: "Hubtel", value: isHubtelConfigured() ? "Ready" : "Not set up yet", ok: isHubtelConfigured() },
-    { label: "Moolre", value: isMoolreConfigured() ? "Ready" : "Not set up yet", ok: isMoolreConfigured() },
+    {
+      label: "Moolre",
+      value: isMoolreConfigured()
+        ? isMoolreWebhookConfigured()
+          ? "Ready"
+          : "Keys set, callback secret missing"
+        : "Not set up yet",
+      ok: isMoolreConfigured() && isMoolreWebhookConfigured(),
+    },
     { label: "Paystack", value: process.env.PAYSTACK_SECRET_KEY ? "Ready" : "Not set up yet", ok: Boolean(process.env.PAYSTACK_SECRET_KEY) },
     {
       label: "Shop visits",
@@ -85,6 +93,20 @@ export default async function ServiceHealthPage({
           </li>
         ))}
       </ul>
+      <AdminSection className="mt-8 max-w-xl" title="Moolre">
+        <p className="text-sm leading-relaxed text-muted">
+          Mobile-money checkout posts to Moolre, waits for the phone prompt, and marks the order paid only after
+          Moolre confirms the debit. In the Moolre dashboard, set the payment callback to this URL and use the same
+          secret stored as MOOLRE_WEBHOOK_SECRET.
+        </p>
+        <p className="mt-3 break-all font-mono text-xs">{moolreCallbackUrl()}</p>
+        {!isMoolreConfigured() ? (
+          <p className="mt-3 text-sm text-accent">MOOLRE_API_USER, MOOLRE_API_PUBKEY, and MOOLRE_ACCOUNT_NUMBER are still empty.</p>
+        ) : null}
+        {isMoolreConfigured() && !isMoolreWebhookConfigured() ? (
+          <p className="mt-3 text-sm text-accent">MOOLRE_WEBHOOK_SECRET is empty. Status checks can still confirm a debit; the callback cannot.</p>
+        ) : null}
+      </AdminSection>
       <AdminSection className="mt-8 max-w-xl" title="Shop email">
         <p className="text-sm leading-relaxed text-muted">
           The shop inbox is {config.contact.email}. Contact messages, paid-order notices, and staff password
