@@ -33,7 +33,7 @@ export async function CatalogPage({
       : params.featured === "1"
         ? "featured"
         : "newest";
-  const extraOpen = Boolean(params.min || params.max || params.stock);
+  const extraOpen = Boolean(params.min?.trim() || params.max?.trim() || params.stock === "1");
   const [{ items, total, pageSize }, categories, popular] = await Promise.all([
     searchProducts({
       q: params.q?.trim() || undefined,
@@ -92,8 +92,8 @@ export async function CatalogPage({
         params={params}
         sort={sort}
         extraOpen={extraOpen}
-        basePath={basePath}
-        category={params.category}
+        actionPath={basePath === "/shop" && params.category ? `/shop/${params.category}` : basePath}
+        categoryInPath={basePath === "/shop" && Boolean(params.category)}
       />
 
       <ul className="-mx-4 mt-2 flex flex-nowrap gap-2 overflow-x-auto px-4 text-sm touch-manipulation [scrollbar-width:none] md:mx-0 md:mt-3 md:flex-wrap md:overflow-visible md:px-0 [&::-webkit-scrollbar]:hidden">
