@@ -1,7 +1,20 @@
 import { query } from "@/server/db/pool";
 import { sql } from "@/server/db/sql";
 import { hashPassword, verifyPassword } from "@/server/auth/password";
-import { hitRateLimit, isLoginBlocked, recordAuthFailure, recordLoginAttempt } from "@/server/auth/rate-limit";
+import {
+  hitRateLimit,
+  isIdentifierThrottled,
+  isIpRateLimited,
+  recordAuthFailure,
+  recordIpFailure,
+  recordLoginAttempt,
+} from "@/server/auth/rate-limit";
+import {
+  LOGIN_LOCK_MESSAGE,
+  clearCustomerLoginLockout,
+  isAccountLocked,
+  registerCustomerLoginFailure,
+} from "@/server/auth/lockout";
 import { createCustomerSession } from "@/server/customers/session";
 
 const MIN_PASSWORD = 10;
@@ -79,16 +92,24 @@ export async function authenticateCustomer(input: {
   const email = input.email.trim().toLowerCase();
   const key = `customer:${email}`;
   try {
-    if (await isLoginBlocked(key, input.ip)) {
-      return { ok: false, error: "Too many failed attempts. Try again in 15 minutes." };
+    if ((await isIpRateLimited(input.ip)) || (await isIdentifierThrottled(key))) {
+      return { ok: false, error: LOGIN_LOCK_MESSAGE };
     }
   } catch (error) {
     console.error("login rate limit skipped", error);
   }
-  const result = await query<{ id: string; password_hash: string | null }>(
-    sql`SELECT id, password_hash FROM customers WHERE lower(email) = ${email} AND password_hash IS NOT NULL`,
+  const result = await query<{
+    id: string;
+    password_hash: string | null;
+    locked_until: Date | string | null;
+  }>(
+    sql`SELECT id, password_hash, locked_until FROM customers WHERE lower(email) = ${email} AND password_hash IS NOT NULL`,
   );
   const row = result.rows[0];
+  if (row && isAccountLocked(row.locked_until)) {
+    await recordIpFailure(input.ip);
+    return { ok: false, error: LOGIN_LOCK_MESSAGE };
+  }
   if (!row?.password_hash) {
     await recordAuthFailure(key, input.ip);
     return { ok: false, error: "Invalid email or password." };
@@ -96,8 +117,10 @@ export async function authenticateCustomer(input: {
   const valid = await verifyPassword(row.password_hash, input.password);
   if (!valid) {
     await recordAuthFailure(key, input.ip);
+    await registerCustomerLoginFailure(row.id);
     return { ok: false, error: "Invalid email or password." };
   }
+  await clearCustomerLoginLockout(row.id);
   await recordLoginAttempt({ identifier: key, success: true, ip: input.ip });
   const token = await createCustomerSession({
     customerId: row.id,

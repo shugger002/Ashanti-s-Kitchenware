@@ -1,7 +1,19 @@
 import { query } from "@/server/db/pool";
 import { sql } from "@/server/db/sql";
 import { hashPassword, verifyPassword } from "@/server/auth/password";
-import { isLoginBlocked, recordAuthFailure, recordLoginAttempt } from "@/server/auth/rate-limit";
+import {
+  isIdentifierThrottled,
+  isIpRateLimited,
+  recordAuthFailure,
+  recordIpFailure,
+  recordLoginAttempt,
+} from "@/server/auth/rate-limit";
+import {
+  LOGIN_LOCK_MESSAGE,
+  clearUserLoginLockout,
+  isAccountLocked,
+  registerUserLoginFailure,
+} from "@/server/auth/lockout";
 import { createSession } from "@/server/auth/session";
 import { writeAuditLog } from "@/server/auth/audit";
 import type { RoleSlug } from "@/server/auth/types";
@@ -14,8 +26,8 @@ export async function authenticateAdmin(input: {
 }): Promise<{ ok: true; token: string } | { ok: false; error: string }> {
   const email = input.email.trim().toLowerCase();
   try {
-    if (await isLoginBlocked(email, input.ip)) {
-      return { ok: false, error: "Too many failed attempts. Try again in 15 minutes." };
+    if ((await isIpRateLimited(input.ip)) || (await isIdentifierThrottled(email))) {
+      return { ok: false, error: LOGIN_LOCK_MESSAGE };
     }
   } catch (error) {
     console.error("admin login rate limit skipped", error);
@@ -25,8 +37,9 @@ export async function authenticateAdmin(input: {
     id: string;
     password_hash: string;
     is_active: boolean;
+    locked_until: Date | string | null;
   }>(sql`
-    SELECT u.id, u.password_hash, u.is_active
+    SELECT u.id, u.password_hash, u.is_active, u.locked_until
      FROM users u
      JOIN user_roles ur ON ur.user_id = u.id
      WHERE lower(u.email) = ${email}
@@ -34,6 +47,10 @@ export async function authenticateAdmin(input: {
      HAVING count(ur.role_slug) > 0
   `);
   const user = result.rows[0];
+  if (user && isAccountLocked(user.locked_until)) {
+    await recordIpFailure(input.ip);
+    return { ok: false, error: LOGIN_LOCK_MESSAGE };
+  }
   if (!user || !user.is_active) {
     await recordAuthFailure(email, input.ip);
     return { ok: false, error: "Invalid email or password." };
@@ -42,9 +59,11 @@ export async function authenticateAdmin(input: {
   const valid = await verifyPassword(user.password_hash, input.password);
   if (!valid) {
     await recordAuthFailure(email, input.ip);
+    await registerUserLoginFailure(user.id);
     return { ok: false, error: "Invalid email or password." };
   }
 
+  await clearUserLoginLockout(user.id);
   await recordLoginAttempt({ identifier: email, success: true, ip: input.ip });
   const token = await createSession({
     userId: user.id,
