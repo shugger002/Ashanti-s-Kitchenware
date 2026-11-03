@@ -33,7 +33,7 @@ export function CategoryTabs({ tabs, activeSlug }: { tabs: CategoryTab[]; active
               data-active={active ? "true" : "false"}
               aria-current={active ? "page" : undefined}
               className={cn(
-                "inline-flex h-9 max-w-[11rem] items-center truncate rounded-sm px-3 text-sm font-medium transition-colors duration-200",
+                "inline-flex h-9 items-center whitespace-nowrap rounded-sm px-3 text-sm font-medium transition-colors duration-200",
                 active ? "bg-accent text-white" : "border border-border bg-surface text-foreground",
               )}
             >

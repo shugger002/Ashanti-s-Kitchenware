@@ -28,6 +28,16 @@ import {
   Wind,
 } from "lucide-react";
 
+const NAV_NAME: Record<string, string> = {
+  "kitchen-appliances": "Appliances",
+  "storage-insulation": "Storage",
+  "home-essentials": "Home",
+};
+
+export function categoryNavName(slug: string, name: string) {
+  return NAV_NAME[slug] ?? name;
+}
+
 const BY_SLUG: Record<string, LucideIcon> = {
   cookware: CookingPot,
   "cookware-sets": Layers,

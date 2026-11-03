@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ChevronRight, Search } from "lucide-react";
-import { CategoryGlyph } from "@/components/store/category-icon";
+import { CategoryGlyph, categoryNavName } from "@/components/store/category-icon";
 import { CategoryTabs } from "@/components/store/category-tabs";
 import { ProductRow } from "@/components/store/product-row";
 import { cn } from "@/lib/utils";
@@ -46,7 +46,7 @@ function railFor(
       {
         href: `/shop/${parent.slug}`,
         slug: "all",
-        name: `All ${parent.name}`,
+        name: `All ${categoryNavName(parent.slug, parent.name)}`,
         active: !selected || selected.id === parent.id,
       },
       ...children.map((child) => ({
@@ -66,14 +66,14 @@ function railFor(
         .map((c) => ({
           href: `/shop/${c.slug}`,
           slug: c.slug,
-          name: c.name,
+          name: categoryNavName(c.slug, c.name),
           active: false,
         })),
     ];
   }
 
   return [
-    { href: aisleHref(selected.slug, "all"), slug: "all", name: `All ${selected.name}`, active: view === "all" },
+    { href: aisleHref(selected.slug, "all"), slug: "all", name: `All ${categoryNavName(selected.slug, selected.name)}`, active: view === "all" },
     { href: aisleHref(selected.slug, "new"), slug: "new", name: "New", active: view === "new" },
     { href: aisleHref(selected.slug, "featured"), slug: "featured", name: "Featured", active: view === "featured" },
     { href: aisleHref(selected.slug, "sale"), slug: "sale", name: "Promo", active: view === "sale" },
@@ -134,7 +134,7 @@ export async function CategoryBrowse({ params }: { params: CatalogSearch }) {
   const heading = headingFor(selected, view);
   const tabs = [
     { href: "/shop", slug: "all", name: "All" },
-    ...tops.map((c) => ({ href: `/shop/${c.slug}`, slug: c.slug, name: c.name })),
+    ...tops.map((c) => ({ href: `/shop/${c.slug}`, slug: c.slug, name: categoryNavName(c.slug, c.name) })),
   ];
   const activeTab = parent?.slug ?? selected?.slug ?? "all";
 
@@ -187,7 +187,7 @@ export async function CategoryBrowse({ params }: { params: CatalogSearch }) {
                     <span className="absolute inset-y-2 left-0 w-0.5 bg-accent" aria-hidden />
                   ) : null}
                   <CategoryGlyph slug={item.slug} className="size-5 shrink-0 md:size-4" />
-                  <span className="hidden text-sm md:inline">{item.name}</span>
+                  <span className="hidden whitespace-nowrap text-sm md:inline">{item.name}</span>
                 </Link>
               </li>
             ))}
