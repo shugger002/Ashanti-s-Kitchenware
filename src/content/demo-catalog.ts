@@ -68,8 +68,8 @@ const demos: DemoProduct[] = [
     salePrice: "2799.00",
     description:
       "Upright blender with a clear jug. Demo listing: wattage and plug type must be verified before publishing live.",
-    categorySlug: "kitchen-appliances",
-    categoryName: "Kitchen Appliances",
+    categorySlug: "blenders",
+    categoryName: "Blenders",
     image: "/demo/blender.jpg",
     featured: true,
     available: 12,
@@ -103,8 +103,8 @@ const demos: DemoProduct[] = [
     salePrice: "1299.00",
     description:
       "Cordless kettle shown with a 3-pin plug. Demo listing: confirm litre size against stock.",
-    categorySlug: "kitchen-appliances",
-    categoryName: "Kitchen Appliances",
+    categorySlug: "kettles",
+    categoryName: "Kettles",
     image: "/demo/kettle.jpg",
     featured: true,
     available: 25,
@@ -142,8 +142,8 @@ const demos: DemoProduct[] = [
     price: "2399.00",
     description:
       "Family-size rice cooker with a glass lid. Demo listing: confirm litre mark and plug before sale.",
-    categorySlug: "kitchen-appliances",
-    categoryName: "Kitchen Appliances",
+    categorySlug: "rice-cookers",
+    categoryName: "Rice cookers",
     image: "/demo/rice-cooker.jpg",
     isNew: true,
     available: 19,
