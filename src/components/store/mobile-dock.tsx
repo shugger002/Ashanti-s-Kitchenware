@@ -2,12 +2,12 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Heart, House, Search, ShoppingBag, Store } from "lucide-react";
+import { House, ShoppingBag, Store, User } from "lucide-react";
 import { useCart } from "@/components/store/cart-provider";
 import { useClientMounted } from "@/lib/use-client-mounted";
 import { cn } from "@/lib/utils";
 
-export function MobileDock({ onSearch }: { onSearch: () => void }) {
+export function MobileDock({ signedIn = false }: { signedIn?: boolean }) {
   const { count, openDrawer } = useCart();
   const pathname = usePathname();
   const cartCount = useClientMounted() ? count : 0;
@@ -16,11 +16,13 @@ export function MobileDock({ onSearch }: { onSearch: () => void }) {
     pathname === "/products" ||
     pathname.startsWith("/shop/") ||
     pathname.startsWith("/products/");
-  const item =
-    "flex min-h-12 flex-col items-center justify-center gap-1 py-2";
+  const accountHref = signedIn ? "/account" : "/login";
+  const accountActive = pathname === "/account" || pathname === "/login" || pathname === "/register";
+  const item = "flex min-h-12 flex-col items-center justify-center gap-1 py-2";
+
   return (
     <nav
-      className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-5 border-t border-border bg-background/95 pb-[max(0.35rem,env(safe-area-inset-bottom))] text-[11px] lg:hidden"
+      className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-4 border-t border-border bg-surface pb-[max(0.35rem,env(safe-area-inset-bottom))] text-[11px] lg:hidden"
       aria-label="Mobile shortcuts"
     >
       <Link href="/" className={cn(item, pathname === "/" && "text-accent")} aria-current={pathname === "/" ? "page" : undefined}>
@@ -28,24 +30,12 @@ export function MobileDock({ onSearch }: { onSearch: () => void }) {
         Home
       </Link>
       <Link
-        href="/products"
+        href="/shop"
         className={cn(item, shopActive && "text-accent")}
         aria-current={shopActive ? "page" : undefined}
       >
         <Store className="h-5 w-5" strokeWidth={1.5} />
-        Shop
-      </Link>
-      <button type="button" className={item} onClick={onSearch}>
-        <Search className="h-5 w-5" strokeWidth={1.5} />
-        Search
-      </button>
-      <Link
-        href="/wishlist"
-        className={cn(item, pathname === "/wishlist" && "text-accent")}
-        aria-current={pathname === "/wishlist" ? "page" : undefined}
-      >
-        <Heart className="h-5 w-5" strokeWidth={1.5} />
-        Saved
+        Category
       </Link>
       <button
         type="button"
@@ -60,6 +50,14 @@ export function MobileDock({ onSearch }: { onSearch: () => void }) {
         ) : null}
         Cart
       </button>
+      <Link
+        href={accountHref}
+        className={cn(item, accountActive && "text-accent")}
+        aria-current={accountActive ? "page" : undefined}
+      >
+        <User className="h-5 w-5" strokeWidth={1.5} />
+        Account
+      </Link>
     </nav>
   );
 }

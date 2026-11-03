@@ -193,7 +193,11 @@ async function searchProductsLive(filters: ShopFilters): Promise<{
     );
   }
   if (filters.category) {
-    where.push(sql`c.slug = ${resolveCategorySlug(filters.category)}`);
+    const categorySlug = resolveCategorySlug(filters.category);
+    where.push(sql`(
+      c.slug = ${categorySlug}
+      OR c.parent_id = (SELECT id FROM categories WHERE slug = ${categorySlug} LIMIT 1)
+    )`);
   }
   if (filters.minPrice != null) {
     where.push(sql`COALESCE(p.sale_price, p.price) >= ${filters.minPrice}`);

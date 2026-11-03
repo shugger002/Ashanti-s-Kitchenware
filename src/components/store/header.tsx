@@ -98,7 +98,7 @@ export function StoreHeader({
           {menuOpen ? <X className="h-5 w-5" strokeWidth={1.75} /> : <Menu className="h-5 w-5" strokeWidth={1.75} />}
         </button>
         <Link href="/" className="flex min-w-0 flex-1 items-center lg:flex-none" aria-label={brand.name}>
-          <StoreLogo className="h-10 w-auto max-w-[min(13.5rem,calc(100vw-8.5rem))] sm:max-w-[14rem] lg:h-11 lg:max-w-[16rem]" />
+          <StoreLogo className="h-10 w-auto max-w-[min(13.5rem,calc(100vw-11rem))] sm:max-w-[14rem] lg:h-11 lg:max-w-[16rem]" />
         </Link>
         <nav className="hidden flex-1 items-center justify-center gap-7 text-[13px] lg:flex" aria-label="Primary">
           {desktop.map((item) => {
@@ -140,7 +140,12 @@ export function StoreHeader({
           <span className="hidden lg:inline-flex">
             <ThemeToggle />
           </span>
-          <button type="button" aria-label="Search products" className="hidden lg:inline-flex" onClick={onSearch}>
+          <button
+            type="button"
+            aria-label="Search products"
+            className="inline-flex size-11 items-center justify-center"
+            onClick={onSearch}
+          >
             <Search className="h-5 w-5" strokeWidth={1.5} />
           </button>
           <Link href="/wishlist" aria-label={`Wishlist, ${savedCount} items`} className="relative hidden lg:inline-flex">

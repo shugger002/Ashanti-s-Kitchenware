@@ -28,7 +28,7 @@ export function StoreChrome({
         onSearch={() => setSearchOpen(true)}
       />
       <SearchOverlay open={searchOpen} onClose={() => setSearchOpen(false)} hints={searchHints} />
-      {menuOpen || searchOpen ? null : <MobileDock onSearch={() => setSearchOpen(true)} />}
+      {menuOpen || searchOpen ? null : <MobileDock signedIn={signedIn} />}
     </>
   );
 }

@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
-import { CatalogPage, type CatalogSearch } from "@/components/store/catalog-page";
+import { CategoryBrowse } from "@/components/store/category-browse";
+import type { CatalogSearch } from "@/components/store/catalog-page";
 import { pageMeta } from "@/lib/seo";
 import { getCategoryBySlug } from "@/server/catalog/queries";
 
@@ -25,5 +26,5 @@ export default async function CategoryPage({
   const cat = await getCategoryBySlug(category);
   if (!cat) notFound();
   const query = await searchParams;
-  return <CatalogPage params={{ ...query, category: cat.slug }} basePath="/shop" heading={cat.name} />;
+  return <CategoryBrowse params={{ ...query, category: cat.slug }} />;
 }

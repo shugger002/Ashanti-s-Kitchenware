@@ -44,6 +44,44 @@ export function CatalogPageSkeleton() {
   );
 }
 
+export function CategoryBrowseSkeleton() {
+  return (
+    <div className="pb-24" aria-busy="true" aria-label="Loading categories">
+      <div className="border-b border-border px-4 pt-3">
+        <Skeleton className="h-10 w-full rounded-sm" />
+        <div className="mt-3 flex gap-2 overflow-hidden pb-3">
+          {Array.from({ length: 6 }, (_, index) => (
+            <Skeleton key={index} className="h-9 w-24 shrink-0 rounded-sm" />
+          ))}
+        </div>
+      </div>
+      <div className="flex">
+        <div className="w-[15vw] min-w-16 max-w-[5.125rem] space-y-2 p-2">
+          {Array.from({ length: 5 }, (_, index) => (
+            <Skeleton key={index} className="mx-auto size-10 rounded-sm" />
+          ))}
+        </div>
+        <div className="min-w-0 flex-1 px-3 py-3">
+          <Skeleton className="w-full rounded-sm" style={{ aspectRatio: "2.9 / 1" }} />
+          <div className="mt-3 rounded-sm bg-surface p-3">
+            <Skeleton className="h-6 w-40" />
+            {Array.from({ length: 4 }, (_, index) => (
+              <div key={index} className="mt-4 flex gap-3">
+                <Skeleton className="size-[4.75rem] shrink-0 rounded-sm" />
+                <div className="min-w-0 flex-1">
+                  <Skeleton className="h-4 w-4/5" />
+                  <Skeleton className="mt-2 h-3 w-24" />
+                  <Skeleton className="mt-2 h-4 w-20" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function HomePageSkeleton() {
   return (
     <div aria-busy="true" aria-label="Loading shop">

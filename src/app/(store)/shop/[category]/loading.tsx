@@ -1,5 +1,5 @@
-import { CatalogPageSkeleton } from "@/components/ui/skeleton";
+import { CategoryBrowseSkeleton } from "@/components/ui/skeleton";
 
 export default function CategoryLoading() {
-  return <CatalogPageSkeleton />;
+  return <CategoryBrowseSkeleton />;
 }
