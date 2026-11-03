@@ -2,7 +2,7 @@ import Link from "next/link";
 import { ChevronRight, Search } from "lucide-react";
 import { CategoryGlyph, categoryNavName } from "@/components/store/category-icon";
 import { CategoryTabs } from "@/components/store/category-tabs";
-import { ProductRow } from "@/components/store/product-row";
+import { ProductCardView } from "@/components/store/product-card";
 import { cn } from "@/lib/utils";
 import { listCategories, searchProducts } from "@/server/catalog/queries";
 import type { Category, ProductCard } from "@/server/catalog/types";
@@ -204,7 +204,7 @@ export async function CategoryBrowse({ params }: { params: CatalogSearch }) {
             <div className="rounded-sm bg-surface" style={{ aspectRatio: "2.9 / 1" }} aria-hidden />
           )}
 
-          <section className="mt-3 rounded-sm bg-surface px-3 py-3 md:mt-4 md:px-4">
+          <section className="mt-3 md:mt-4">
             <div className="flex items-center justify-between gap-3">
               <h2 className="font-serif text-lg tracking-tight md:text-xl">{heading.title}</h2>
               <Link href={heading.href} className="inline-flex size-9 items-center justify-center text-muted" aria-label={`See all ${heading.title}`}>
@@ -215,10 +215,10 @@ export async function CategoryBrowse({ params }: { params: CatalogSearch }) {
             {items.length === 0 ? (
               <p className="mt-6 text-pretty text-sm text-muted">Nothing in this aisle yet. Try another category.</p>
             ) : (
-              <ul className="mt-1 lg:grid lg:grid-cols-2 lg:gap-x-8">
+              <ul className="mt-3 grid grid-cols-2 gap-x-3 gap-y-6 sm:gap-x-4 sm:gap-y-8 md:grid-cols-3">
                 {items.map((product, index) => (
                   <li key={product.id}>
-                    <ProductRow product={product} priority={index < 2} />
+                    <ProductCardView product={product} priority={index < 4} />
                   </li>
                 ))}
               </ul>

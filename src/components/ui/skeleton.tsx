@@ -63,18 +63,17 @@ export function CategoryBrowseSkeleton() {
         </div>
         <div className="min-w-0 flex-1 px-3 py-3">
           <Skeleton className="w-full rounded-sm" style={{ aspectRatio: "2.9 / 1" }} />
-          <div className="mt-3 rounded-sm bg-surface p-3">
+          <div className="mt-3">
             <Skeleton className="h-6 w-40" />
-            {Array.from({ length: 4 }, (_, index) => (
-              <div key={index} className="mt-4 flex gap-3">
-                <Skeleton className="size-[4.75rem] shrink-0 rounded-sm" />
-                <div className="min-w-0 flex-1">
-                  <Skeleton className="h-4 w-4/5" />
-                  <Skeleton className="mt-2 h-3 w-24" />
-                  <Skeleton className="mt-2 h-4 w-20" />
+            <div className="mt-3 grid grid-cols-2 gap-3">
+              {Array.from({ length: 4 }, (_, index) => (
+                <div key={index}>
+                  <Skeleton className="aspect-square w-full rounded-sm" />
+                  <Skeleton className="mt-2 h-4 w-4/5" />
+                  <Skeleton className="mt-2 h-4 w-16" />
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
       </div>
