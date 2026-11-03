@@ -13,8 +13,18 @@ const DEMO_CATEGORIES: Category[] = [
   { id: "demo-cat-cooking-pots", slug: "cooking-pots", name: "Cooking pots", description: "Large round and rectangle cooking pots.", imageUrl: null, sortOrder: 13, isActive: true, parentId: "demo-cat-cookware" },
   { id: "demo-cat-appliances", slug: "kitchen-appliances", name: "Kitchen Appliances", description: "Blenders, cookers, fryers, and related appliances.", imageUrl: "/demo/blender.jpg", sortOrder: 20, isActive: true, parentId: null },
   { id: "demo-cat-tableware", slug: "tableware", name: "Tableware", description: "Plates, serving pieces, and dining sets.", imageUrl: "/demo/tableware.jpg", sortOrder: 30, isActive: true, parentId: null },
+  { id: "demo-cat-cutlery", slug: "cutlery", name: "Cutlery", description: "Spoons and cutlery sets.", imageUrl: null, sortOrder: 31, isActive: true, parentId: "demo-cat-tableware" },
+  { id: "demo-cat-drinkware", slug: "drinkware", name: "Drinkware", description: "Cups and drinking pieces.", imageUrl: null, sortOrder: 32, isActive: true, parentId: "demo-cat-tableware" },
   { id: "demo-cat-storage", slug: "storage-insulation", name: "Insulation & Food Storage", description: "Racks, lunch boxes, insulation, and food storage.", imageUrl: "/demo/storage-rack.jpg", sortOrder: 40, isActive: true, parentId: null },
+  { id: "demo-cat-food-storage", slug: "food-storage", name: "Food storage", description: "Boxes and food containers.", imageUrl: null, sortOrder: 41, isActive: true, parentId: "demo-cat-storage" },
+  { id: "demo-cat-cool-boxes", slug: "cool-boxes", name: "Cool boxes", description: "Insulated cool boxes.", imageUrl: null, sortOrder: 42, isActive: true, parentId: "demo-cat-storage" },
+  { id: "demo-cat-shoe-racks", slug: "shoe-racks", name: "Shoe racks", description: "Shoe racks.", imageUrl: null, sortOrder: 43, isActive: true, parentId: "demo-cat-storage" },
   { id: "demo-cat-home", slug: "home-essentials", name: "Home Essentials", description: "Household items sold alongside the kitchen range.", imageUrl: "/demo/kettle.jpg", sortOrder: 50, isActive: true, parentId: null },
+  { id: "demo-cat-furniture", slug: "furniture", name: "Furniture", description: "Chairs, tables, sofas, and dressing tables.", imageUrl: null, sortOrder: 51, isActive: true, parentId: "demo-cat-home" },
+  { id: "demo-cat-outdoor", slug: "outdoor-shade", name: "Outdoor shade", description: "Sunshades, awnings, and outdoor seating.", imageUrl: null, sortOrder: 52, isActive: true, parentId: "demo-cat-home" },
+  { id: "demo-cat-fans", slug: "fans", name: "Fans", description: "Desk, mini, and handheld fans.", imageUrl: null, sortOrder: 53, isActive: true, parentId: "demo-cat-home" },
+  { id: "demo-cat-ac", slug: "air-conditioners", name: "Air conditioners", description: "Room air conditioners.", imageUrl: null, sortOrder: 54, isActive: true, parentId: "demo-cat-home" },
+  { id: "demo-cat-soap", slug: "soap-dispensers", name: "Soap dispensers", description: "Press and sensor soap dispensers.", imageUrl: null, sortOrder: 55, isActive: true, parentId: "demo-cat-home" },
 ];
 
 function available(onHand: string | number, reserved: string | number): number {
