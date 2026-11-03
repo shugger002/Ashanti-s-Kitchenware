@@ -8,6 +8,9 @@ import { isUuid } from "@/lib/utils";
 
 const DEMO_CATEGORIES: Category[] = [
   { id: "demo-cat-cookware", slug: "cookware", name: "Cookware", description: "Pots, pans, and sets.", imageUrl: "/demo/pot-set.jpg", sortOrder: 10, isActive: true, parentId: null },
+  { id: "demo-cat-cookware-sets", slug: "cookware-sets", name: "Cookware sets", description: "Multi-piece pot and pan sets.", imageUrl: "/demo/pot-set.jpg", sortOrder: 11, isActive: true, parentId: "demo-cat-cookware" },
+  { id: "demo-cat-soup-pots", slug: "soup-pots", name: "Soup pots", description: "Single soup pots.", imageUrl: null, sortOrder: 12, isActive: true, parentId: "demo-cat-cookware" },
+  { id: "demo-cat-cooking-pots", slug: "cooking-pots", name: "Cooking pots", description: "Large round and rectangle cooking pots.", imageUrl: null, sortOrder: 13, isActive: true, parentId: "demo-cat-cookware" },
   { id: "demo-cat-appliances", slug: "kitchen-appliances", name: "Kitchen Appliances", description: "Blenders, cookers, fryers, and related appliances.", imageUrl: "/demo/blender.jpg", sortOrder: 20, isActive: true, parentId: null },
   { id: "demo-cat-tableware", slug: "tableware", name: "Tableware", description: "Plates, serving pieces, and dining sets.", imageUrl: "/demo/tableware.jpg", sortOrder: 30, isActive: true, parentId: null },
   { id: "demo-cat-storage", slug: "storage-insulation", name: "Insulation & Food Storage", description: "Racks, lunch boxes, insulation, and food storage.", imageUrl: "/demo/storage-rack.jpg", sortOrder: 40, isActive: true, parentId: null },
@@ -81,10 +84,17 @@ export async function countOnSaleProducts(): Promise<number> {
 function demoSearch(filters: ShopFilters) {
   const page = Math.max(1, filters.page ?? 1);
   const pageSize = Math.min(48, Math.max(1, filters.pageSize ?? 12));
-  const all = filterDemoProducts({
+  const resolved = filters.category ? resolveCategorySlug(filters.category) : undefined;
+  const current = resolved ? DEMO_CATEGORIES.find((c) => c.slug === resolved) : undefined;
+  const childSlugs = current ? DEMO_CATEGORIES.filter((c) => c.parentId === current.id).map((c) => c.slug) : [];
+  let all = filterDemoProducts({
     ...filters,
-    category: filters.category ? resolveCategorySlug(filters.category) : undefined,
+    category: resolved && childSlugs.length === 0 ? resolved : undefined,
   });
+  if (resolved && childSlugs.length > 0) {
+    const allowed = new Set([resolved, ...childSlugs]);
+    all = all.filter((p) => p.categorySlug && allowed.has(p.categorySlug));
+  }
   const start = (page - 1) * pageSize;
   return {
     items: all.slice(start, start + pageSize),

@@ -4,9 +4,11 @@ import {
   Box,
   CookingPot,
   House,
+  Layers,
   LayoutGrid,
   PackageCheck,
   Percent,
+  Soup,
   Sparkles,
   Star,
   UtensilsCrossed,
@@ -14,6 +16,9 @@ import {
 
 const BY_SLUG: Record<string, LucideIcon> = {
   cookware: CookingPot,
+  "cookware-sets": Layers,
+  "soup-pots": Soup,
+  "cooking-pots": CookingPot,
   "kitchen-appliances": Blender,
   tableware: UtensilsCrossed,
   "storage-insulation": Box,

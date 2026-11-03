@@ -110,7 +110,7 @@ export async function CatalogPage({
             All
           </Link>
         </li>
-        {categories.map((c) => (
+        {categories.filter((c) => !c.parentId).map((c) => (
           <li key={c.id} id={c.slug}>
             {c.slug === "cookware" ? <span id="cooking-ware" className="sr-only" /> : null}
             {c.slug === "storage-insulation" ? <span id="insulations" className="sr-only" /> : null}

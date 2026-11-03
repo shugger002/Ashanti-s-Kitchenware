@@ -45,7 +45,7 @@ function railFor(
     return [
       {
         href: `/shop/${parent.slug}`,
-        slug: parent.slug,
+        slug: "all",
         name: `All ${parent.name}`,
         active: !selected || selected.id === parent.id,
       },

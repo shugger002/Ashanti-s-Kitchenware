@@ -29,8 +29,8 @@ const demos: DemoProduct[] = [
     price: "6199.00",
     description:
       "A stacked stainless cooking set for family meals. Demo listing: confirm price, contents, and photograph against real stock before sale.",
-    categorySlug: "cookware",
-    categoryName: "Cookware",
+    categorySlug: "cookware-sets",
+    categoryName: "Cookware sets",
     image: "/demo/pot-set.jpg",
     featured: true,
     available: 7,
@@ -43,8 +43,8 @@ const demos: DemoProduct[] = [
     price: "7499.00",
     description:
       "Heavy enamel-coated pot for stews. Demo listing: replace this photograph with the actual piece in the Accra shop.",
-    categorySlug: "cookware",
-    categoryName: "Cookware",
+    categorySlug: "cooking-pots",
+    categoryName: "Cooking pots",
     image: "/demo/dutch-oven.jpg",
     featured: true,
     isNew: true,

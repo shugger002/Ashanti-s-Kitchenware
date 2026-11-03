@@ -29,6 +29,7 @@ export default async function HomePage() {
     searchProducts({ isNew: true, pageSize: 12 }),
     searchProducts({ pageSize: 16 }),
   ]);
+  const aisles = categories.filter((category) => !category.parentId);
   const mix = featured.items.length > 0 ? featured.items : catalogue.items;
   const extraArrivals = arrivals.items.filter(
     (p) => !mix.some((f) => f.id === p.id) && !promo.items.some((sale) => sale.id === p.id),
@@ -67,7 +68,7 @@ export default async function HomePage() {
           ) : null}
         </div>
         <ul className="mx-auto mt-8 grid max-w-6xl grid-cols-2 items-stretch gap-2.5 px-4 md:mt-10 md:gap-3 lg:grid-cols-3 lg:px-8 [&>li:last-child]:col-span-2 lg:[&>li:last-child]:col-span-1">
-          {categories.map((category) => (
+          {aisles.map((category) => (
             <li
               key={category.id}
               className="h-full"
