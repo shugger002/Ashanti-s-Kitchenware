@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { submitMoolreOtp } from "@/app/(store)/checkout/moolre/actions";
+import { shopperError } from "@/lib/user-error";
 
 export function MoolreOtpForm({ publicRef, momoChannel }: { publicRef: string; momoChannel: "13" | "6" | "7" }) {
   const router = useRouter();
@@ -15,15 +16,21 @@ export function MoolreOtpForm({ publicRef, momoChannel }: { publicRef: string; m
       className="mt-8 space-y-4"
       onSubmit={async (event) => {
         event.preventDefault();
+        if (pending) return;
         setPending(true);
         setError(null);
-        const result = await submitMoolreOtp(new FormData(event.currentTarget));
-        setPending(false);
-        if (!result.ok) {
-          setError(result.error);
-          return;
+        try {
+          const result = await submitMoolreOtp(new FormData(event.currentTarget));
+          if (!result.ok) {
+            setError(shopperError(result.error, "Could not check that code. Try again."));
+            return;
+          }
+          if (result.redirectUrl) router.push(result.redirectUrl);
+        } catch (error) {
+          setError(shopperError(error, "Could not check that code. Check your connection and try again."));
+        } finally {
+          setPending(false);
         }
-        if (result.redirectUrl) router.push(result.redirectUrl);
       }}
     >
       <input type="hidden" name="ref" value={publicRef} />

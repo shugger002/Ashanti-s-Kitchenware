@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ChevronDown } from "lucide-react";
@@ -11,6 +11,10 @@ import { Button, buttonClass } from "@/components/ui/button";
 import { isDemoListing } from "@/lib/listing";
 import { defaultContact } from "@/config/brand";
 import type { PaymentOption } from "@/server/payments/types";
+import { shopperError } from "@/lib/user-error";
+import { CartPageSkeleton } from "@/components/ui/skeleton";
+
+const CHECKOUT_DRAFT = "ak_checkout_draft";
 
 const GHANA_REGIONS = [
   "Ahafo",
@@ -72,12 +76,58 @@ export function CheckoutForm({
   const names = splitName(customer?.fullName ?? "");
   const [firstName, setFirstName] = useState(names.first);
   const [lastName, setLastName] = useState(names.last);
+  const [email, setEmail] = useState(customer?.email ?? "");
+  const [phone, setPhone] = useState(customer?.phone ?? "");
+  const [addressLine1, setAddressLine1] = useState("");
+  const [addressLine2, setAddressLine2] = useState("");
+  const [city, setCity] = useState("");
+  const [notes, setNotes] = useState("");
   const idempotencyKey = useMemo(() => crypto.randomUUID(), []);
+
+  useEffect(() => {
+    try {
+      const raw = sessionStorage.getItem(CHECKOUT_DRAFT);
+      if (!raw) return;
+      const draft = JSON.parse(raw) as Record<string, string>;
+      if (!customer?.email && draft.email) setEmail(draft.email);
+      if (!customer?.phone && draft.phone) setPhone(draft.phone);
+      if (!names.first && draft.firstName) setFirstName(draft.firstName);
+      if (!names.last && draft.lastName) setLastName(draft.lastName);
+      if (draft.addressLine1) setAddressLine1(draft.addressLine1);
+      if (draft.addressLine2) setAddressLine2(draft.addressLine2);
+      if (draft.city) setCity(draft.city);
+      if (draft.notes) setNotes(draft.notes);
+    } catch {
+      /* ignore a bad draft */
+    }
+    // Restore once on open. Customer defaults stay if they were already signed in.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    try {
+      sessionStorage.setItem(
+        CHECKOUT_DRAFT,
+        JSON.stringify({
+          email,
+          phone,
+          firstName,
+          lastName,
+          addressLine1,
+          addressLine2,
+          city,
+          notes,
+        }),
+      );
+    } catch {
+      /* private mode */
+    }
+  }, [email, phone, firstName, lastName, addressLine1, addressLine2, city, notes]);
   const subtotal = items.reduce((sum, line) => sum + line.unitPrice * line.quantity, 0);
   const total = subtotal;
 
   if (!live) {
-    return <p className="px-4 py-16 text-center text-muted">Loading checkout…</p>;
+    return <CartPageSkeleton />;
   }
 
   if (items.length === 0) {
@@ -146,35 +196,45 @@ export function CheckoutForm({
       className="lg:grid lg:grid-cols-[minmax(0,1fr)_26rem]"
       onSubmit={async (event) => {
         event.preventDefault();
+        if (pending) return;
         setPending(true);
         setError(null);
-        if (items.some((line) => isDemoListing(line.sku, line.slug))) {
+        try {
+          if (items.some((line) => isDemoListing(line.sku, line.slug))) {
+            setError("Demo listings are not for sale. Remove them from the cart.");
+            return;
+          }
+          const form = new FormData(event.currentTarget);
+          form.set("fullName", `${firstName} ${lastName}`.trim());
+          form.set("deliveryMethod", method);
+          form.set(
+            "items",
+            JSON.stringify(
+              items.map((i) => ({
+                productId: i.productId,
+                variantId: i.variantId,
+                quantity: i.quantity,
+              })),
+            ),
+          );
+          const result = await submitCheckout(form);
+          if (!result.ok) {
+            setError(shopperError(result.error, "Could not place the order. Check your connection and try again."));
+            return;
+          }
+          try {
+            sessionStorage.removeItem(CHECKOUT_DRAFT);
+          } catch {
+            /* ignore */
+          }
+          clear();
+          if (result.redirectUrl) {
+            router.push(result.redirectUrl);
+          }
+        } catch (error) {
+          setError(shopperError(error, "Could not place the order. Check your connection and try again."));
+        } finally {
           setPending(false);
-          setError("Demo listings are not for sale. Remove them from the cart.");
-          return;
-        }
-        const form = new FormData(event.currentTarget);
-        form.set("fullName", `${firstName} ${lastName}`.trim());
-        form.set("deliveryMethod", method);
-        form.set(
-          "items",
-          JSON.stringify(
-            items.map((i) => ({
-              productId: i.productId,
-              variantId: i.variantId,
-              quantity: i.quantity,
-            })),
-          ),
-        );
-        const result = await submitCheckout(form);
-        setPending(false);
-        if (!result.ok) {
-          setError(result.error);
-          return;
-        }
-        clear();
-        if (result.redirectUrl) {
-          router.push(result.redirectUrl);
         }
       }}
     >
@@ -214,7 +274,8 @@ export function CheckoutForm({
             type="email"
             name="email"
             required
-            defaultValue={customer?.email}
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
             placeholder="Email"
             className="input"
             autoComplete="email"
@@ -249,7 +310,10 @@ export function CheckoutForm({
           <input
             required
             name="phone"
-            defaultValue={customer?.phone}
+            type="tel"
+            inputMode="tel"
+            value={phone}
+            onChange={(event) => setPhone(event.target.value)}
             placeholder={payWith === "moolre" ? "Mobile money number" : "Phone"}
             className="input"
             autoComplete="tel"
@@ -259,10 +323,33 @@ export function CheckoutForm({
           ) : null}
           {method === "delivery" ? (
             <>
-              <input required name="addressLine1" placeholder="Address" className="input" autoComplete="address-line1" />
-              <input name="addressLine2" placeholder="Apartment, landmark (optional)" className="input" autoComplete="address-line2" />
+              <input
+                required
+                name="addressLine1"
+                value={addressLine1}
+                onChange={(event) => setAddressLine1(event.target.value)}
+                placeholder="Address"
+                className="input"
+                autoComplete="address-line1"
+              />
+              <input
+                name="addressLine2"
+                value={addressLine2}
+                onChange={(event) => setAddressLine2(event.target.value)}
+                placeholder="Apartment, landmark (optional)"
+                className="input"
+                autoComplete="address-line2"
+              />
               <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3">
-                <input required name="city" placeholder="City" className="input min-w-0" autoComplete="address-level2" />
+                <input
+                  required
+                  name="city"
+                  value={city}
+                  onChange={(event) => setCity(event.target.value)}
+                  placeholder="City"
+                  className="input min-w-0"
+                  autoComplete="address-level2"
+                />
                 <select name="region" required defaultValue="Greater Accra" className="input min-w-0" autoComplete="address-level1">
                   {GHANA_REGIONS.map((region) => (
                     <option key={region} value={region}>
@@ -271,7 +358,13 @@ export function CheckoutForm({
                   ))}
                 </select>
               </div>
-              <textarea name="deliveryInstructions" placeholder="Delivery notes (optional)" className="input min-h-20" />
+              <textarea
+                name="deliveryInstructions"
+                value={notes}
+                onChange={(event) => setNotes(event.target.value)}
+                placeholder="Delivery notes (optional)"
+                className="input min-h-20"
+              />
             </>
           ) : (
             <p className="rounded-sm border border-border bg-surface px-3 py-3 text-sm text-muted">

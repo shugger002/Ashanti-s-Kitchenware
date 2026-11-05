@@ -56,7 +56,7 @@ export async function sendContactMessage(
   if (!result.sent) {
     return {
       ok: true,
-      notice: `The form could not email the shop automatically (${result.reason ?? "mail not configured"}). Write to ${contact.email} or call ${contact.phoneDisplay}.`,
+      notice: `The form could not email the shop automatically. Write to ${contact.email} or call ${contact.phoneDisplay}.`,
     };
   }
 

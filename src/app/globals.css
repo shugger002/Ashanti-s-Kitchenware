@@ -14,6 +14,7 @@
   --sage: #c8102e;
   --shadow: 0 12px 32px rgba(26, 26, 26, 0.08);
   --store-dock: 5.75rem;
+  color-scheme: light;
 }
 
 html.dark {
@@ -333,9 +334,11 @@ h3 {
   min-height: 2.75rem;
   border: 1px solid var(--border);
   background: var(--surface);
+  color: var(--foreground);
   border-radius: 0.2rem;
   padding: 0.75rem 0.9rem;
   font-size: 1rem;
+  scroll-margin-bottom: calc(var(--store-dock) + 8rem);
   transition: border-color 180ms ease;
 }
 

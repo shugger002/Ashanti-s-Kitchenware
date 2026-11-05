@@ -9,6 +9,7 @@ import { formatGhs } from "@/lib/money";
 import { buttonClass } from "@/components/ui/button";
 import { Button } from "@/components/ui/button";
 import { QuantityStepper } from "@/components/store/quantity-stepper";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function CartPage() {
   const { items, update, remove, clear } = useCart();
@@ -22,7 +23,17 @@ export default function CartPage() {
     <div className="mx-auto max-w-4xl px-4 py-6 pb-36 lg:px-8 lg:py-12 lg:pb-12">
       <h1 className="font-sans text-3xl font-bold uppercase tracking-[0.12em] md:text-4xl">My cart</h1>
       {!live ? (
-        <p className="mt-10 text-muted">Loading cart…</p>
+        <ul className="mt-10 divide-y divide-border" aria-busy="true" aria-label="Loading cart">
+          {Array.from({ length: 3 }, (_, index) => (
+            <li key={index} className="flex gap-4 py-5">
+              <Skeleton className="h-20 w-20 shrink-0 rounded-2xl" />
+              <div className="min-w-0 flex-1">
+                <Skeleton className="h-5 w-2/3" />
+                <Skeleton className="mt-3 h-4 w-24" />
+              </div>
+            </li>
+          ))}
+        </ul>
       ) : items.length === 0 ? (
         <p className="mt-10 text-muted">
           My cart is empty.{" "}

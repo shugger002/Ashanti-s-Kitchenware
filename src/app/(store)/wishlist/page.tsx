@@ -12,6 +12,7 @@ import {
 } from "@/components/store/wishlist-store";
 import { formatGhs } from "@/lib/money";
 import { buttonClass } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function WishlistPage() {
   const items = useSyncExternalStore(subscribeWishlist, getWishlist, getServerWishlist);
@@ -26,7 +27,17 @@ export default function WishlistPage() {
       <h1 className="text-3xl md:text-4xl">Wishlist</h1>
       <p className="mt-2 text-sm text-muted">Saved on this device. Sign in is not required.</p>
       {!live ? (
-        <p className="mt-10 text-muted">Loading saved items…</p>
+        <ul className="mt-10 divide-y divide-border" aria-busy="true" aria-label="Loading saved items">
+          {Array.from({ length: 3 }, (_, index) => (
+            <li key={index} className="flex gap-4 py-5">
+              <Skeleton className="h-20 w-20 shrink-0 rounded-2xl" />
+              <div className="min-w-0 flex-1">
+                <Skeleton className="h-5 w-2/3" />
+                <Skeleton className="mt-3 h-4 w-24" />
+              </div>
+            </li>
+          ))}
+        </ul>
       ) : items.length === 0 ? (
         <p className="mt-10 text-muted">
           Nothing saved yet.{" "}

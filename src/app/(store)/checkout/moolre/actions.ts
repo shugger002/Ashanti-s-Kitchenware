@@ -46,6 +46,10 @@ export async function submitMoolreOtp(formData: FormData) {
     }
     return { ok: true as const, redirectUrl: intent.redirectUrl ?? `/checkout/success?ref=${encodeURIComponent(publicRef)}&await=momo` };
   } catch (error) {
-    return { ok: false as const, error: error instanceof Error ? error.message : "Moolre verification failed" };
+    console.error("submitMoolreOtp failed", error);
+    return {
+      ok: false as const,
+      error: "That code could not be checked. Try again, or WhatsApp the shop if the prompt did not arrive.",
+    };
   }
 }

@@ -19,6 +19,7 @@ export function ProductReviews({
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState(false);
+  const [pending, setPending] = useState(false);
 
   return (
     <section className="mt-10 border-t border-border pt-8 md:mt-16 md:pt-10">
@@ -45,14 +46,22 @@ export function ProductReviews({
         className="mt-8 max-w-lg space-y-3"
         onSubmit={async (event) => {
           event.preventDefault();
-          const result = await createProductReview(new FormData(event.currentTarget));
-          if (!result.ok) {
-            setError("error" in result ? result.error : "Could not save review.");
-            return;
-          }
-          setDone(true);
+          if (pending) return;
+          setPending(true);
           setError(null);
-          router.refresh();
+          try {
+            const result = await createProductReview(new FormData(event.currentTarget));
+            if (!result.ok) {
+              setError("error" in result ? result.error : "Could not save the review. Try again.");
+              return;
+            }
+            setDone(true);
+            router.refresh();
+          } catch {
+            setError("Could not save the review. Check your connection and try again.");
+          } finally {
+            setPending(false);
+          }
         }}
       >
         <h3 className="font-medium">Write a review</h3>
@@ -93,8 +102,12 @@ export function ProductReviews({
         {done ? (
           <p className="text-sm text-muted">Thank you. The shop will read it before it appears on this page.</p>
         ) : null}
-        <button type="submit" className="inline-flex h-12 w-full items-center justify-center rounded-sm bg-accent px-4 text-sm font-medium text-white sm:w-auto dark:text-background">
-          Submit review
+        <button
+          type="submit"
+          disabled={pending}
+          className="inline-flex h-12 w-full items-center justify-center rounded-sm bg-accent px-4 text-sm font-medium text-white transition-[transform,opacity] duration-150 active:scale-[0.98] disabled:opacity-50 sm:w-auto dark:text-background"
+        >
+          {pending ? "Sending…" : "Submit review"}
         </button>
       </form>
       ) : null}
