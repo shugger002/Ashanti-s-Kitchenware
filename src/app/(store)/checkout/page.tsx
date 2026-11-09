@@ -17,7 +17,6 @@ export default async function CheckoutPage() {
   const [customer, config] = await Promise.all([readStoreCustomer(), getStorefrontConfig()]);
   return (
     <CheckoutShell>
-      <h1 className="sr-only">Checkout</h1>
       <CheckoutForm
         customer={customer ? { fullName: customer.fullName, email: customer.email, phone: customer.phone } : null}
         fulfillment={config.fulfillment}

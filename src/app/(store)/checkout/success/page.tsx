@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { CheckoutShell } from "@/components/store/checkout-shell";
+import { CheckoutPaper, CheckoutShell } from "@/components/store/checkout-shell";
 import { MoolreAwait } from "@/components/store/moolre-await";
 import { pageMeta } from "@/lib/seo";
 import { query } from "@/server/db/pool";
@@ -27,9 +27,9 @@ export default async function SuccessPage({
 
   return (
     <CheckoutShell>
-      <div className="mx-auto max-w-xl px-4 py-8 lg:px-8 lg:py-16">
-        <h1 className="text-3xl md:text-4xl">Thank you</h1>
-        <p className="mt-4 text-muted">
+      <CheckoutPaper>
+        <h1 className="font-sans text-3xl font-bold uppercase tracking-[0.12em] md:text-4xl">Thank you</h1>
+        <p className="mt-4 text-pretty text-muted">
           {paymentStatus === "paid"
             ? "Payment has been confirmed. We will contact you about fulfilment."
             : awaiting === "momo"
@@ -52,7 +52,7 @@ export default async function SuccessPage({
         <Link href="/shop" className="mt-8 inline-flex h-12 w-full items-center justify-center bg-accent text-sm text-white sm:w-auto sm:px-5">
           Continue shopping
         </Link>
-      </div>
+      </CheckoutPaper>
     </CheckoutShell>
   );
 }

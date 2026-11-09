@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ChevronDown } from "lucide-react";
@@ -13,6 +13,7 @@ import { defaultContact } from "@/config/brand";
 import type { PaymentOption } from "@/server/payments/types";
 import { shopperError } from "@/lib/user-error";
 import { CartPageSkeleton } from "@/components/ui/skeleton";
+import { cn } from "@/lib/utils";
 
 const CHECKOUT_DRAFT = "ak_checkout_draft";
 
@@ -35,11 +36,59 @@ const GHANA_REGIONS = [
   "Western North",
 ] as const;
 
+const choiceClass =
+  "flex min-h-12 cursor-pointer items-center gap-3 border border-border bg-background px-4 py-3.5 text-sm has-[:checked]:border-accent has-[:checked]:bg-surface";
+
 function splitName(fullName: string) {
   const parts = fullName.trim().split(/\s+/);
   if (parts.length === 0) return { first: "", last: "" };
   if (parts.length === 1) return { first: parts[0], last: "" };
   return { first: parts[0], last: parts.slice(1).join(" ") };
+}
+
+function Field({
+  label,
+  hint,
+  children,
+}: {
+  label: string;
+  hint?: string;
+  children: ReactNode;
+}) {
+  return (
+    <label className="block text-sm">
+      {label}
+      <span className="mt-1.5 block">{children}</span>
+      {hint ? <span className="mt-1.5 block text-xs text-pretty text-muted">{hint}</span> : null}
+    </label>
+  );
+}
+
+function Section({
+  step,
+  title,
+  extra,
+  children,
+}: {
+  step: string;
+  title: string;
+  extra?: ReactNode;
+  children: ReactNode;
+}) {
+  return (
+    <section className="border border-border bg-surface px-4 py-5 sm:px-6 sm:py-6">
+      <div className="mb-5 flex items-baseline justify-between gap-3">
+        <h2 className="text-2xl">
+          <span className="mr-2 font-sans text-[11px] font-medium uppercase tracking-[0.14em] text-muted">
+            {step}
+          </span>
+          {title}
+        </h2>
+        {extra}
+      </div>
+      <div className="space-y-3">{children}</div>
+    </section>
+  );
 }
 
 export function CheckoutForm({
@@ -146,14 +195,14 @@ export function CheckoutForm({
       <ul className="space-y-4">
         {items.map((line) => (
           <li key={`${line.productId}-${line.variantId}`} className="flex gap-3 text-sm">
-            <div className="relative h-16 w-16 shrink-0">
+            <div className="relative size-16 shrink-0">
               {line.imageUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={line.imageUrl} alt="" className="h-16 w-16 rounded-sm border border-border object-cover" />
+                <img src={line.imageUrl} alt="" className="size-16 rounded-2xl object-cover" />
               ) : (
-                <div className="h-16 w-16 rounded-sm border border-border bg-background" />
+                <div className="size-16 rounded-2xl border border-border bg-background" />
               )}
-              <span className="absolute -right-1.5 -top-1.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-foreground px-1 text-[11px] text-background">
+              <span className="absolute -right-1.5 -top-1.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-accent px-1 text-[11px] text-white">
                 {line.quantity}
               </span>
             </div>
@@ -170,21 +219,18 @@ export function CheckoutForm({
           <dt>Subtotal</dt>
           <dd className="tabular-nums">{formatGhs(subtotal)}</dd>
         </div>
-        <div className="flex justify-between">
+        <div className="flex justify-between gap-4">
           <dt>Shipping</dt>
           <dd className="text-right text-muted">
             {method === "collection" ? formatGhs(0) : "Quoted on WhatsApp"}
           </dd>
         </div>
-        <div className="flex justify-between text-lg font-medium">
-          <dt>Total</dt>
-          <dd className="tabular-nums">
-            <span className="mr-2 text-xs font-normal uppercase tracking-wide text-muted">GHS</span>
-            {formatGhs(total)}
-          </dd>
+        <div className="flex items-baseline justify-between pt-2 text-lg font-medium">
+          <dt>Due now</dt>
+          <dd className="price text-xl">{formatGhs(total)}</dd>
         </div>
       </dl>
-      <p className="text-xs text-muted">
+      <p className="text-pretty text-xs text-muted">
         Item total is due now. Delivery, if you choose it, is confirmed on WhatsApp and is not included in this total.
         Payment is taken only when Hubtel or Moolre confirms it.
       </p>
@@ -193,7 +239,7 @@ export function CheckoutForm({
 
   return (
     <form
-      className="lg:grid lg:grid-cols-[minmax(0,1fr)_26rem]"
+      className="mx-auto max-w-6xl lg:grid lg:grid-cols-[minmax(0,1fr)_22rem] xl:grid-cols-[minmax(0,1fr)_24rem]"
       onSubmit={async (event) => {
         event.preventDefault();
         if (pending) return;
@@ -238,170 +284,187 @@ export function CheckoutForm({
         }
       }}
     >
-      <div className="sticky top-14 z-30 border-b border-border bg-background lg:hidden">
+      <div className="border-b border-border bg-background lg:hidden">
         <button
           type="button"
           className="flex min-h-12 w-full items-center justify-between px-4 py-3 text-sm"
           onClick={() => setSummaryOpen((open) => !open)}
           aria-expanded={summaryOpen}
         >
-          <span className="flex items-center gap-1 text-accent">
-            Order summary
-            <ChevronDown className={`h-4 w-4 transition-transform ${summaryOpen ? "rotate-180" : ""}`} />
+          <span className="flex items-center gap-1">
+            Order
+            <ChevronDown className={`size-4 transition-transform ${summaryOpen ? "rotate-180" : ""}`} />
           </span>
           <span className="font-medium tabular-nums">{formatGhs(total)}</span>
         </button>
         {summaryOpen ? <div className="max-h-[45vh] overflow-y-auto border-t border-border px-4 py-4">{summary}</div> : null}
       </div>
 
-      <div className="mx-auto w-full max-w-xl space-y-6 px-4 py-6 pb-28 lg:ml-auto lg:mr-0 lg:max-w-none lg:space-y-8 lg:px-8 lg:py-10 lg:pb-10">
-        <section className="space-y-3">
-          <div className="flex items-baseline justify-between">
-            <h2 className="text-lg font-semibold tracking-tight">Contact</h2>
-            {customer ? (
+      <div className="mx-auto w-full max-w-xl space-y-5 px-4 py-8 pb-28 lg:mx-0 lg:max-w-none lg:space-y-6 lg:px-8 lg:py-10 lg:pb-10">
+        <header>
+          <h1 className="font-sans text-3xl font-bold uppercase tracking-[0.12em]">Checkout</h1>
+          <p className="mt-2 max-w-md text-pretty text-sm text-muted">
+            Pay for the pieces now. Delivery, if you want it, is quoted on WhatsApp after this order.
+          </p>
+        </header>
+
+        <Section
+          step="01"
+          title="Contact"
+          extra={
+            customer ? (
               <span className="text-sm text-muted">Signed in</span>
             ) : (
               <Link href="/login?next=/checkout" className="text-sm text-accent">
                 Sign in
               </Link>
-            )}
-          </div>
-          <label className="sr-only" htmlFor="email">
-            Email
-          </label>
-          <input
-            id="email"
-            type="email"
-            name="email"
-            required
-            value={email}
-            onChange={(event) => setEmail(event.target.value)}
-            placeholder="Email"
-            className="input"
-            autoComplete="email"
-          />
-          <p className="text-xs text-muted">Used for the order receipt. Guest checkout is available.</p>
-        </section>
+            )
+          }
+        >
+          <Field label="Email" hint="Used for the order receipt. Guest checkout is available.">
+            <input
+              id="email"
+              type="email"
+              name="email"
+              required
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+              className="input"
+              autoComplete="email"
+            />
+          </Field>
+        </Section>
 
-        <section className="space-y-3">
-          <h2 className="text-lg font-semibold tracking-tight">Delivery</h2>
-          {fulfillment.coverageNote ? <p className="text-sm text-muted">{fulfillment.coverageNote}</p> : null}
+        <Section step="02" title="Details">
+          {fulfillment.coverageNote ? <p className="text-pretty text-sm text-muted">{fulfillment.coverageNote}</p> : null}
           <p className="text-sm text-muted">Ghana</p>
-          <div className="grid grid-cols-2 gap-2 sm:gap-3">
-            <input
-              required
-              name="firstName"
-              value={firstName}
-              onChange={(event) => setFirstName(event.target.value)}
-              placeholder="First name"
-              className="input min-w-0"
-              autoComplete="given-name"
-            />
-            <input
-              required
-              name="lastName"
-              value={lastName}
-              onChange={(event) => setLastName(event.target.value)}
-              placeholder="Last name"
-              className="input min-w-0"
-              autoComplete="family-name"
-            />
-          </div>
-          <input
-            required
-            name="phone"
-            type="tel"
-            inputMode="tel"
-            value={phone}
-            onChange={(event) => setPhone(event.target.value)}
-            placeholder={payWith === "moolre" ? "Mobile money number" : "Phone"}
-            className="input"
-            autoComplete="tel"
-          />
-          {payWith === "moolre" ? (
-            <p className="text-xs text-muted">Use the Ghana number that will receive the Moolre prompt (MTN, Telecel, or AT).</p>
-          ) : null}
-          {method === "delivery" ? (
-            <>
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="First name">
               <input
                 required
-                name="addressLine1"
-                value={addressLine1}
-                onChange={(event) => setAddressLine1(event.target.value)}
-                placeholder="Address"
-                className="input"
-                autoComplete="address-line1"
+                name="firstName"
+                value={firstName}
+                onChange={(event) => setFirstName(event.target.value)}
+                className="input min-w-0"
+                autoComplete="given-name"
               />
+            </Field>
+            <Field label="Last name">
               <input
-                name="addressLine2"
-                value={addressLine2}
-                onChange={(event) => setAddressLine2(event.target.value)}
-                placeholder="Apartment, landmark (optional)"
-                className="input"
-                autoComplete="address-line2"
+                required
+                name="lastName"
+                value={lastName}
+                onChange={(event) => setLastName(event.target.value)}
+                className="input min-w-0"
+                autoComplete="family-name"
               />
-              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3">
+            </Field>
+          </div>
+          <Field
+            label={payWith === "moolre" ? "Mobile money number" : "Phone"}
+            hint={
+              payWith === "moolre"
+                ? "Use the Ghana number that will receive the Moolre prompt (MTN, Telecel, or AT)."
+                : undefined
+            }
+          >
+            <input
+              required
+              name="phone"
+              type="tel"
+              inputMode="tel"
+              value={phone}
+              onChange={(event) => setPhone(event.target.value)}
+              className="input"
+              autoComplete="tel"
+            />
+          </Field>
+          {method === "delivery" ? (
+            <>
+              <Field label="Address">
                 <input
                   required
-                  name="city"
-                  value={city}
-                  onChange={(event) => setCity(event.target.value)}
-                  placeholder="City"
-                  className="input min-w-0"
-                  autoComplete="address-level2"
+                  name="addressLine1"
+                  value={addressLine1}
+                  onChange={(event) => setAddressLine1(event.target.value)}
+                  className="input"
+                  autoComplete="address-line1"
                 />
-                <select name="region" required defaultValue="Greater Accra" className="input min-w-0" autoComplete="address-level1">
-                  {GHANA_REGIONS.map((region) => (
-                    <option key={region} value={region}>
-                      {region}
-                    </option>
-                  ))}
-                </select>
+              </Field>
+              <Field label="Apartment, landmark (optional)">
+                <input
+                  name="addressLine2"
+                  value={addressLine2}
+                  onChange={(event) => setAddressLine2(event.target.value)}
+                  className="input"
+                  autoComplete="address-line2"
+                />
+              </Field>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <Field label="City">
+                  <input
+                    required
+                    name="city"
+                    value={city}
+                    onChange={(event) => setCity(event.target.value)}
+                    className="input min-w-0"
+                    autoComplete="address-level2"
+                  />
+                </Field>
+                <Field label="Region">
+                  <select name="region" required defaultValue="Greater Accra" className="input min-w-0" autoComplete="address-level1">
+                    {GHANA_REGIONS.map((region) => (
+                      <option key={region} value={region}>
+                        {region}
+                      </option>
+                    ))}
+                  </select>
+                </Field>
               </div>
-              <textarea
-                name="deliveryInstructions"
-                value={notes}
-                onChange={(event) => setNotes(event.target.value)}
-                placeholder="Delivery notes (optional)"
-                className="input min-h-20"
-              />
+              <Field label="Delivery notes (optional)">
+                <textarea
+                  name="deliveryInstructions"
+                  value={notes}
+                  onChange={(event) => setNotes(event.target.value)}
+                  className="input min-h-20"
+                />
+              </Field>
             </>
           ) : (
-            <p className="rounded-sm border border-border bg-surface px-3 py-3 text-sm text-muted">
+            <p className="border border-border bg-background px-4 py-3 text-pretty text-sm text-muted">
               Collection at {defaultContact.addressLine1}, {defaultContact.city}.
             </p>
           )}
-        </section>
+        </Section>
 
-        <section className="space-y-3">
-          <h2 className="text-lg font-semibold tracking-tight">Shipping method</h2>
-          <div className="overflow-hidden rounded-sm border border-border">
+        <Section step="03" title="How you get it">
+          <div className="space-y-2">
             {collectionOn ? (
-              <label className={`flex min-h-12 cursor-pointer items-center justify-between gap-3 px-3 py-3 sm:px-4 ${method === "collection" ? "bg-surface" : ""}`}>
-                <span className="flex min-w-0 items-center gap-3 text-sm">
+              <label className={cn(choiceClass, "justify-between")}>
+                <span className="flex min-w-0 items-center gap-3">
                   <input
                     type="radio"
                     name="deliveryMethod"
                     value="collection"
                     checked={method === "collection"}
                     onChange={() => setMethod("collection")}
+                    className="accent-accent"
                   />
                   Collection at the shop
                 </span>
-                <span className="text-sm tabular-nums">{formatGhs(0)}</span>
+                <span className="tabular-nums">{formatGhs(0)}</span>
               </label>
             ) : null}
             {deliveryOn ? (
-              <label
-                className={`flex min-h-12 cursor-pointer items-center justify-between gap-3 px-3 py-3 sm:px-4 ${collectionOn ? "border-t border-border" : ""} ${method === "delivery" ? "bg-surface" : ""}`}
-              >
-                <span className="flex min-w-0 items-center gap-3 text-sm">
+              <label className={cn(choiceClass, "justify-between")}>
+                <span className="flex min-w-0 items-center gap-3">
                   <input
                     type="radio"
                     name="deliveryMethod"
                     value="delivery"
                     checked={method === "delivery"}
                     onChange={() => setMethod("delivery")}
+                    className="accent-accent"
                   />
                   Delivery
                 </span>
@@ -409,7 +472,7 @@ export function CheckoutForm({
               </label>
             ) : null}
             {!collectionOn && !deliveryOn ? (
-              <p className="px-4 py-3 text-sm text-muted">
+              <p className="text-sm text-muted">
                 <a href={whatsappHref} className="text-accent">
                   WhatsApp the shop
                 </a>{" "}
@@ -418,73 +481,71 @@ export function CheckoutForm({
             ) : null}
           </div>
           {method === "delivery" ? (
-            <p className="text-sm text-muted">
+            <p className="text-pretty text-sm text-muted">
               After you pay for the items, we confirm the delivery charge and timing on{" "}
               <a href={whatsappHref} className="text-accent">
                 WhatsApp
               </a>
-              . It is not included in the total above.
+              . It is not included in the total.
             </p>
           ) : null}
-        </section>
+        </Section>
 
-        <section className="space-y-3">
-          <h2 className="text-lg font-semibold tracking-tight">Payment</h2>
-          <p className="text-sm text-muted">All transactions are secure and encrypted.</p>
+        <Section step="04" title="Payment">
           {paymentsReady ? (
-            <div className="overflow-hidden rounded-sm border border-border">
+            <div className="space-y-2">
               {paymentOptions.map((option) => (
-                <label
-                  key={option.id}
-                  className={`flex cursor-pointer items-start gap-3 border-b border-border px-3 py-3 last:border-b-0 sm:px-4 ${payWith === option.id ? "bg-surface" : ""}`}
-                >
+                <label key={option.id} className={cn(choiceClass, "items-start")}>
                   <input
                     type="radio"
                     name="paymentProvider"
                     value={option.id}
                     checked={payWith === option.id}
                     onChange={() => setPayWith(option.id)}
-                    className="mt-1"
+                    className="mt-0.5 accent-accent"
                   />
                   <span>
-                    <span className="block text-sm font-medium">{option.label}</span>
-                    <span className="mt-1 block text-sm text-muted">{option.description}</span>
+                    <span className="block font-medium">{option.label}</span>
+                    <span className="mt-1 block text-pretty text-muted">{option.description}</span>
                   </span>
                 </label>
               ))}
             </div>
           ) : (
-            <p className="rounded-sm border border-accent bg-accent/5 px-4 py-3 text-sm">
+            <p className="border border-accent bg-accent/5 px-4 py-3 text-sm">
               Online payment is not configured yet. Call or WhatsApp the shop to order. Do not treat a confirmation page
               as proof of payment.
             </p>
           )}
           {payWith === "moolre" ? (
-            <fieldset className="space-y-2">
-              <legend className="text-sm font-medium">Mobile money network</legend>
-              {(
-                [
-                  ["13", "MTN"],
-                  ["6", "Telecel"],
-                  ["7", "AT"],
-                ] as const
-              ).map(([value, label]) => (
-                <label key={value} className="flex min-h-11 items-center gap-2 text-sm">
-                  <input
-                    type="radio"
-                    name="momoChannel"
-                    value={value}
-                    checked={momoChannel === value}
-                    onChange={() => setMomoChannel(value)}
-                  />
-                  {label}
-                </label>
-              ))}
+            <fieldset>
+              <legend className="mb-2 text-sm">Mobile money network</legend>
+              <div className="grid grid-cols-3 gap-2">
+                {(
+                  [
+                    ["13", "MTN"],
+                    ["6", "Telecel"],
+                    ["7", "AT"],
+                  ] as const
+                ).map(([value, label]) => (
+                  <label key={value} className={cn(choiceClass, "min-h-11 justify-center px-2")}>
+                    <input
+                      type="radio"
+                      name="momoChannel"
+                      value={value}
+                      checked={momoChannel === value}
+                      onChange={() => setMomoChannel(value)}
+                      className="sr-only"
+                    />
+                    {label}
+                  </label>
+                ))}
+              </div>
             </fieldset>
           ) : null}
           <label className="flex min-h-11 items-start gap-2 py-1 text-sm text-muted">
-            <input type="checkbox" name="agree" required className="mt-1 size-4" />
-            <span>
+            <input type="checkbox" name="agree" required className="mt-1 size-4 accent-accent" />
+            <span className="text-pretty">
               By paying, you agree to our{" "}
               <Link href="/terms" className="underline">
                 Terms of service
@@ -496,7 +557,7 @@ export function CheckoutForm({
               .
             </span>
           </label>
-        </section>
+        </Section>
 
         <input type="hidden" name="idempotencyKey" value={idempotencyKey} />
         {error ? <p className="text-sm text-red-800">{error}</p> : null}
@@ -531,7 +592,10 @@ export function CheckoutForm({
       </div>
 
       <aside className="hidden border-l border-border bg-surface lg:block">
-        <div className="sticky top-0 px-8 py-10">{summary}</div>
+        <div className="sticky top-0 px-8 py-10">
+          <h2 className="mb-6 font-sans text-[11px] font-medium uppercase tracking-[0.14em] text-muted">Your order</h2>
+          {summary}
+        </div>
       </aside>
     </form>
   );

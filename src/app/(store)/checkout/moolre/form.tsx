@@ -40,7 +40,7 @@ export function MoolreOtpForm({ publicRef, momoChannel }: { publicRef: string; m
         <input name="otp" required inputMode="numeric" autoComplete="one-time-code" className="input mt-1" />
       </label>
       {error ? <p className="text-sm text-red-800">{error}</p> : null}
-      <Button type="submit" disabled={pending}>
+      <Button type="submit" className="h-12 w-full sm:w-auto" disabled={pending}>
         {pending ? "Sending…" : "Continue"}
       </Button>
     </form>

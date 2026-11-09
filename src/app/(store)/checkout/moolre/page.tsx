@@ -1,4 +1,4 @@
-import { CheckoutShell } from "@/components/store/checkout-shell";
+import { CheckoutPaper, CheckoutShell } from "@/components/store/checkout-shell";
 import { MoolreOtpForm } from "@/app/(store)/checkout/moolre/form";
 import { pageMeta } from "@/lib/seo";
 
@@ -17,9 +17,9 @@ export default async function MoolreOtpPage({
   const momoChannel = channel === "6" || channel === "7" ? channel : "13";
   return (
     <CheckoutShell>
-      <div className="mx-auto max-w-xl px-4 py-12 lg:px-8">
-        <h1 className="text-3xl">Confirm your number</h1>
-        <p className="mt-3 text-sm text-muted">
+      <CheckoutPaper>
+        <h1 className="font-sans text-3xl font-bold uppercase tracking-[0.12em]">Confirm your number</h1>
+        <p className="mt-3 text-pretty text-sm text-muted">
           Moolre sent an SMS code for a first-time payer. Enter it here. We still do not mark the order paid until
           Moolre confirms the mobile-money debit.
         </p>
@@ -28,7 +28,7 @@ export default async function MoolreOtpPage({
         ) : (
           <p className="mt-6 text-sm text-muted">Missing order reference. Return to checkout and try again.</p>
         )}
-      </div>
+      </CheckoutPaper>
     </CheckoutShell>
   );
 }
