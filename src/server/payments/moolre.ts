@@ -1,4 +1,4 @@
-import { timingSafeEqual } from "node:crypto";
+import { randomBytes, timingSafeEqual } from "node:crypto";
 import { ghanaLocalMsisdn } from "@/lib/phone-gh";
 import { parseMoney } from "@/lib/money";
 import { getAppUrl } from "@/server/env";
@@ -68,18 +68,32 @@ async function moolrePost(path: "/open/transact/payment" | "/open/transact/statu
   return { response, json, code: String(json.code ?? "") };
 }
 
-function collectionBody(input: CreatePaymentInput, otpCode?: string) {
+const PROMPT_REF_SUFFIX = /\.m[a-f0-9]{6}$/i;
+
+export function shopOrderRefFromMoolre(externalref: string) {
+  return externalref.replace(PROMPT_REF_SUFFIX, "");
+}
+
+function promptExternalRef(publicRef: string) {
+  return `${publicRef}.m${randomBytes(3).toString("hex")}`;
+}
+
+function collectionBody(
+  input: CreatePaymentInput,
+  extra?: { otpCode?: string; externalref?: string },
+) {
   const { account } = credentials();
+  const externalref = extra?.externalref ?? input.publicRef;
   return {
     type: 1,
     channel: input.momoChannel ?? "13",
     currency: "GHS",
     payer: ghanaLocalMsisdn(input.phone),
     amount: parseMoney(input.amountGhs).toFixed(2),
-    externalref: input.publicRef,
+    externalref,
     accountnumber: account,
     reference: `Ashantis ${input.publicRef}`,
-    ...(otpCode ? { otpcode: otpCode } : {}),
+    ...(extra?.otpCode ? { otpcode: extra.otpCode } : {}),
   };
 }
 
@@ -113,33 +127,50 @@ export class MoolreProvider implements PaymentProvider {
   readonly id = "moolre" as const;
 
   async createIntent(input: CreatePaymentInput): Promise<CreatePaymentResult> {
-    const first = await moolrePost("/open/transact/payment", collectionBody(input, input.otpCode));
-    if (first.code === "TP14") {
+    let usedRef = input.publicRef;
+    let result = await moolrePost("/open/transact/payment", collectionBody(input, { otpCode: input.otpCode, externalref: usedRef }));
+
+    if (result.code === "TP13") {
+      usedRef = promptExternalRef(input.publicRef);
+      result = await moolrePost("/open/transact/payment", collectionBody(input, { otpCode: input.otpCode, externalref: usedRef }));
+    }
+
+    if (result.code === "TP14") {
       if (input.otpCode) {
-        throw new Error("That SMS code was not accepted. Ask Moolre to send another and try again.");
+        throw new Error("That SMS code was not accepted. Wait for a new SMS from Moolre and try again.");
       }
       return otpPage(input);
     }
-    if (first.code === "TP17") {
-      const prompt = await moolrePost("/open/transact/payment", collectionBody(input));
-      return this.interpretPrompt(input, prompt);
+
+    if (result.code === "TP17") {
+      usedRef = promptExternalRef(input.publicRef);
+      result = await moolrePost("/open/transact/payment", collectionBody(input, { externalref: usedRef }));
     }
-    return this.interpretPrompt(input, first);
+
+    return this.interpretPrompt(input, result, usedRef);
   }
 
   private interpretPrompt(
     input: CreatePaymentInput,
     result: Awaited<ReturnType<typeof moolrePost>>,
+    usedRef: string,
   ): CreatePaymentResult {
-    if (result.code === "TR099" || (String(result.json.status) === "1" && result.code !== "TP13" && result.code !== "TP14" && result.code !== "TP01")) {
-      const data = result.json.data;
-      const providerRef = typeof data === "string" && data && data !== "all" ? data : input.publicRef;
-      return promptSent(input, providerRef);
+    const blocked = new Set(["TP13", "TP14", "TP17", "TP01", "AIN01", "AIN03"]);
+    if (result.code === "TR099" || (String(result.json.status) === "1" && !blocked.has(result.code))) {
+      return promptSent(input, usedRef);
     }
+    console.error("[moolre] payment not prompted", { code: result.code, message: result.json.message });
     if (result.code === "TP13") {
       throw new Error("This order already started a Moolre payment. Approve the prompt on the phone, or wait for confirmation.");
     }
-    throw new Error(result.json.message || "Moolre could not start the mobile-money prompt");
+    if (result.code === "TP17") {
+      throw new Error("Moolre verified the number but could not send the mobile-money prompt. Try Pay now again.");
+    }
+    const message = (result.json.message || "").trim();
+    if (message && message.length <= 160 && !message.includes("{")) {
+      throw new Error(message);
+    }
+    throw new Error("Moolre could not start the mobile-money prompt");
   }
 
   async verifyByExternalRef(publicRef: string): Promise<VerifiedPaymentEvent | null> {
@@ -182,7 +213,7 @@ export class MoolreProvider implements PaymentProvider {
     return {
       provider: this.id,
       providerEventId: String(payload.data?.transactionid ?? `${ref}:${payload.code ?? "event"}`),
-      providerRef: successful ? String(payload.data?.transactionid ?? ref) : ref,
+      providerRef: shopOrderRefFromMoolre(ref),
       eventType: payload.code ?? "callback",
       successful,
       amountGhs: Number(payload.data?.amount ?? 0),

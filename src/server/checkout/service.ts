@@ -236,7 +236,14 @@ export async function markOrderPaid(input: {
       id: string;
       payment_status: string;
       total: string;
-    }>(sql`SELECT id, payment_status, total::text FROM orders WHERE public_ref = ${input.publicRef} FOR UPDATE`);
+    }>(sql`
+      SELECT id, payment_status, total::text FROM orders
+       WHERE public_ref = ${input.publicRef}
+          OR public_ref = regexp_replace(${input.publicRef}, '\\.m[a-f0-9]{6}$', '', 'i')
+          OR id IN (SELECT order_id FROM payments WHERE provider_ref = ${input.publicRef})
+       LIMIT 1
+       FOR UPDATE
+    `);
     const row = order.rows[0];
     if (!row) throw new Error("Order not found");
     if (row.payment_status === "paid") return;

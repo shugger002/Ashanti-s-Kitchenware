@@ -1,5 +1,6 @@
 "use server";
 
+import { shopperError } from "@/lib/user-error";
 import { query } from "@/server/db/pool";
 import { sql } from "@/server/db/sql";
 import { getAppUrl } from "@/server/env";
@@ -49,7 +50,10 @@ export async function submitMoolreOtp(formData: FormData) {
     console.error("submitMoolreOtp failed", error);
     return {
       ok: false as const,
-      error: "That code could not be checked. Try again, or WhatsApp the shop if the prompt did not arrive.",
+      error: shopperError(
+        error,
+        "That code could not be checked. Try again, or WhatsApp the shop if the prompt did not arrive.",
+      ),
     };
   }
 }

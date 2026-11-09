@@ -15,7 +15,11 @@ export async function confirmMoolreDebit(publicRef: string) {
   if (order.rows[0].payment_status === "paid") return { paid: true as const };
   if (!isMoolreConfigured()) return { paid: false as const };
   try {
-    const event = await new MoolreProvider().verifyByExternalRef(ref);
+    const payment = await query<{ provider_ref: string | null }>(
+      sql`SELECT provider_ref FROM payments WHERE order_id = (SELECT id FROM orders WHERE public_ref = ${ref}) ORDER BY created_at DESC LIMIT 1`,
+    );
+    const moolreRef = payment.rows[0]?.provider_ref?.trim() || ref;
+    const event = await new MoolreProvider().verifyByExternalRef(moolreRef);
     if (!event?.successful) return { paid: false as const };
     await markOrderPaid({
       publicRef: ref,
