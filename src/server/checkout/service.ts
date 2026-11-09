@@ -145,12 +145,6 @@ export async function placeOrder(input: CheckoutInput, sessionCustomerId?: strin
         name = `${p.name}, ${v.name}`;
         if (v.price_override) unit = parseMoney(v.price_override);
       }
-      await lockAndReserve(db, {
-        productId: item.productId,
-        variantId: item.variantId,
-        quantity: item.quantity,
-        orderId,
-      });
       subtotal += unit * item.quantity;
       lines.push({
         productId: p.id,
@@ -173,6 +167,14 @@ export async function placeOrder(input: CheckoutInput, sessionCustomerId?: strin
          'pending_payment','pending',${subtotal},${shippingAmount},${total},${parsed.idempotencyKey}
        )
     `);
+    for (const item of parsed.items) {
+      await lockAndReserve(db, {
+        productId: item.productId,
+        variantId: item.variantId,
+        quantity: item.quantity,
+        orderId,
+      });
+    }
     await db.query(sql`
       INSERT INTO order_status_history (order_id, from_status, to_status, note)
        VALUES (${orderId}, NULL, 'pending_payment', 'Order created')

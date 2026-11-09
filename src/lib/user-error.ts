@@ -9,7 +9,7 @@ export function shopperError(error: unknown, fallback: string) {
   }
   if (!raw.trim()) return fallback;
   if (
-    /undefined|cannot read|is not a function|\[object |status code|sql |postgres|exception|stack|digest/i.test(
+    /undefined|cannot read|is not a function|\[object |status code|sql |postgres|exception|stack|digest|violates foreign key|insert or update on table|constraint/i.test(
       raw,
     )
   ) {

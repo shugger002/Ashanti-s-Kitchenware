@@ -2,6 +2,7 @@
 
 import { placeOrder } from "@/server/checkout/service";
 import { readStoreCustomer } from "@/server/customers/session";
+import { shopperError } from "@/lib/user-error";
 
 export async function submitCheckout(formData: FormData) {
   const items = JSON.parse(String(formData.get("items") ?? "[]")) as {
@@ -35,14 +36,9 @@ export async function submitCheckout(formData: FormData) {
     return { ok: true as const, redirectUrl: result.redirectUrl, publicRef: result.publicRef };
   } catch (error) {
     console.error("submitCheckout failed", error);
-    const raw = error instanceof Error ? error.message : "";
-    const known =
-      raw &&
-      raw.length < 160 &&
-      !/undefined|cannot read|sql |postgres|exception|stack/i.test(raw);
     return {
       ok: false as const,
-      error: known ? raw : "Could not place the order. Check your connection and try again.",
+      error: shopperError(error, "Could not place the order. Check your connection and try again."),
     };
   }
 }
