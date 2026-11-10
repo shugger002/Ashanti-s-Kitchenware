@@ -18,9 +18,7 @@ export function CheckoutShell({ children }: { children: React.ReactNode }) {
           <Link href="/" className="flex max-w-[12rem] items-center sm:max-w-[16rem]" aria-label={brand.name}>
             <StoreLogo className="h-9 w-auto max-w-full lg:h-11" />
           </Link>
-          <p className="shrink-0 text-right text-[11px] uppercase tracking-[0.12em] text-muted">
-            Ghana · GH₵
-          </p>
+          <p className="w-16 shrink-0 text-right text-[11px] text-muted sm:w-auto">GH₵</p>
         </div>
       </header>
       {children}

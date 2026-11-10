@@ -37,7 +37,7 @@ const GHANA_REGIONS = [
 ] as const;
 
 const choiceClass =
-  "flex min-h-12 cursor-pointer items-center gap-3 border border-border bg-background px-4 py-3.5 text-sm has-[:checked]:border-accent has-[:checked]:bg-surface";
+  "flex min-h-12 cursor-pointer items-center gap-3 border border-border bg-surface px-4 py-3.5 text-sm has-[:checked]:border-accent";
 
 function splitName(fullName: string) {
   const parts = fullName.trim().split(/\s+/);
@@ -65,25 +65,20 @@ function Field({
 }
 
 function Section({
-  step,
   title,
   extra,
+  last,
   children,
 }: {
-  step: string;
   title: string;
   extra?: ReactNode;
+  last?: boolean;
   children: ReactNode;
 }) {
   return (
-    <section className="border border-border bg-surface px-4 py-5 sm:px-6 sm:py-6">
+    <section className={cn("py-8", !last && "border-b border-border")}>
       <div className="mb-5 flex items-baseline justify-between gap-3">
-        <h2 className="text-2xl">
-          <span className="mr-2 font-sans text-[11px] font-medium uppercase tracking-[0.14em] text-muted">
-            {step}
-          </span>
-          {title}
-        </h2>
+        <h2 className="text-2xl text-balance">{title}</h2>
         {extra}
       </div>
       <div className="space-y-3">{children}</div>
@@ -190,6 +185,21 @@ export function CheckoutForm({
     );
   }
 
+  const payCta = paymentsReady ? (
+    <Button type="submit" className="h-12 w-full text-base" disabled={pending}>
+      {pending ? "Placing order…" : `Pay now · ${formatGhs(total)}`}
+    </Button>
+  ) : (
+    <a
+      href={whatsappHref}
+      className={buttonClass("primary", "h-12 w-full text-base")}
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      WhatsApp to order · {formatGhs(total)}
+    </a>
+  );
+
   const summary = (
     <div className="space-y-5">
       <ul className="space-y-4">
@@ -198,11 +208,15 @@ export function CheckoutForm({
             <div className="relative size-16 shrink-0">
               {line.imageUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={line.imageUrl} alt="" className="size-16 rounded-2xl object-cover" />
+                <img
+                  src={line.imageUrl}
+                  alt=""
+                  className="size-16 rounded-2xl object-cover outline outline-1 outline-black/10"
+                />
               ) : (
                 <div className="size-16 rounded-2xl border border-border bg-background" />
               )}
-              <span className="absolute -right-1.5 -top-1.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-accent px-1 text-[11px] text-white">
+              <span className="absolute -right-1.5 -top-1.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-accent px-1 text-[11px] tabular-nums text-white">
                 {line.quantity}
               </span>
             </div>
@@ -239,7 +253,7 @@ export function CheckoutForm({
 
   return (
     <form
-      className="mx-auto max-w-6xl lg:grid lg:grid-cols-[minmax(0,1fr)_22rem] xl:grid-cols-[minmax(0,1fr)_24rem]"
+      className="mx-auto max-w-6xl lg:grid lg:grid-cols-[minmax(0,1fr)_20rem] xl:grid-cols-[minmax(0,1fr)_22rem]"
       onSubmit={async (event) => {
         event.preventDefault();
         if (pending) return;
@@ -284,33 +298,50 @@ export function CheckoutForm({
         }
       }}
     >
-      <div className="border-b border-border bg-background lg:hidden">
+      <div className="border-b border-border lg:hidden">
         <button
           type="button"
-          className="flex min-h-12 w-full items-center justify-between px-4 py-3 text-sm"
+          className="flex min-h-12 w-full items-center gap-3 px-4 py-3 text-sm"
           onClick={() => setSummaryOpen((open) => !open)}
           aria-expanded={summaryOpen}
         >
-          <span className="flex items-center gap-1">
-            Order
-            <ChevronDown className={`size-4 transition-transform ${summaryOpen ? "rotate-180" : ""}`} />
+          <span className="flex min-w-0 flex-1 items-center gap-2">
+            {items.slice(0, 3).map((line) =>
+              line.imageUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  key={`${line.productId}-${line.variantId}`}
+                  src={line.imageUrl}
+                  alt=""
+                  className="size-9 rounded-lg object-cover outline outline-1 outline-black/10"
+                />
+              ) : (
+                <span
+                  key={`${line.productId}-${line.variantId}`}
+                  className="size-9 rounded-lg border border-border bg-surface"
+                />
+              ),
+            )}
+            <span className="flex items-center gap-1 text-muted">
+              {items.length === 1 ? "1 piece" : `${items.length} pieces`}
+              <ChevronDown className={`size-4 transition-transform ${summaryOpen ? "rotate-180" : ""}`} />
+            </span>
           </span>
-          <span className="font-medium tabular-nums">{formatGhs(total)}</span>
+          <span className="shrink-0 font-medium tabular-nums">{formatGhs(total)}</span>
         </button>
         {summaryOpen ? <div className="max-h-[45vh] overflow-y-auto border-t border-border px-4 py-4">{summary}</div> : null}
       </div>
 
-      <div className="mx-auto w-full max-w-xl space-y-5 px-4 py-8 pb-28 lg:mx-0 lg:max-w-none lg:space-y-6 lg:px-8 lg:py-10 lg:pb-10">
-        <header>
-          <h1 className="font-sans text-3xl font-bold uppercase tracking-[0.12em]">Checkout</h1>
+      <div className="mx-auto w-full max-w-xl px-4 pb-28 pt-8 lg:mx-0 lg:max-w-xl lg:px-8 lg:pb-12 lg:pt-10">
+        <header className="border-b border-border pb-8">
+          <h1 className="text-3xl text-balance md:text-4xl">Checkout</h1>
           <p className="mt-2 max-w-md text-pretty text-sm text-muted">
             Pay for the pieces now. Delivery, if you want it, is quoted on WhatsApp after this order.
           </p>
         </header>
 
         <Section
-          step="01"
-          title="Contact"
+          title="You"
           extra={
             customer ? (
               <span className="text-sm text-muted">Signed in</span>
@@ -321,23 +352,6 @@ export function CheckoutForm({
             )
           }
         >
-          <Field label="Email" hint="Used for the order receipt. Guest checkout is available.">
-            <input
-              id="email"
-              type="email"
-              name="email"
-              required
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
-              className="input"
-              autoComplete="email"
-            />
-          </Field>
-        </Section>
-
-        <Section step="02" title="Details">
-          {fulfillment.coverageNote ? <p className="text-pretty text-sm text-muted">{fulfillment.coverageNote}</p> : null}
-          <p className="text-sm text-muted">Ghana</p>
           <div className="grid grid-cols-2 gap-3">
             <Field label="First name">
               <input
@@ -360,11 +374,23 @@ export function CheckoutForm({
               />
             </Field>
           </div>
+          <Field label="Email" hint="Receipt only. Guest checkout is available.">
+            <input
+              id="email"
+              type="email"
+              name="email"
+              required
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+              className="input"
+              autoComplete="email"
+            />
+          </Field>
           <Field
             label={payWith === "moolre" ? "Mobile money number" : "Phone"}
             hint={
               payWith === "moolre"
-                ? "Use the Ghana number that will receive the Moolre prompt (MTN, Telecel, or AT)."
+                ? "Ghana number that will receive the Moolre prompt."
                 : undefined
             }
           >
@@ -379,8 +405,70 @@ export function CheckoutForm({
               autoComplete="tel"
             />
           </Field>
-          {method === "delivery" ? (
+        </Section>
+
+        <Section title="How you get it">
+          {fulfillment.coverageNote ? <p className="text-pretty text-sm text-muted">{fulfillment.coverageNote}</p> : null}
+          <div className={cn("grid gap-2", collectionOn && deliveryOn && "sm:grid-cols-2")}>
+            {collectionOn ? (
+              <label className={cn(choiceClass, "justify-between")}>
+                <span className="flex min-w-0 items-center gap-3">
+                  <input
+                    type="radio"
+                    name="deliveryMethod"
+                    value="collection"
+                    checked={method === "collection"}
+                    onChange={() => setMethod("collection")}
+                    className="accent-accent"
+                  />
+                  <span>
+                    <span className="block font-medium">Collect</span>
+                    <span className="mt-0.5 block text-xs text-muted">Dansoman shop</span>
+                  </span>
+                </span>
+                <span className="tabular-nums">{formatGhs(0)}</span>
+              </label>
+            ) : null}
+            {deliveryOn ? (
+              <label className={cn(choiceClass, "justify-between")}>
+                <span className="flex min-w-0 items-center gap-3">
+                  <input
+                    type="radio"
+                    name="deliveryMethod"
+                    value="delivery"
+                    checked={method === "delivery"}
+                    onChange={() => setMethod("delivery")}
+                    className="accent-accent"
+                  />
+                  <span>
+                    <span className="block font-medium">Delivery</span>
+                    <span className="mt-0.5 block text-xs text-muted">Quoted on WhatsApp</span>
+                  </span>
+                </span>
+              </label>
+            ) : null}
+          </div>
+          {!collectionOn && !deliveryOn ? (
+            <p className="text-sm text-muted">
+              <a href={whatsappHref} className="text-accent">
+                WhatsApp the shop
+              </a>{" "}
+              to arrange collection or delivery.
+            </p>
+          ) : null}
+          {method === "collection" ? (
+            <p className="text-pretty text-sm text-muted">
+              {defaultContact.addressLine1}, {defaultContact.city}.
+            </p>
+          ) : (
             <>
+              <p className="text-pretty text-sm text-muted">
+                After you pay, we confirm the delivery charge and timing on{" "}
+                <a href={whatsappHref} className="text-accent">
+                  WhatsApp
+                </a>
+                . It is not in the total.
+              </p>
               <Field label="Address">
                 <input
                   required
@@ -430,69 +518,16 @@ export function CheckoutForm({
                 />
               </Field>
             </>
-          ) : (
-            <p className="border border-border bg-background px-4 py-3 text-pretty text-sm text-muted">
-              Collection at {defaultContact.addressLine1}, {defaultContact.city}.
-            </p>
           )}
         </Section>
 
-        <Section step="03" title="How you get it">
-          <div className="space-y-2">
-            {collectionOn ? (
-              <label className={cn(choiceClass, "justify-between")}>
-                <span className="flex min-w-0 items-center gap-3">
-                  <input
-                    type="radio"
-                    name="deliveryMethod"
-                    value="collection"
-                    checked={method === "collection"}
-                    onChange={() => setMethod("collection")}
-                    className="accent-accent"
-                  />
-                  Collection at the shop
-                </span>
-                <span className="tabular-nums">{formatGhs(0)}</span>
-              </label>
-            ) : null}
-            {deliveryOn ? (
-              <label className={cn(choiceClass, "justify-between")}>
-                <span className="flex min-w-0 items-center gap-3">
-                  <input
-                    type="radio"
-                    name="deliveryMethod"
-                    value="delivery"
-                    checked={method === "delivery"}
-                    onChange={() => setMethod("delivery")}
-                    className="accent-accent"
-                  />
-                  Delivery
-                </span>
-                <span className="shrink-0 text-xs text-muted sm:text-sm">Quoted on WhatsApp</span>
-              </label>
-            ) : null}
-            {!collectionOn && !deliveryOn ? (
-              <p className="text-sm text-muted">
-                <a href={whatsappHref} className="text-accent">
-                  WhatsApp the shop
-                </a>{" "}
-                to arrange collection or delivery.
-              </p>
-            ) : null}
-          </div>
-          {method === "delivery" ? (
-            <p className="text-pretty text-sm text-muted">
-              After you pay for the items, we confirm the delivery charge and timing on{" "}
-              <a href={whatsappHref} className="text-accent">
-                WhatsApp
-              </a>
-              . It is not included in the total.
-            </p>
-          ) : null}
-        </Section>
-
-        <Section step="04" title="Payment">
-          {paymentsReady ? (
+        <Section title="Pay" last>
+          {paymentsReady && paymentOptions.length === 1 ? (
+            <>
+              <input type="hidden" name="paymentProvider" value={paymentOptions[0].id} />
+              <p className="text-pretty text-sm text-muted">{paymentOptions[0].description}</p>
+            </>
+          ) : paymentsReady ? (
             <div className="space-y-2">
               {paymentOptions.map((option) => (
                 <label key={option.id} className={cn(choiceClass, "items-start")}>
@@ -519,7 +554,7 @@ export function CheckoutForm({
           )}
           {payWith === "moolre" ? (
             <fieldset>
-              <legend className="mb-2 text-sm">Mobile money network</legend>
+              <legend className="mb-2 text-sm">Network</legend>
               <div className="grid grid-cols-3 gap-2">
                 {(
                   [
@@ -528,7 +563,7 @@ export function CheckoutForm({
                     ["7", "AT"],
                   ] as const
                 ).map(([value, label]) => (
-                  <label key={value} className={cn(choiceClass, "min-h-11 justify-center px-2")}>
+                  <label key={value} className={cn(choiceClass, "min-h-11 justify-center px-2 has-[:checked]:font-medium")}>
                     <input
                       type="radio"
                       name="momoChannel"
@@ -546,9 +581,9 @@ export function CheckoutForm({
           <label className="flex min-h-11 items-start gap-2 py-1 text-sm text-muted">
             <input type="checkbox" name="agree" required className="mt-1 size-4 accent-accent" />
             <span className="text-pretty">
-              By paying, you agree to our{" "}
+              I agree to the{" "}
               <Link href="/terms" className="underline">
-                Terms of service
+                Terms
               </Link>{" "}
               and{" "}
               <Link href="/privacy" className="underline">
@@ -557,44 +592,25 @@ export function CheckoutForm({
               .
             </span>
           </label>
+          {error ? <p className="text-sm text-red-800">{error}</p> : null}
         </Section>
 
         <input type="hidden" name="idempotencyKey" value={idempotencyKey} />
-        {error ? <p className="text-sm text-red-800">{error}</p> : null}
-
-        {paymentsReady ? (
-          <Button type="submit" className="hidden h-14 w-full text-base lg:inline-flex" disabled={pending}>
-            {pending ? "Placing order…" : `Pay now · ${formatGhs(total)}`}
-          </Button>
-        ) : (
-          <a
-            href={whatsappHref}
-            className={`${buttonClass("primary", "hidden h-14 w-full text-base lg:inline-flex")}`}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            WhatsApp to order · {formatGhs(total)}
-          </a>
-        )}
       </div>
 
-      <div className="fixed inset-x-0 bottom-0 z-50 border-t border-border bg-background px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] lg:hidden">
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] lg:hidden">
         {error ? <p className="mb-2 text-sm text-red-800">{error}</p> : null}
-        {paymentsReady ? (
-          <Button type="submit" className="h-12 w-full text-base" disabled={pending}>
-            {pending ? "Placing order…" : `Pay now · ${formatGhs(total)}`}
-          </Button>
-        ) : (
-          <a href={whatsappHref} className={buttonClass("primary", "h-12 w-full text-base")} target="_blank" rel="noopener noreferrer">
-            WhatsApp to order · {formatGhs(total)}
-          </a>
-        )}
+        {payCta}
       </div>
 
       <aside className="hidden border-l border-border bg-surface lg:block">
-        <div className="sticky top-0 px-8 py-10">
-          <h2 className="mb-6 font-sans text-[11px] font-medium uppercase tracking-[0.14em] text-muted">Your order</h2>
-          {summary}
+        <div className="sticky top-0 flex min-h-[calc(100dvh-4.5rem)] flex-col px-7 py-10">
+          <h2 className="mb-6 text-2xl">Your order</h2>
+          <div className="flex-1">{summary}</div>
+          <div className="mt-8 space-y-3 border-t border-border pt-6">
+            {error ? <p className="text-sm text-red-800">{error}</p> : null}
+            {payCta}
+          </div>
         </div>
       </aside>
     </form>

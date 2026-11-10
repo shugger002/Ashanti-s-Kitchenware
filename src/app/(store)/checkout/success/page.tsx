@@ -28,7 +28,7 @@ export default async function SuccessPage({
   return (
     <CheckoutShell>
       <CheckoutPaper>
-        <h1 className="font-sans text-3xl font-bold uppercase tracking-[0.12em] md:text-4xl">Thank you</h1>
+        <h1 className="text-3xl text-balance md:text-4xl">Thank you</h1>
         <p className="mt-4 text-pretty text-muted">
           {paymentStatus === "paid"
             ? "Payment has been confirmed. We will contact you about fulfilment."
