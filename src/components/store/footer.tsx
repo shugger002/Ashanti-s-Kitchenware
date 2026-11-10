@@ -87,10 +87,12 @@ export function StoreFooter({
   contact,
   social,
   categories = [],
+  showDemoNotice = false,
 }: {
   contact: ContactSettings;
   social: SocialSettings;
   categories?: CategoryLink[];
+  showDemoNotice?: boolean;
 }) {
   const socialLinks = [
     ["TikTok", social.tiktok],
@@ -222,7 +224,9 @@ export function StoreFooter({
             ))}
           </nav>
         </div>
-        <p className="mx-auto max-w-6xl px-4 pb-4 text-[11px] leading-relaxed text-white/45 lg:px-8 lg:pb-5">{DEMO_PHOTO_NOTICE}</p>
+        {showDemoNotice ? (
+          <p className="mx-auto max-w-6xl px-4 pb-4 text-[11px] leading-relaxed text-white/45 lg:px-8 lg:pb-5">{DEMO_PHOTO_NOTICE}</p>
+        ) : null}
       </div>
     </footer>
   );

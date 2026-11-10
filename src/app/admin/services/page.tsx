@@ -106,6 +106,11 @@ export default async function ServiceHealthPage({
         {isMoolreConfigured() && !isMoolreWebhookConfigured() ? (
           <p className="mt-3 text-sm text-accent">MOOLRE_WEBHOOK_SECRET is empty. Status checks can still confirm a debit; the callback cannot.</p>
         ) : null}
+        <p className="mt-3 text-sm leading-relaxed text-muted">
+          Collections still need Moolre to enable the API service on the ASHANTI'S ENTERPRISE wallet. That KYC step is
+          done in the Moolre dashboard, not on this site. Hubtel stays off until merchant keys exist. Do not paste
+          private keys here.
+        </p>
       </AdminSection>
       <AdminSection className="mt-8 max-w-xl" title="Shop email">
         <p className="text-sm leading-relaxed text-muted">

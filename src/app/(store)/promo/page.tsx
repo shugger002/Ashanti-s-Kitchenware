@@ -3,8 +3,6 @@ import { PromoDiscountedSection } from "@/components/store/promo-section";
 import { pageMeta } from "@/lib/seo";
 import { searchProducts } from "@/server/catalog/queries";
 
-export const dynamic = "force-dynamic";
-
 export const metadata = pageMeta({
   title: "Promo and discounted",
   description:

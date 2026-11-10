@@ -186,9 +186,14 @@ export default async function AdminProductsPage({
             }
             action={
               canWrite ? (
-                <Link href="/admin/products/new" className={adminButton()}>
-                  Add product
-                </Link>
+                <span className="flex flex-col gap-2 sm:flex-row">
+                  <Link href="/admin/products/new" className={adminButton()}>
+                    Add product
+                  </Link>
+                  <Link href="/admin/products/new#add-many" className={buttonClass("secondary", "h-12 min-h-12 w-full sm:w-auto")}>
+                    Import CSV
+                  </Link>
+                </span>
               ) : undefined
             }
           />

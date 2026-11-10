@@ -19,6 +19,9 @@ import {
   Toolbar,
 } from "@/components/admin/ui";
 import { InventoryCsvForm } from "@/app/admin/inventory/csv-form";
+import { sendLowStockAlertAction } from "@/app/admin/inventory/actions";
+import { listLowStockRows, lowStockWhatsAppHref } from "@/server/notifications/low-stock";
+import { getStorefrontConfig } from "@/server/store/settings";
 import { buttonClass } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -49,7 +52,7 @@ function matchesNeed(row: InventoryRow, need: StockNeed | undefined) {
 export default async function InventoryPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; need?: string; product?: string }>;
+  searchParams: Promise<{ q?: string; need?: string; product?: string; alert?: string }>;
 }) {
   const params = await searchParams;
   const q = params.q?.trim() ?? "";
@@ -57,11 +60,14 @@ export default async function InventoryPage({
   const productId = params.product?.trim() ?? "";
   const needParam = parseNeed(params.need);
   const need: StockNeed | undefined = productId ? undefined : needParam || (searching ? undefined : "work");
-  const [, rows, glance] = await Promise.all([
+  const [, rows, glance, lowRows, config] = await Promise.all([
     requirePermission("inventory.write"),
     listInventory(),
     countStockGlance(),
+    listLowStockRows(),
+    getStorefrontConfig(),
   ]);
+  const stockWa = lowStockWhatsAppHref(config.contact.whatsappE164, lowRows);
 
   let displayed = rows.filter((row) => matchesNeed(row, need));
   if (productId) displayed = displayed.filter((row) => row.productId === productId);
@@ -94,7 +100,27 @@ export default async function InventoryPage({
       <AdminPageHeader
         title="Stock"
         description="Work now is low or finished shop pieces, not sample DEMO codes. Sold in shop takes a walk-in piece off the site. Restock what arrived. Fix a count only when the shelf does not match."
+        action={
+          lowRows.length > 0 ? (
+            <>
+              {stockWa ? (
+                <a href={stockWa} className={buttonClass("secondary", "h-12 min-h-12 w-full sm:w-auto")}>
+                  WhatsApp stock list
+                </a>
+              ) : null}
+              <form action={sendLowStockAlertAction}>
+                <button className={adminButton()} type="submit">
+                  Email low-stock list
+                </button>
+              </form>
+            </>
+          ) : undefined
+        }
       />
+      {params.alert === "sent" ? <p className="mt-3 text-sm">Low-stock list emailed to the shop inbox.</p> : null}
+      {params.alert === "fail" ? (
+        <p className="mt-3 text-sm text-accent">Email did not send. Check Connections for shop email.</p>
+      ) : null}
       <AdminGlance
         items={[
           { href: "/admin/inventory", label: "Work now", value: glance.work, warn: glance.work > 0 },

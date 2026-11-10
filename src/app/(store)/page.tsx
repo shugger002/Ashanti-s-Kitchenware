@@ -9,8 +9,6 @@ import { journalArticles } from "@/content/journal";
 import { pageMeta } from "@/lib/seo";
 import { mediaZoomClass } from "@/lib/utils";
 
-export const dynamic = "force-dynamic";
-
 export const metadata = pageMeta({
   title: "Kitchen appliances in Accra",
   description:

@@ -410,3 +410,16 @@ table tbody tr:hover {
     animation: none;
   }
 }
+
+@media print {
+  .admin-desk nav,
+  .admin-desk header,
+  .print\\:hidden {
+    display: none !important;
+  }
+  .pack-ticket,
+  .pack-desk {
+    background: #fff;
+    color: #111;
+  }
+}

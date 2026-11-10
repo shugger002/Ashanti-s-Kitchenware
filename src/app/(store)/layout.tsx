@@ -9,21 +9,21 @@ import { DeferredStoreExtras } from "@/components/store/deferred-store-extras";
 import { Toasts } from "@/components/store/toasts";
 import { WishlistHydrator } from "@/components/store/wishlist-button";
 import { StoreChromeSkeleton } from "@/components/ui/skeleton";
-import { countOnSaleProducts, listCategories } from "@/server/catalog/queries";
-import { readStoreCustomer } from "@/server/customers/session";
+import { countDemoListings, countOnSaleProducts, listCategories } from "@/server/catalog/queries";
 import { getStorefrontConfig } from "@/server/store/settings";
 import { AnalyticsTracker } from "@/components/store/analytics-tracker";
 import { getAnalyticsMeasurementId } from "@/server/env";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 async function StoreShell({ children }: { children: React.ReactNode }) {
-  const [config, customer, categories, promoCount] = await Promise.all([
+  const [config, categories, promoCount, demoCount] = await Promise.all([
     getStorefrontConfig(),
-    readStoreCustomer(),
     listCategories(),
     countOnSaleProducts(),
+    countDemoListings(),
   ]);
+  const demoAnnouncement = config.announcement.text.toLowerCase().includes("demo photograph");
   const categoryLinks = categories.filter((c) => !c.parentId).map((c) => ({ slug: c.slug, name: c.name }));
   const searchHints = categoryLinks.map((c) => ({
     slug: c.slug,
@@ -35,7 +35,7 @@ async function StoreShell({ children }: { children: React.ReactNode }) {
     <StoreFrame
       announcement={
         <>
-          {config.announcement.enabled && config.announcement.text ? (
+          {config.announcement.enabled && config.announcement.text && !(demoAnnouncement && demoCount === 0) ? (
             <p className="line-clamp-1 bg-accent px-3 py-1.5 text-center text-[10px] uppercase leading-snug tracking-[0.12em] text-white sm:line-clamp-none sm:px-4 sm:py-2 sm:text-xs sm:tracking-[0.14em]">
               {config.announcement.text}
             </p>
@@ -56,8 +56,8 @@ async function StoreShell({ children }: { children: React.ReactNode }) {
           ) : null}
         </>
       }
-      chrome={<StoreChrome signedIn={Boolean(customer)} categories={categoryLinks} searchHints={searchHints} />}
-      footer={<StoreFooter contact={config.contact} social={config.social} categories={categoryLinks} />}
+      chrome={<StoreChrome categories={categoryLinks} searchHints={searchHints} />}
+      footer={<StoreFooter contact={config.contact} social={config.social} categories={categoryLinks} showDemoNotice={demoCount > 0} />}
       extras={
         <>
           <WhatsAppButton phoneE164={config.contact.whatsappE164} />

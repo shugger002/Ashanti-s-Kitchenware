@@ -65,6 +65,10 @@ const nextConfig: NextConfig = {
           { key: "Service-Worker-Allowed", value: "/" },
         ],
       },
+      {
+        source: "/admin/:path*",
+        headers: [...securityHeaders, { key: "Cache-Control", value: "private, no-store" }],
+      },
       { source: "/:path*", headers: securityHeaders },
     ];
   },

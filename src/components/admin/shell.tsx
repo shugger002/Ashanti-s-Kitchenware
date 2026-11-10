@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import {
   Activity,
   BarChart3,
+  Box,
   ClipboardList,
   FolderTree,
   Home,
@@ -43,6 +44,7 @@ const groups: { label: string; items: NavItem[] }[] = [
     items: [
       { href: "/admin", label: "Home", permission: "orders.read", icon: Home, exact: true },
       { href: "/admin/orders", label: "Orders", permission: "orders.read", icon: ClipboardList },
+      { href: "/admin/pack", label: "Pack desk", permission: "orders.read", icon: Box },
       { href: "/admin/products", label: "Edit products", permission: "products.read", icon: Package },
       { href: "/admin/products/new", label: "Add product", permission: "products.write", icon: Plus, exact: true },
       { href: "/admin/inventory", label: "Stock", permission: "inventory.write", icon: Warehouse },

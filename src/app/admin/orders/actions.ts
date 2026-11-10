@@ -9,6 +9,7 @@ function touchOrders(orderId: string) {
   revalidatePath("/admin/orders");
   revalidatePath("/admin");
   revalidatePath(`/admin/orders/${orderId}`);
+  revalidatePath("/admin/pack");
 }
 
 export async function transitionOrderAction(formData: FormData) {

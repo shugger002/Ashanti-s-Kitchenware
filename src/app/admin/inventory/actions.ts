@@ -8,6 +8,8 @@ import { runInventoryCsvImport } from "@/server/inventory/import-file";
 import type { InventoryCsvResult } from "@/lib/desk-import";
 import { query } from "@/server/db/pool";
 import { sql } from "@/server/db/sql";
+import { sendLowStockDigest } from "@/server/notifications/low-stock";
+import { redirect } from "next/navigation";
 
 function touchStock() {
   revalidateTag("catalog", { expire: 0 });
@@ -105,4 +107,10 @@ export async function importInventoryCsv(
       errors: [],
     };
   }
+}
+
+export async function sendLowStockAlertAction() {
+  await requirePermission("inventory.write");
+  const result = await sendLowStockDigest({ force: true });
+  redirect(result.sent ? "/admin/inventory?alert=sent" : `/admin/inventory?alert=fail`);
 }

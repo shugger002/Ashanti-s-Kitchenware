@@ -8,6 +8,7 @@ import { formatAccraWhen } from "@/lib/accra-time";
 import { ghanaInternationalMsisdn } from "@/lib/phone-gh";
 import { customerWhatsAppHref } from "@/lib/order-whatsapp";
 import { OrderWhatsAppLink } from "@/components/admin/whatsapp-link";
+import { PrintTicketButton } from "@/components/admin/print-ticket";
 import { CUSTOMER_TRACK_STEPS, customerTrackIndex, forwardOrderSteps, ORDER_STATUS_LABEL, staffNextLabel } from "@/lib/order-status";
 import { buttonClass } from "@/components/ui/button";
 import {
@@ -86,15 +87,16 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
   });
 
   return (
-    <div className="space-y-6">
+    <div className="pack-ticket space-y-6">
       <BackLink href="/admin/orders">Work now</BackLink>
       <AdminPageHeader
         title={text(order.public_ref)}
         description={`${text(order.full_name)} · ${text(order.phone)} · Placed ${order.created_at ? formatAccraWhen(String(order.created_at)) : ""}`}
         action={
-          <span className="flex flex-wrap gap-2">
+          <span className="flex flex-wrap gap-2 print:hidden">
             <StatusPill value={status} tone={orderTone(status)} />
             <StatusPill value={paymentStatus} tone={paymentTone(paymentStatus)} label={paymentLabel(paymentStatus)} />
+            <PrintTicketButton />
           </span>
         }
       />
@@ -108,7 +110,7 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
         ]}
       />
 
-      <div className="flex max-w-xl flex-col gap-2 lg:hidden">
+      <div className="flex max-w-xl flex-col gap-2 print:hidden lg:hidden">
         {waDigits.length >= 11 ? (
           <a href={`tel:+${waDigits}`} className={adminButton()}>
             Call customer
@@ -118,7 +120,7 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
       </div>
 
       {canWrite && allowed.length > 0 ? (
-        <form action={transitionOrderAction} className="max-w-xl">
+        <form action={transitionOrderAction} className="max-w-xl print:hidden">
           <AdminSection title="Next step" hint={nextStepHint(status, method)}>
             <input type="hidden" name="orderId" value={id} />
             <label className="block text-sm">

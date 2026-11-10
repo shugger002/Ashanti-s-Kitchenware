@@ -76,6 +76,23 @@ export async function listCategories(activeOnly = true): Promise<Category[]> {
   )();
 }
 
+export async function countDemoListings(): Promise<number> {
+  if (!process.env.DATABASE_URL) return 0;
+  return unstable_cache(
+    async () => {
+      const result = await query<{ count: string }>(sql`
+        SELECT count(*)::text AS count
+         FROM products
+         WHERE archived_at IS NULL
+           AND (sku ILIKE 'DEMO-%' OR slug ILIKE 'demo-%')
+      `);
+      return Number(result.rows[0]?.count ?? 0);
+    },
+    ["count-demo-listings"],
+    { revalidate: 60, tags: ["catalog"] },
+  )();
+}
+
 export async function countOnSaleProducts(): Promise<number> {
   if (!process.env.DATABASE_URL) {
     return filterDemoProducts({ onSale: true }).length;

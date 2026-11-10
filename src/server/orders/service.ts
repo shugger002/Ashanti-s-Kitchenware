@@ -3,6 +3,7 @@ import { likeContains, sql, sqlAnd } from "@/server/db/sql";
 import { writeAuditLog } from "@/server/auth/audit";
 import { hitRateLimit } from "@/server/auth/rate-limit";
 import { isUuid } from "@/lib/utils";
+import { sendPackedOrderEmail } from "@/server/notifications/order-mail";
 
 export const ORDER_TRANSITIONS: Record<string, string[]> = {
   pending_payment: ["cancelled", "paid"],
@@ -376,6 +377,9 @@ export async function transitionOrder(input: {
       db,
     );
   });
+  if (input.toStatus === "shipped" || input.toStatus === "ready_for_collection") {
+    await sendPackedOrderEmail(input.orderId, input.toStatus);
+  }
 }
 
 export async function addOrderNote(orderId: string, actorUserId: string, note: string): Promise<void> {

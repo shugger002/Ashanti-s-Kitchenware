@@ -115,6 +115,9 @@ export default async function AdminHomePage() {
                 Add product
               </Link>
             ) : null}
+            <Link href="/admin/pack" className={buttonClass("secondary", "h-12 min-h-12 w-full sm:w-auto")}>
+              Pack desk
+            </Link>
             <Link href="/admin/orders" className={buttonClass("secondary", "h-12 min-h-12 w-full sm:w-auto")}>
               All orders
             </Link>
