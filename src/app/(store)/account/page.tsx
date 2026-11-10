@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Heart, PackageSearch, Store } from "lucide-react";
@@ -7,6 +8,7 @@ import { pageMeta } from "@/lib/seo";
 import { formatGhs } from "@/lib/money";
 import { readStoreCustomer } from "@/server/customers/session";
 import { listOrdersForCustomer } from "@/server/orders/service";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export const metadata = pageMeta({
   title: "Your account",
@@ -27,7 +29,6 @@ function labelStatus(value: string) {
 export default async function AccountPage() {
   const customer = await readStoreCustomer();
   if (!customer) redirect("/login");
-  const orders = await listOrdersForCustomer(customer.id);
   const phoneHref = `tel:${customer.phone.replace(/\s+/g, "")}`;
 
   return (
@@ -90,35 +91,53 @@ export default async function AccountPage() {
 
       <section className="mt-10">
         <h2 className="text-2xl">Orders</h2>
-        {orders.length === 0 ? (
-          <div className="mt-4 rounded-2xl border border-dashed border-border bg-surface px-4 py-5 text-center">
-            <p className="font-serif text-xl">No orders yet</p>
-            <p className="mx-auto mt-2 max-w-sm text-pretty text-sm text-muted">
-              Orders placed with this account will list here with the Ghana Cedi total. Use Shop above to browse.
-            </p>
-          </div>
-        ) : (
-          <ul className="mt-4 space-y-3">
-            {orders.map((order) => (
-              <li key={order.id}>
-                <Link
-                  href={`/orders/track?ref=${encodeURIComponent(order.publicRef)}`}
-                  className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border bg-surface p-4 text-foreground md:p-5"
-                >
-                  <div className="min-w-0">
-                    <p className="font-medium tabular-nums">{order.publicRef}</p>
-                    <p className="mt-1 text-sm capitalize text-muted">
-                      {new Date(order.createdAt).toLocaleDateString("en-GH")} · {labelStatus(order.status)} ·{" "}
-                      {labelStatus(order.paymentStatus)}
-                    </p>
-                  </div>
-                  <p className="price text-lg">{formatGhs(Number(order.total))}</p>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        )}
+        <Suspense
+          fallback={
+            <div className="mt-4 space-y-3" aria-busy="true" role="status" aria-label="Loading orders">
+              {Array.from({ length: 3 }, (_, index) => (
+                <Skeleton key={index} className="h-20 w-full rounded-2xl" />
+              ))}
+            </div>
+          }
+        >
+          <AccountOrders customerId={customer.id} />
+        </Suspense>
       </section>
     </div>
+  );
+}
+
+async function AccountOrders({ customerId }: { customerId: string }) {
+  const orders = await listOrdersForCustomer(customerId);
+  if (orders.length === 0) {
+    return (
+      <div className="mt-4 rounded-2xl border border-dashed border-border bg-surface px-4 py-5 text-center">
+        <p className="font-serif text-xl">No orders yet</p>
+        <p className="mx-auto mt-2 max-w-sm text-pretty text-sm text-muted">
+          Orders placed with this account will list here with the Ghana Cedi total. Use Shop above to browse.
+        </p>
+      </div>
+    );
+  }
+  return (
+    <ul className="mt-4 space-y-3">
+      {orders.map((order) => (
+        <li key={order.id}>
+          <Link
+            href={`/orders/track?ref=${encodeURIComponent(order.publicRef)}`}
+            className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border bg-surface p-4 text-foreground md:p-5"
+          >
+            <div className="min-w-0">
+              <p className="font-medium tabular-nums">{order.publicRef}</p>
+              <p className="mt-1 text-sm capitalize text-muted">
+                {new Date(order.createdAt).toLocaleDateString("en-GH")} · {labelStatus(order.status)} ·{" "}
+                {labelStatus(order.paymentStatus)}
+              </p>
+            </div>
+            <p className="price text-lg">{formatGhs(Number(order.total))}</p>
+          </Link>
+        </li>
+      ))}
+    </ul>
   );
 }

@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { NewsletterForm } from "@/components/store/newsletter-form";
@@ -6,6 +7,7 @@ import { getJournalArticle, journalArticles } from "@/content/journal";
 import { jsonLdText, pageMeta } from "@/lib/seo";
 import { getAppUrl } from "@/server/env";
 import { getProductBySlug } from "@/server/catalog/queries";
+import { ProductRailSkeleton } from "@/components/ui/skeleton";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
@@ -19,9 +21,6 @@ export default async function JournalArticlePage({ params }: { params: Promise<{
   const article = getJournalArticle(slug);
   if (!article) notFound();
   const related = journalArticles.filter((item) => item.slug !== article.slug);
-  const products = (
-    await Promise.all(article.relatedSlugs.map((productSlug) => getProductBySlug(productSlug)))
-  ).filter((item) => item !== null);
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Article",
@@ -64,11 +63,10 @@ export default async function JournalArticlePage({ params }: { params: Promise<{
           Email
         </a>
       </div>
-      {products.length > 0 ? (
-        <section className="mt-16">
-          <h2 className="text-2xl">Recommended from the shop</h2>
-          <ProductRail products={products} className="mt-8" />
-        </section>
+      {article.relatedSlugs.length > 0 ? (
+        <Suspense fallback={<div className="mt-16"><ProductRailSkeleton count={3} /></div>}>
+          <JournalRelatedProducts slugs={article.relatedSlugs} />
+        </Suspense>
       ) : null}
       <section className="mt-16 rounded-3xl bg-surface p-8">
         <h2 className="text-2xl">Stock updates</h2>
@@ -88,5 +86,18 @@ export default async function JournalArticlePage({ params }: { params: Promise<{
         </ul>
       </section>
     </article>
+  );
+}
+
+async function JournalRelatedProducts({ slugs }: { slugs: string[] }) {
+  const products = (await Promise.all(slugs.map((productSlug) => getProductBySlug(productSlug)))).filter(
+    (item) => item !== null,
+  );
+  if (products.length === 0) return null;
+  return (
+    <section className="mt-16">
+      <h2 className="text-2xl">Recommended from the shop</h2>
+      <ProductRail products={products} className="mt-8" />
+    </section>
   );
 }

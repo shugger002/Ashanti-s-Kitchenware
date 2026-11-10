@@ -1,5 +1,5 @@
-import { CatalogPageSkeleton } from "@/components/ui/skeleton";
+import { CartPageSkeleton } from "@/components/ui/skeleton";
 
 export default function WishlistLoading() {
-  return <CatalogPageSkeleton />;
+  return <CartPageSkeleton />;
 }

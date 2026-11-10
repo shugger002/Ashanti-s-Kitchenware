@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AddToCart } from "@/components/store/add-to-cart";
@@ -14,6 +15,7 @@ import { listPublishedReviews } from "@/server/reviews/service";
 import { isDemoListing } from "@/lib/listing";
 import { StarRating } from "@/components/store/star-rating";
 import { SalePriceBubble } from "@/components/store/sale-price";
+import { ProductRailSkeleton, ProductReviewsSkeleton } from "@/components/ui/skeleton";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
@@ -30,10 +32,6 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
   const { slug } = await params;
   const product = await getProductBySlug(slug);
   if (!product) notFound();
-  const [related, reviews] = await Promise.all([
-    relatedProducts(product.id, product.categorySlug),
-    listPublishedReviews(product.id),
-  ]);
   const price = Number(product.salePrice ?? product.price);
   const demo = isDemoListing(product.sku, product.slug);
   const average = product.ratingAverage;
@@ -190,14 +188,43 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
         </div>
       </div>
 
-      <ProductReviews productId={product.id} slug={product.slug} reviews={reviews} allowSubmit={!demo} />
-      {related.length > 0 ? (
-        <section className="mt-16">
-          <h2 className="text-2xl">Related products</h2>
-          <ProductRail products={related} className="mt-8" />
-        </section>
-      ) : null}
+      <Suspense fallback={<ProductReviewsSkeleton />}>
+        <ProductReviewsBlock productId={product.id} slug={product.slug} allowSubmit={!demo} />
+      </Suspense>
+      <Suspense fallback={<div className="mt-16"><ProductRailSkeleton /></div>}>
+        <RelatedProductsBlock productId={product.id} categorySlug={product.categorySlug} />
+      </Suspense>
       <RecentlyViewed excludeSlug={product.slug} />
     </div>
+  );
+}
+
+async function ProductReviewsBlock({
+  productId,
+  slug,
+  allowSubmit,
+}: {
+  productId: string;
+  slug: string;
+  allowSubmit: boolean;
+}) {
+  const reviews = await listPublishedReviews(productId);
+  return <ProductReviews productId={productId} slug={slug} reviews={reviews} allowSubmit={allowSubmit} />;
+}
+
+async function RelatedProductsBlock({
+  productId,
+  categorySlug,
+}: {
+  productId: string;
+  categorySlug: string | null;
+}) {
+  const related = await relatedProducts(productId, categorySlug);
+  if (related.length === 0) return null;
+  return (
+    <section className="mt-16">
+      <h2 className="text-2xl">Related products</h2>
+      <ProductRail products={related} className="mt-8" />
+    </section>
   );
 }

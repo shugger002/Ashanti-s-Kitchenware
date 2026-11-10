@@ -6,6 +6,7 @@ import { useSearchParams } from "next/navigation";
 import { customerLogin } from "@/app/(store)/login/actions";
 import { Button } from "@/components/ui/button";
 import { PasswordField } from "@/components/ui/password-field";
+import { AuthPageSkeleton } from "@/components/ui/skeleton";
 
 function LoginForm() {
   const searchParams = useSearchParams();
@@ -44,7 +45,7 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <Suspense>
+    <Suspense fallback={<AuthPageSkeleton />}>
       <LoginForm />
     </Suspense>
   );

@@ -1,8 +1,10 @@
+import { Suspense } from "react";
 import Link from "next/link";
 import { ChevronRight, Search } from "lucide-react";
 import { CategoryGlyph, categoryNavName } from "@/components/store/category-icon";
 import { CategoryTabs } from "@/components/store/category-tabs";
 import { ProductCardView } from "@/components/store/product-card";
+import { ShopProductsSkeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { listCategories, searchProducts } from "@/server/catalog/queries";
 import type { Category, ProductCard } from "@/server/catalog/types";
@@ -110,14 +112,18 @@ function headingFor(
   return { title: selected.name, href: `/shop/${selected.slug}` };
 }
 
-export async function CategoryBrowse({ params }: { params: CatalogSearch }) {
+async function CategoryProducts({
+  params,
+  aisle,
+  selected,
+  view,
+}: {
+  params: CatalogSearch;
+  aisle: Category | null;
+  selected: Category | null;
+  view: ReturnType<typeof viewFromParams>;
+}) {
   const page = Math.max(1, Number(params.page ?? 1) || 1);
-  const view = viewFromParams(params);
-  const categories = await listCategories();
-  const tops = categories.filter((c) => !c.parentId);
-  const selected = params.category ? (categories.find((c) => c.slug === params.category) ?? null) : null;
-  const parent = selected?.parentId ? (categories.find((c) => c.id === selected.parentId) ?? selected) : selected;
-  const aisle = selected ?? parent;
   const { items, total, pageSize } = await searchProducts({
     category: aisle?.slug,
     featured: view === "featured",
@@ -129,8 +135,78 @@ export async function CategoryBrowse({ params }: { params: CatalogSearch }) {
     pageSize: 24,
   });
   const pages = Math.max(1, Math.ceil(total / pageSize));
-  const rail = railFor(categories, selected, parent, view);
   const banner = bannerFor(aisle, items);
+  const heading = headingFor(selected, view);
+
+  return (
+    <>
+      {banner ? (
+        <div className="overflow-hidden rounded-sm bg-background" style={{ aspectRatio: "2.9 / 1" }}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={banner.src} alt={banner.alt} className="size-full object-cover" />
+        </div>
+      ) : (
+        <div className="rounded-sm bg-surface" style={{ aspectRatio: "2.9 / 1" }} aria-hidden />
+      )}
+
+      <section className="mt-3 md:mt-4">
+        <div className="flex items-center justify-between gap-3">
+          <h2 className="font-serif text-lg tracking-tight md:text-xl">{heading.title}</h2>
+          <Link href={heading.href} className="inline-flex size-9 items-center justify-center text-muted" aria-label={`See all ${heading.title}`}>
+            <ChevronRight className="size-4" strokeWidth={1.75} />
+          </Link>
+        </div>
+
+        {items.length === 0 ? (
+          <p className="mt-6 text-pretty text-sm text-muted">Nothing in this aisle yet. Try another category.</p>
+        ) : (
+          <ul className="mt-3 grid grid-cols-2 gap-x-3 gap-y-6 sm:gap-x-4 sm:gap-y-8 md:grid-cols-3">
+            {items.map((product, index) => (
+              <li key={product.id}>
+                <ProductCardView product={product} priority={index < 4} />
+              </li>
+            ))}
+          </ul>
+        )}
+
+        {pages > 1 ? (
+          <nav className="mt-4 flex flex-wrap gap-2" aria-label="Pagination">
+            {Array.from({ length: pages }, (_, i) => i + 1).map((n) => {
+              const next = new URLSearchParams();
+              if (params.new === "1") next.set("new", "1");
+              if (params.featured === "1") next.set("featured", "1");
+              if (params.sale === "1") next.set("sale", "1");
+              if (params.stock === "1") next.set("stock", "1");
+              next.set("page", String(n));
+              const path = aisle ? `/shop/${aisle.slug}` : "/shop";
+              return (
+                <Link
+                  key={n}
+                  href={`${path}?${next.toString()}`}
+                  className={cn(
+                    "inline-flex min-h-11 min-w-11 items-center justify-center rounded-sm px-3 text-sm",
+                    n === page ? "bg-accent text-white" : "bg-background",
+                  )}
+                >
+                  {n}
+                </Link>
+              );
+            })}
+          </nav>
+        ) : null}
+      </section>
+    </>
+  );
+}
+
+export async function CategoryBrowse({ params }: { params: CatalogSearch }) {
+  const view = viewFromParams(params);
+  const categories = await listCategories();
+  const tops = categories.filter((c) => !c.parentId);
+  const selected = params.category ? (categories.find((c) => c.slug === params.category) ?? null) : null;
+  const parent = selected?.parentId ? (categories.find((c) => c.id === selected.parentId) ?? selected) : selected;
+  const aisle = selected ?? parent;
+  const rail = railFor(categories, selected, parent, view);
   const heading = headingFor(selected, view);
   const tabs = [
     { href: "/shop", slug: "all", name: "All" },
@@ -195,61 +271,9 @@ export async function CategoryBrowse({ params }: { params: CatalogSearch }) {
         </nav>
 
         <div className="min-w-0 flex-1 px-3 py-3 md:px-0 md:py-0">
-          {banner ? (
-            <div className="overflow-hidden rounded-sm bg-background" style={{ aspectRatio: "2.9 / 1" }}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={banner.src} alt={banner.alt} className="size-full object-cover" />
-            </div>
-          ) : (
-            <div className="rounded-sm bg-surface" style={{ aspectRatio: "2.9 / 1" }} aria-hidden />
-          )}
-
-          <section className="mt-3 md:mt-4">
-            <div className="flex items-center justify-between gap-3">
-              <h2 className="font-serif text-lg tracking-tight md:text-xl">{heading.title}</h2>
-              <Link href={heading.href} className="inline-flex size-9 items-center justify-center text-muted" aria-label={`See all ${heading.title}`}>
-                <ChevronRight className="size-4" strokeWidth={1.75} />
-              </Link>
-            </div>
-
-            {items.length === 0 ? (
-              <p className="mt-6 text-pretty text-sm text-muted">Nothing in this aisle yet. Try another category.</p>
-            ) : (
-              <ul className="mt-3 grid grid-cols-2 gap-x-3 gap-y-6 sm:gap-x-4 sm:gap-y-8 md:grid-cols-3">
-                {items.map((product, index) => (
-                  <li key={product.id}>
-                    <ProductCardView product={product} priority={index < 4} />
-                  </li>
-                ))}
-              </ul>
-            )}
-
-            {pages > 1 ? (
-              <nav className="mt-4 flex flex-wrap gap-2" aria-label="Pagination">
-                {Array.from({ length: pages }, (_, i) => i + 1).map((n) => {
-                  const next = new URLSearchParams();
-                  if (params.new === "1") next.set("new", "1");
-                  if (params.featured === "1") next.set("featured", "1");
-                  if (params.sale === "1") next.set("sale", "1");
-                  if (params.stock === "1") next.set("stock", "1");
-                  next.set("page", String(n));
-                  const path = aisle ? `/shop/${aisle.slug}` : "/shop";
-                  return (
-                    <Link
-                      key={n}
-                      href={`${path}?${next.toString()}`}
-                      className={cn(
-                        "inline-flex min-h-11 min-w-11 items-center justify-center rounded-sm px-3 text-sm",
-                        n === page ? "bg-accent text-white" : "bg-background",
-                      )}
-                    >
-                      {n}
-                    </Link>
-                  );
-                })}
-              </nav>
-            ) : null}
-          </section>
+          <Suspense fallback={<ShopProductsSkeleton />}>
+            <CategoryProducts params={params} aisle={aisle} selected={selected} view={view} />
+          </Suspense>
         </div>
       </div>
     </div>

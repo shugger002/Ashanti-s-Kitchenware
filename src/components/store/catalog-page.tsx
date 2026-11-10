@@ -1,6 +1,8 @@
+import { Suspense } from "react";
 import Link from "next/link";
 import { ProductGrid } from "@/components/store/product-grid";
 import { CatalogToolbar } from "@/components/store/catalog-toolbar";
+import { ProductGridSkeleton } from "@/components/ui/skeleton";
 import { listCategories, searchProducts } from "@/server/catalog/queries";
 import { cn } from "@/lib/utils";
 
@@ -16,6 +18,75 @@ export type CatalogSearch = {
   new?: string;
   sale?: string;
 };
+
+async function CatalogResults({
+  params,
+  basePath,
+  sort,
+  page,
+}: {
+  params: CatalogSearch;
+  basePath: "/shop" | "/products";
+  sort: "price_asc" | "price_desc" | "newest" | "featured";
+  page: number;
+}) {
+  const [{ items, total, pageSize }, popular] = await Promise.all([
+    searchProducts({
+      q: params.q?.trim() || undefined,
+      category: params.category || undefined,
+      minPrice: params.min ? Number(params.min) : undefined,
+      maxPrice: params.max ? Number(params.max) : undefined,
+      inStock: params.stock === "1",
+      featured: params.featured === "1",
+      isNew: params.new === "1",
+      onSale: params.sale === "1",
+      sort,
+      page,
+    }),
+    searchProducts({ featured: true, pageSize: 4 }),
+  ]);
+  const pages = Math.max(1, Math.ceil(total / pageSize));
+
+  return (
+    <>
+      {items.length > 0 ? (
+        <p className="-mt-2 mb-2 text-right text-sm tabular-nums text-muted">{total} pieces</p>
+      ) : null}
+      {items.length === 0 ? (
+        <div className="mt-8">
+          <p className="text-pretty text-muted">Nothing matched. Featured pieces from the catalogue are below.</p>
+          {popular.items.length > 0 ? (
+            <div className="mt-6">
+              <ProductGrid products={popular.items} countLabel={`${popular.items.length} featured`} />
+            </div>
+          ) : (
+            <Link href={basePath} className="mt-4 inline-block min-h-11 text-sm text-accent">
+              Clear filters
+            </Link>
+          )}
+        </div>
+      ) : (
+        <div className="mt-4">
+          <ProductGrid products={items} />
+        </div>
+      )}
+
+      {pages > 1 ? (
+        <nav className="mt-10 flex flex-wrap gap-2" aria-label="Pagination">
+          {Array.from({ length: pages }, (_, i) => i + 1).map((n) => (
+            <Link
+              key={n}
+              href={`${basePath}?${new URLSearchParams({ ...Object.fromEntries(Object.entries(params).filter(([, v]) => v)), page: String(n) }).toString()}`}
+              className={`inline-flex min-h-11 min-w-11 items-center justify-center rounded-xl px-3 text-sm ${n === page ? "bg-accent text-white" : "bg-surface"}`}
+            >
+              {n}
+            </Link>
+          ))}
+        </nav>
+      ) : null}
+    </>
+  );
+}
 
 export async function CatalogPage({
   params,
@@ -34,23 +105,7 @@ export async function CatalogPage({
         ? "featured"
         : "newest";
   const extraOpen = Boolean(params.min?.trim() || params.max?.trim() || params.stock === "1");
-  const [{ items, total, pageSize }, categories, popular] = await Promise.all([
-    searchProducts({
-      q: params.q?.trim() || undefined,
-      category: params.category || undefined,
-      minPrice: params.min ? Number(params.min) : undefined,
-      maxPrice: params.max ? Number(params.max) : undefined,
-      inStock: params.stock === "1",
-      featured: params.featured === "1",
-      isNew: params.new === "1",
-      onSale: params.sale === "1",
-      sort,
-      page,
-    }),
-    listCategories(),
-    searchProducts({ featured: true, pageSize: 4 }),
-  ]);
-  const pages = Math.max(1, Math.ceil(total / pageSize));
+  const categories = await listCategories();
   const title = heading
     ? heading
     : params.q
@@ -78,9 +133,6 @@ export async function CatalogPage({
       </nav>
       <div className="flex items-baseline justify-between gap-3 md:mt-3">
         <h1 className="text-pretty text-2xl md:text-4xl">{title}</h1>
-        {items.length > 0 ? (
-          <p className="shrink-0 text-sm tabular-nums text-muted">{total} pieces</p>
-        ) : null}
       </div>
       {params.sale === "1" ? (
         <p className="mt-2 max-w-2xl text-pretty text-sm text-muted">
@@ -129,38 +181,9 @@ export async function CatalogPage({
         ))}
       </ul>
 
-      {items.length === 0 ? (
-        <div className="mt-8">
-          <p className="text-pretty text-muted">Nothing matched. Featured pieces from the catalogue are below.</p>
-          {popular.items.length > 0 ? (
-            <div className="mt-6">
-              <ProductGrid products={popular.items} countLabel={`${popular.items.length} featured`} />
-            </div>
-          ) : (
-            <Link href={basePath} className="mt-4 inline-block min-h-11 text-sm text-accent">
-              Clear filters
-            </Link>
-          )}
-        </div>
-      ) : (
-        <div className="mt-4">
-          <ProductGrid products={items} />
-        </div>
-      )}
-
-      {pages > 1 ? (
-        <nav className="mt-10 flex flex-wrap gap-2" aria-label="Pagination">
-          {Array.from({ length: pages }, (_, i) => i + 1).map((n) => (
-            <Link
-              key={n}
-              href={`${basePath}?${new URLSearchParams({ ...Object.fromEntries(Object.entries(params).filter(([, v]) => v)), page: String(n) }).toString()}`}
-              className={`inline-flex min-h-11 min-w-11 items-center justify-center rounded-xl px-3 text-sm ${n === page ? "bg-accent text-white" : "bg-surface"}`}
-            >
-              {n}
-            </Link>
-          ))}
-        </nav>
-      ) : null}
+      <Suspense fallback={<div className="mt-4"><ProductGridSkeleton count={8} /></div>}>
+        <CatalogResults params={params} basePath={basePath} sort={sort} page={page} />
+      </Suspense>
     </div>
   );
 }
