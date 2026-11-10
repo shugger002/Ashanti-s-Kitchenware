@@ -56,7 +56,51 @@ export async function placeOrder(input: CheckoutInput, sessionCustomerId?: strin
     payment_status: string;
   }>(sql`SELECT id, public_ref, payment_status FROM orders WHERE idempotency_key = ${parsed.idempotencyKey}`);
   if (existing.rows[0]) {
-    return { orderId: existing.rows[0].id, publicRef: existing.rows[0].public_ref, alreadyExisted: true as const };
+    const row = existing.rows[0];
+    if (row.payment_status === "paid") {
+      return {
+        orderId: row.id,
+        publicRef: row.public_ref,
+        redirectUrl: `${getAppUrl()}/checkout/success?ref=${encodeURIComponent(row.public_ref)}`,
+        provider: getPaymentProvider(parsed.paymentProvider).id,
+        alreadyExisted: true as const,
+      };
+    }
+    const details = await query<{
+      email: string | null;
+      full_name: string;
+      phone: string;
+      total: string;
+    }>(sql`SELECT email, full_name, phone, total::text FROM orders WHERE id = ${row.id}`);
+    const d = details.rows[0];
+    if (!d) {
+      return { orderId: row.id, publicRef: row.public_ref, alreadyExisted: true as const };
+    }
+    const resumeProvider = getPaymentProvider(parsed.paymentProvider);
+    if (resumeProvider.id === "disabled") {
+      throw new Error("Online payment is not configured. Call or WhatsApp the shop to place an order.");
+    }
+    const intent = await resumeProvider.createIntent({
+      orderId: row.id,
+      publicRef: row.public_ref,
+      email: d.email || "orders@ashantisakitchenware.com",
+      fullName: d.full_name,
+      phone: d.phone,
+      amountGhs: Number(d.total),
+      callbackUrl: `${getAppUrl()}/checkout/success?ref=${encodeURIComponent(row.public_ref)}`,
+      momoChannel: parsed.momoChannel,
+    });
+    await query(sql`
+      INSERT INTO payments (order_id, provider, provider_ref, amount, status)
+       VALUES (${row.id},${intent.provider},${intent.providerRef},${d.total},${intent.status})
+    `);
+    return {
+      orderId: row.id,
+      publicRef: row.public_ref,
+      redirectUrl: intent.redirectUrl,
+      provider: intent.provider,
+      alreadyExisted: true as const,
+    };
   }
 
   const shippingAmount = 0;

@@ -1,5 +1,10 @@
-import { CartPageSkeleton } from "@/components/ui/skeleton";
+import { CheckoutPageSkeleton } from "@/components/ui/skeleton";
+import { CheckoutShell } from "@/components/store/checkout-shell";
 
 export default function CheckoutLoading() {
-  return <CartPageSkeleton />;
+  return (
+    <CheckoutShell>
+      <CheckoutPageSkeleton />
+    </CheckoutShell>
+  );
 }

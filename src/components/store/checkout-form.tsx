@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ChevronDown } from "lucide-react";
@@ -12,7 +12,8 @@ import { isDemoListing } from "@/lib/listing";
 import { defaultContact } from "@/config/brand";
 import type { PaymentOption } from "@/server/payments/types";
 import { shopperError } from "@/lib/user-error";
-import { CartPageSkeleton } from "@/components/ui/skeleton";
+import { CheckoutPageSkeleton } from "@/components/ui/skeleton";
+import { inferMomoChannel } from "@/lib/phone-gh";
 import { cn } from "@/lib/utils";
 
 const CHECKOUT_DRAFT = "ak_checkout_draft";
@@ -106,6 +107,7 @@ export function CheckoutForm({
   const live = useAfterHydrate();
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
+  const errorRef = useRef<HTMLParagraphElement>(null);
   const [pending, setPending] = useState(false);
   const [summaryOpen, setSummaryOpen] = useState(false);
   const collectionOn = fulfillment.collectionEnabled;
@@ -116,7 +118,10 @@ export function CheckoutForm({
   const paymentsReady = paymentOptions.length > 0;
   const whatsappHref = `https://wa.me/${whatsappE164.replace(/\D/g, "")}`;
   const [payWith, setPayWith] = useState(paymentOptions[0]?.id ?? "hubtel");
-  const [momoChannel, setMomoChannel] = useState<"13" | "6" | "7">("13");
+  const [momoChannel, setMomoChannel] = useState<"13" | "6" | "7">(
+    inferMomoChannel(customer?.phone ?? "") ?? "13",
+  );
+  const [channelTouched, setChannelTouched] = useState(false);
   const names = splitName(customer?.fullName ?? "");
   const [firstName, setFirstName] = useState(names.first);
   const [lastName, setLastName] = useState(names.last);
@@ -134,7 +139,11 @@ export function CheckoutForm({
       if (!raw) return;
       const draft = JSON.parse(raw) as Record<string, string>;
       if (!customer?.email && draft.email) setEmail(draft.email);
-      if (!customer?.phone && draft.phone) setPhone(draft.phone);
+      if (!customer?.phone && draft.phone) {
+        setPhone(draft.phone);
+        const inferred = inferMomoChannel(draft.phone);
+        if (inferred) setMomoChannel(inferred);
+      }
       if (!names.first && draft.firstName) setFirstName(draft.firstName);
       if (!names.last && draft.lastName) setLastName(draft.lastName);
       if (draft.addressLine1) setAddressLine1(draft.addressLine1);
@@ -167,21 +176,28 @@ export function CheckoutForm({
       /* private mode */
     }
   }, [email, phone, firstName, lastName, addressLine1, addressLine2, city, notes]);
+
+  useEffect(() => {
+    if (!error) return;
+    errorRef.current?.scrollIntoView({ block: "center", behavior: "smooth" });
+  }, [error]);
+
   const subtotal = items.reduce((sum, line) => sum + line.unitPrice * line.quantity, 0);
   const total = subtotal;
 
   if (!live) {
-    return <CartPageSkeleton />;
+    return <CheckoutPageSkeleton />;
   }
 
   if (items.length === 0) {
     return (
-      <p className="px-4 py-16 text-center text-muted">
-        My cart is empty.{" "}
-        <Link href="/shop" className="text-accent">
+      <div className="mx-auto max-w-xl px-4 py-16">
+        <h1 className="text-3xl text-balance">Checkout</h1>
+        <p className="mt-3 text-pretty text-muted">My cart is empty.</p>
+        <Link href="/shop" className={buttonClass("primary", "mt-8")}>
           Continue shopping
         </Link>
-      </p>
+      </div>
     );
   }
 
@@ -221,7 +237,9 @@ export function CheckoutForm({
               </span>
             </div>
             <div className="min-w-0 flex-1">
-              <p className="break-words font-medium leading-snug">{line.name}</p>
+              <Link href={`/products/${line.slug}`} className="break-words font-medium leading-snug hover:text-accent">
+                {line.name}
+              </Link>
               <p className="mt-0.5 text-xs text-muted">{line.sku}</p>
             </div>
             <p className="shrink-0 text-right tabular-nums">{formatGhs(line.unitPrice * line.quantity)}</p>
@@ -400,9 +418,17 @@ export function CheckoutForm({
               type="tel"
               inputMode="tel"
               value={phone}
-              onChange={(event) => setPhone(event.target.value)}
+              onChange={(event) => {
+                const next = event.target.value;
+                setPhone(next);
+                if (!channelTouched) {
+                  const inferred = inferMomoChannel(next);
+                  if (inferred) setMomoChannel(inferred);
+                }
+              }}
               className="input"
               autoComplete="tel"
+              placeholder="024 123 4567"
             />
           </Field>
         </Section>
@@ -569,7 +595,10 @@ export function CheckoutForm({
                       name="momoChannel"
                       value={value}
                       checked={momoChannel === value}
-                      onChange={() => setMomoChannel(value)}
+                      onChange={() => {
+                        setChannelTouched(true);
+                        setMomoChannel(value);
+                      }}
                       className="sr-only"
                     />
                     {label}
@@ -592,7 +621,11 @@ export function CheckoutForm({
               .
             </span>
           </label>
-          {error ? <p className="text-sm text-red-800">{error}</p> : null}
+          {error ? (
+            <p ref={errorRef} className="text-sm text-red-800">
+              {error}
+            </p>
+          ) : null}
         </Section>
 
         <input type="hidden" name="idempotencyKey" value={idempotencyKey} />

@@ -133,6 +133,24 @@ export function ProductPageSkeleton() {
   );
 }
 
+export function CheckoutPageSkeleton() {
+  return (
+    <div className="mx-auto max-w-xl px-4 py-10 lg:px-8" aria-busy="true" aria-label="Loading checkout">
+      <Skeleton className="h-10 w-40" />
+      <Skeleton className="mt-3 h-4 w-72 max-w-full" />
+      <div className="mt-10 space-y-6">
+        {Array.from({ length: 3 }, (_, index) => (
+          <div key={index} className="space-y-3 border-b border-border pb-8">
+            <Skeleton className="h-7 w-32" />
+            <Skeleton className="h-11 w-full" />
+            <Skeleton className="h-11 w-full" />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export function CartPageSkeleton() {
   return (
     <div className="mx-auto max-w-4xl px-4 py-8 lg:px-8 lg:py-12" aria-busy="true" aria-label="Loading cart">
