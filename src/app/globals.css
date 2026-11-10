@@ -413,8 +413,7 @@ table tbody tr:hover {
 
 @media print {
   .admin-desk nav,
-  .admin-desk header,
-  .print\\:hidden {
+  .admin-desk header {
     display: none !important;
   }
   .pack-ticket,

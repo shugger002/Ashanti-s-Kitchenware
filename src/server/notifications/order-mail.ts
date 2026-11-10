@@ -129,7 +129,9 @@ export async function sendPackedOrderEmail(orderId: string, toStatus: string) {
   try {
     if (!(await claimNotification(`order-packed:${orderId}:${toStatus}`))) return;
     const loaded = await loadOrder(orderId);
-    if (!loaded?.order.email) return;
+    if (!loaded) return;
+    const email = loaded.order.email;
+    if (!email) return;
     const { order, items } = loaded;
     const track = `${getAppUrl()}/orders/track?ref=${encodeURIComponent(order.public_ref)}`;
     const lines = items.map((item) => `${item.quantity} × ${item.product_name}`).join("\n");
@@ -138,7 +140,7 @@ export async function sendPackedOrderEmail(orderId: string, toStatus: string) {
         ? "Your order is packed and ready at the Accra shop."
         : "Your order is packed and on its way. Delivery timing is confirmed on WhatsApp.";
     await sendEmail({
-      to: order.email,
+      to: email,
       subject: `Order ${order.public_ref} is packed`,
       text: [`Hello ${order.full_name},`, "", heading, "", lines, "", `Track: ${track}`].join("\n"),
     });
@@ -151,11 +153,13 @@ export async function sendFailedPaymentEmail(orderId: string) {
   try {
     if (!(await claimNotification(`order-pay-failed:${orderId}`))) return;
     const loaded = await loadOrder(orderId);
-    if (!loaded?.order.email) return;
+    if (!loaded) return;
+    const email = loaded.order.email;
+    if (!email) return;
     const { order } = loaded;
     const track = `${getAppUrl()}/orders/track?ref=${encodeURIComponent(order.public_ref)}`;
     await sendEmail({
-      to: order.email,
+      to: email,
       subject: `Payment for ${order.public_ref} did not go through`,
       text: [
         `Hello ${order.full_name},`,
