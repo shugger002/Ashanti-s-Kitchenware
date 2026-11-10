@@ -143,8 +143,20 @@ export class MoolreProvider implements PaymentProvider {
     }
 
     if (result.code === "TP17") {
-      usedRef = promptExternalRef(input.publicRef);
       result = await moolrePost("/open/transact/payment", collectionBody(input, { externalref: usedRef }));
+      if (result.code === "TP13" || result.code === "TP14") {
+        result = await moolrePost(
+          "/open/transact/payment",
+          collectionBody(input, { otpCode: input.otpCode, externalref: usedRef }),
+        );
+      }
+      if (result.code === "TP13" || result.code === "TP14") {
+        usedRef = promptExternalRef(input.publicRef);
+        result = await moolrePost(
+          "/open/transact/payment",
+          collectionBody(input, { otpCode: input.otpCode, externalref: usedRef }),
+        );
+      }
     }
 
     return this.interpretPrompt(input, result, usedRef);
@@ -165,6 +177,9 @@ export class MoolreProvider implements PaymentProvider {
     }
     if (result.code === "TP17") {
       throw new Error("Moolre verified the number but could not send the mobile-money prompt. Try Pay now again.");
+    }
+    if (result.code === "TP14") {
+      throw new Error("That SMS code was not accepted. Wait for a new SMS from Moolre and try again.");
     }
     const message = (result.json.message || "").trim();
     if (message && message.length <= 160 && !message.includes("{")) {
