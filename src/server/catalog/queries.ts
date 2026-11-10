@@ -120,18 +120,6 @@ function demoSearch(filters: ShopFilters) {
   };
 }
 
-async function liveCatalogCount(): Promise<number> {
-  const result = await query<{ count: string }>(sql`
-    SELECT count(*)::text AS count
-     FROM products
-     WHERE archived_at IS NULL
-       AND is_active = TRUE
-       AND sku NOT ILIKE 'DEMO-%'
-       AND slug NOT ILIKE 'demo-%'
-  `);
-  return Number(result.rows[0]?.count ?? 0);
-}
-
 const CATEGORY_ALIASES: Record<string, string> = {
   "cooking-ware": "cookware",
   insulations: "storage-insulation",
@@ -325,11 +313,7 @@ async function searchProductsLive(filters: ShopFilters): Promise<{
   ]);
   const total = Number(count.rows[0]?.count ?? 0);
   if (total === 0) {
-    // Layout samples must not replace a real import when a filter (featured, sale, category) matches nothing.
-    if ((await liveCatalogCount()) > 0) {
-      return { items: [], total: 0, page, pageSize };
-    }
-    return demoSearch(filters);
+    return { items: [], total: 0, page, pageSize };
   }
 
   return {
@@ -507,10 +491,7 @@ export async function getProductBySlug(slug: string, opts?: { includeInactive?: 
        ${opts?.includeInactive ? sql`` : sql`AND p.is_active = TRUE`}
   `);
   const row = result.rows[0];
-  if (!row) {
-    if ((await liveCatalogCount()) > 0) return null;
-    return getDemoProduct(slug);
-  }
+  if (!row) return null;
 
   const images = await query<{
     id: string;
