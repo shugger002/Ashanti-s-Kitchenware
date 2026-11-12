@@ -3,7 +3,7 @@ import { attachPhotosBySku } from "@/server/catalog/images";
 import { parseProductCsv } from "@/server/catalog/csv";
 import { assertTableUploadSize, extractSpreadsheetText } from "@/lib/table-upload";
 import type { ProductCsvResult } from "@/lib/desk-import";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import type { AdminUser } from "@/server/auth/types";
 
 export type { ProductCsvResult };
@@ -24,11 +24,12 @@ export async function runProductCsvImport(formData: FormData, user: AdminUser): 
       return { ok: false, message: "Choose a CSV or PDF and/or product photographs.", ...empty };
     }
     const photosResult = await attachPhotosBySku(photos);
+    revalidateTag("catalog", { expire: 0 });
     revalidatePath("/admin/products");
     revalidatePath("/admin/inventory");
     revalidatePath("/");
     revalidatePath("/products");
-    revalidatePath("/shop");
+    revalidatePath("/shop", "layout");
     return {
       ok: photosResult.attached.length > 0,
       message:
@@ -74,11 +75,12 @@ export async function runProductCsvImport(formData: FormData, user: AdminUser): 
       ? await importProductsFromCsv({ rows: parsed.rows, actorId: user.id })
       : { created: [], skipped: [], errors: [] as string[] };
   const photosResult = photos.length > 0 ? await attachPhotosBySku(photos) : { attached: [], unmatched: [], errors: [] };
+  revalidateTag("catalog", { expire: 0 });
   revalidatePath("/admin/products");
   revalidatePath("/admin/inventory");
   revalidatePath("/");
   revalidatePath("/products");
-  revalidatePath("/shop");
+  revalidatePath("/shop", "layout");
   const errors = [...parsed.errors, ...result.errors, ...photosResult.errors];
   const created = result.created.length;
   const attached = photosResult.attached.length;

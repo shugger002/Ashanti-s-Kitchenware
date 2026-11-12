@@ -24,7 +24,7 @@ function touchCatalog(productId?: string) {
   if (productId) revalidatePath(`/admin/products/${productId}`);
   revalidatePath("/");
   revalidatePath("/products");
-  revalidatePath("/shop");
+  revalidatePath("/shop", "layout");
 }
 
 function uniqueKind(error: unknown): "sku" | "slug" | null {

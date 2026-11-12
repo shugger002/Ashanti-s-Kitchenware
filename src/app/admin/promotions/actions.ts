@@ -14,7 +14,7 @@ function touchSale(productId: string) {
   revalidatePath(`/admin/products/${productId}`);
   revalidatePath("/");
   revalidatePath("/products");
-  revalidatePath("/shop");
+  revalidatePath("/shop", "layout");
   revalidatePath("/promo");
 }
 

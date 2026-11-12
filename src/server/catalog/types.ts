@@ -7,6 +7,7 @@ export type Category = {
   sortOrder: number;
   isActive: boolean;
   parentId: string | null;
+  listedCount?: number;
 };
 
 export type ProductImage = {

@@ -42,7 +42,9 @@ function railFor(
   parent: Category | null,
   view: ReturnType<typeof viewFromParams>,
 ): RailItem[] {
-  const children = parent ? categories.filter((c) => c.parentId === parent.id) : [];
+  const children = parent
+    ? categories.filter((c) => c.parentId === parent.id && (c.listedCount == null || c.listedCount > 0))
+    : [];
   if (children.length > 0 && parent) {
     return [
       {

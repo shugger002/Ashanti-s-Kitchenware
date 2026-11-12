@@ -24,7 +24,7 @@ export async function POST(request: Request) {
     revalidatePath("/admin/products");
     revalidatePath("/");
     revalidatePath("/products");
-    revalidatePath("/shop");
+    revalidatePath("/shop", "layout");
     return NextResponse.json({ ok: true });
   } catch (error) {
     return NextResponse.json(

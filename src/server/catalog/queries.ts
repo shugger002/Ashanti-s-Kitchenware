@@ -48,11 +48,19 @@ async function listCategoriesLive(activeOnly: boolean): Promise<Category[]> {
     sort_order: number;
     is_active: boolean;
     parent_id: string | null;
+    listed_count: string;
   }>(sql`
-    SELECT id, slug, name, description, image_url, sort_order, is_active, parent_id
-     FROM categories
-     ${activeOnly ? sql`WHERE is_active = TRUE` : sql``}
-     ORDER BY sort_order, name
+    SELECT c.id, c.slug, c.name, c.description, c.image_url, c.sort_order, c.is_active, c.parent_id,
+            COALESCE(listed.n, 0)::text AS listed_count
+     FROM categories c
+     LEFT JOIN (
+       SELECT category_id, count(*)::int AS n
+        FROM products
+        WHERE archived_at IS NULL AND is_active = TRUE
+        GROUP BY category_id
+     ) listed ON listed.category_id = c.id
+     ${activeOnly ? sql`WHERE c.is_active = TRUE` : sql``}
+     ORDER BY c.sort_order, c.name
   `);
   const mapped = result.rows.map((row) => ({
     id: row.id,
@@ -63,6 +71,7 @@ async function listCategoriesLive(activeOnly: boolean): Promise<Category[]> {
     sortOrder: row.sort_order,
     isActive: row.is_active,
     parentId: row.parent_id,
+    listedCount: Number(row.listed_count),
   }));
   return mapped.length > 0 ? mapped : DEMO_CATEGORIES.filter((c) => !activeOnly || c.isActive);
 }
@@ -225,10 +234,12 @@ async function searchProductsLive(filters: ShopFilters): Promise<{
   }
   if (filters.category) {
     const categorySlug = resolveCategorySlug(filters.category);
-    where.push(sql`(
-      c.slug = ${categorySlug}
-      OR c.parent_id = (SELECT id FROM categories WHERE slug = ${categorySlug} LIMIT 1)
-    )`);
+    const cats = await listCategories(false);
+    const current = cats.find((c) => c.slug === categorySlug);
+    const slugs = current
+      ? [current.slug, ...cats.filter((c) => c.parentId === current.id).map((c) => c.slug)]
+      : [categorySlug];
+    where.push(sql`c.slug = ANY(${slugs})`);
   }
   if (filters.minPrice != null) {
     where.push(sql`COALESCE(p.sale_price, p.price) >= ${filters.minPrice}`);

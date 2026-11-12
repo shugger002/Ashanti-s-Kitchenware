@@ -18,7 +18,7 @@ function touchStock() {
   revalidatePath("/admin/products");
   revalidatePath("/");
   revalidatePath("/products");
-  revalidatePath("/shop");
+  revalidatePath("/shop", "layout");
 }
 
 const soldInShopSchema = z.object({
