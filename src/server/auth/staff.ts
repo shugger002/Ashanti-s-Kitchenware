@@ -2,7 +2,7 @@ import { query } from "@/server/db/pool";
 import { likeContains, sql, sqlAnd } from "@/server/db/sql";
 import { hashPassword } from "@/server/auth/password";
 import { writeAuditLog } from "@/server/auth/audit";
-import { PERMISSIONS, ROLE_SLUGS, type RoleSlug } from "@/server/auth/types";
+import { PERMISSIONS, ROLE_SLUGS, SHOP_ROLE_SLUGS, type RoleSlug } from "@/server/auth/types";
 import { isUuid } from "@/lib/utils";
 
 export type StaffNeedFilter = "on" | "pack" | "paid" | "stock" | "blocked" | "all";
@@ -203,7 +203,7 @@ export async function setStaffActive(input: { userId: string; actorUserId: strin
 }
 
 export async function setStaffRole(input: { userId: string; actorUserId: string; role: RoleSlug }) {
-  if (!(ROLE_SLUGS as readonly string[]).includes(input.role)) {
+  if (!(SHOP_ROLE_SLUGS as readonly string[]).includes(input.role)) {
     throw new Error("Unknown job");
   }
   const person = await getStaffById(input.userId);
@@ -214,8 +214,11 @@ export async function setStaffRole(input: { userId: string; actorUserId: string;
     nextActive: person.isActive,
     nextRole: input.role,
   });
-  await query(sql`DELETE FROM user_roles WHERE user_id = ${person.id}`);
-  await query(sql`INSERT INTO user_roles (user_id, role_slug) VALUES (${person.id}, ${input.role})`);
+  await query(sql`DELETE FROM user_roles WHERE user_id = ${person.id} AND role_slug <> 'developer'`);
+  await query(sql`
+    INSERT INTO user_roles (user_id, role_slug) VALUES (${person.id}, ${input.role})
+    ON CONFLICT DO NOTHING
+  `);
   await writeAuditLog({
     actorUserId: input.actorUserId,
     action: "staff.role",

@@ -67,10 +67,15 @@ const groups: { label: string; items: NavItem[] }[] = [
     items: [
       { href: "/admin/analytics", label: "Analytics", permission: "reports.read", icon: BarChart3 },
       { href: "/admin/delivery", label: "Delivery", permission: "settings.write", icon: Truck },
-      { href: "/admin/ops", label: "Operations", permission: "settings.write", icon: HeartPulse },
-      { href: "/admin/services", label: "Connections", permission: "settings.write", icon: Activity },
-      { href: "/admin/activity", label: "Activity", permission: "settings.write", icon: ScrollText },
       { href: "/admin/settings", label: "Settings", permission: "settings.write", icon: Settings },
+    ],
+  },
+  {
+    label: "Develop",
+    items: [
+      { href: "/admin/ops", label: "Operations", permission: "ops.write", icon: HeartPulse },
+      { href: "/admin/services", label: "Connections", permission: "ops.write", icon: Activity },
+      { href: "/admin/activity", label: "Activity", permission: "ops.write", icon: ScrollText },
     ],
   },
   {

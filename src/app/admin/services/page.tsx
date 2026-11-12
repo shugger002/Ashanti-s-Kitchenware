@@ -23,7 +23,7 @@ async function pingDatabase() {
 
 async function sendTestMail() {
   "use server";
-  await requirePermission("settings.write");
+  await requirePermission("ops.write");
   const { contact } = await getStorefrontConfig();
   const result = await sendEmail({
     to: contact.email,
@@ -40,7 +40,7 @@ export default async function ServiceHealthPage({
 }) {
   const [{ mail }, , databaseOk, config] = await Promise.all([
     searchParams,
-    requirePermission("settings.write"),
+    requirePermission("ops.write"),
     pingDatabase(),
     getStorefrontConfig(),
   ]);

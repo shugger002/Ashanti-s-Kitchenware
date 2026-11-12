@@ -9,7 +9,7 @@ import { retryJob } from "@/server/ops/jobs";
 import { writeAuditLog } from "@/server/auth/audit";
 
 export async function saveOperationsAction(formData: FormData) {
-  const user = await requirePermission("settings.write");
+  const user = await requirePermission("ops.write");
   const current = await getOperationsConfig();
   const pause = formData.get("checkoutPaused") === "on";
   if (pause !== current.checkoutPaused) {
@@ -39,7 +39,7 @@ export async function saveOperationsAction(formData: FormData) {
 }
 
 export async function retryJobAction(formData: FormData) {
-  const user = await requirePermission("settings.write");
+  const user = await requirePermission("ops.write");
   const password = String(formData.get("confirmPassword") ?? "");
   if (!(await confirmAdminPassword(user.id, password))) {
     redirect("/admin/ops?error=" + encodeURIComponent("Enter your admin password to retry."));

@@ -11,7 +11,7 @@ const items = [
   { href: "/admin", label: "Home", icon: Home, permission: "orders.read" as const, exact: true },
   { href: "/admin/orders", label: "Orders", icon: ClipboardList, permission: "orders.read" as const },
   { href: "/admin/products", label: "Products", icon: Package, permission: "products.read" as const },
-  { href: "/admin/ops", label: "Ops", icon: Activity, permission: "settings.write" as const },
+  { href: "/admin/ops", label: "Ops", icon: Activity, permission: "ops.write" as const },
   { href: "/admin/settings", label: "Shop", icon: Settings, permission: "settings.write" as const },
 ];
 
@@ -24,7 +24,11 @@ export function AdminMobileDock({ user }: { user: AdminUser }) {
       aria-label="Desk shortcuts"
       className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-white pb-[env(safe-area-inset-bottom)] lg:hidden"
     >
-      <ul className="grid grid-cols-5">
+      <ul
+        className={
+          visible.length >= 5 ? "grid grid-cols-5" : visible.length === 4 ? "grid grid-cols-4" : "grid grid-cols-3"
+        }
+      >
         {visible.slice(0, 5).map((item) => {
           const Icon = item.icon;
           const active = item.exact ? pathname === item.href : pathname === item.href || pathname.startsWith(`${item.href}/`);

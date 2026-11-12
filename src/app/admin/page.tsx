@@ -1,11 +1,12 @@
 import Link from "next/link";
-import { requirePermission } from "@/server/auth/authorize";
+import { requireUser } from "@/server/auth/authorize";
 import { dashboardMetrics, dashboardRange, type DeskRange } from "@/server/reporting/service";
 import { dashboardGrowth } from "@/server/reporting/growth";
 import { HomeGrowth } from "@/components/admin/home-growth";
 import { formatGhs } from "@/lib/money";
 import { customerWhatsAppHref, formatOrderAddress, packLines } from "@/lib/order-whatsapp";
 import { hasPermission } from "@/server/auth/types";
+import { redirect } from "next/navigation";
 import { OrderWhatsAppLink } from "@/components/admin/whatsapp-link";
 import {
   adminButton,
@@ -44,7 +45,10 @@ export default async function AdminHomePage({
   let metrics: Awaited<ReturnType<typeof dashboardMetrics>> | null = null;
   let growth: Awaited<ReturnType<typeof dashboardGrowth>> | null = null;
   let rangeStats: Awaited<ReturnType<typeof dashboardRange>> | null = null;
-  const user = await requirePermission("orders.read");
+  const user = await requireUser();
+  if (!hasPermission(user.roles, "orders.read")) {
+    redirect(hasPermission(user.roles, "ops.write") ? "/admin/ops" : "/admin/login");
+  }
   try {
     [metrics, growth, rangeStats] = await Promise.all([dashboardMetrics(), dashboardGrowth(), dashboardRange(range)]);
   } catch {

@@ -175,6 +175,7 @@ export function staffJobLabel(role: string) {
     store_admin: "Shop desk",
     inventory_manager: "Stock",
     order_manager: "Orders",
+    developer: "Developer",
   };
   return labels[role] ?? role.replaceAll("_", " ");
 }

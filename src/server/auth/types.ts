@@ -3,6 +3,14 @@ export const ROLE_SLUGS = [
   "store_admin",
   "inventory_manager",
   "order_manager",
+  "developer",
+] as const;
+
+export const SHOP_ROLE_SLUGS = [
+  "super_admin",
+  "store_admin",
+  "inventory_manager",
+  "order_manager",
 ] as const;
 
 export type RoleSlug = (typeof ROLE_SLUGS)[number];
@@ -25,6 +33,7 @@ export const PERMISSIONS = {
   "settings.write": ["super_admin", "store_admin"],
   "users.write": ["super_admin"],
   "payments.capture": ["super_admin", "store_admin"],
+  "ops.write": ["developer"],
 } as const;
 
 export type Permission = keyof typeof PERMISSIONS;

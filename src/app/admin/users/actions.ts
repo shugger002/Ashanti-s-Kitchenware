@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requirePermission } from "@/server/auth/authorize";
 import { createAdminUser } from "@/server/auth/login";
-import { ROLE_SLUGS, type RoleSlug } from "@/server/auth/types";
+import { SHOP_ROLE_SLUGS, type RoleSlug } from "@/server/auth/types";
 import { setStaffActive, setStaffPassword, setStaffRole } from "@/server/auth/staff";
 import { isUuid } from "@/lib/utils";
 
@@ -16,7 +16,7 @@ function touchStaff(userId?: string) {
 
 function parseRole(value: FormDataEntryValue | null): RoleSlug {
   const role = String(value ?? "");
-  if (!(ROLE_SLUGS as readonly string[]).includes(role)) {
+  if (!(SHOP_ROLE_SLUGS as readonly string[]).includes(role)) {
     throw new Error("Unknown job");
   }
   return role as RoleSlug;

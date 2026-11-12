@@ -27,7 +27,7 @@ export default async function OpsPage({
 }: {
   searchParams: Promise<{ error?: string; notice?: string }>;
 }) {
-  const [{ error, notice }] = await Promise.all([searchParams, requirePermission("settings.write")]);
+  const [{ error, notice }] = await Promise.all([searchParams, requirePermission("ops.write")]);
   let health: Awaited<ReturnType<typeof runHealthChecks>> | null = null;
   let loadError = "";
   try {

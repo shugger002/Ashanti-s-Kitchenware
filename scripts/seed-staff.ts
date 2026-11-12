@@ -5,7 +5,7 @@ import { createPgPool } from "@/server/db/config";
 type StaffSeed = {
   email: string;
   fullName: string;
-  role: "super_admin" | "store_admin" | "order_manager" | "inventory_manager";
+  role: "super_admin" | "store_admin" | "order_manager" | "inventory_manager" | "developer";
 };
 
 function password(): string {

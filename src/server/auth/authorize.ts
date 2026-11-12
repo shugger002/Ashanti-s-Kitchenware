@@ -15,7 +15,7 @@ export async function requireUser(): Promise<AdminUser> {
 export async function requirePermission(permission: Permission): Promise<AdminUser> {
   const user = await requireUser();
   if (!hasPermission(user.roles, permission)) {
-    redirect("/admin");
+    redirect(hasPermission(user.roles, "ops.write") ? "/admin/ops" : "/admin");
   }
   return user;
 }

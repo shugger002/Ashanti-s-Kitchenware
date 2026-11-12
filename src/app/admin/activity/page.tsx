@@ -8,7 +8,7 @@ function actionLabel(action: string) {
 }
 
 export default async function ActivityPage() {
-  await requirePermission("settings.write");
+  await requirePermission("ops.write");
   let rows: Awaited<ReturnType<typeof listAdminActivity>> = [];
   let failed = false;
   try {
