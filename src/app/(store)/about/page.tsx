@@ -15,7 +15,7 @@ export default async function AboutPage() {
     <div>
       <section className="relative min-h-[42dvh] overflow-hidden bg-foreground">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/products/UC-TS0912/01.jpg" alt="" className="absolute inset-0 h-full w-full object-cover opacity-55" />
+        <img src="/stock/UC-TS0912/01.jpg" alt="" className="absolute inset-0 h-full w-full object-cover opacity-55" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-black/10" />
         <div className="relative mx-auto flex min-h-[42dvh] max-w-3xl flex-col justify-end px-4 pb-8 lg:px-8 lg:pb-12">
           <h1 className="text-3xl text-white md:text-5xl">Kitchen appliances from the Accra shop.</h1>

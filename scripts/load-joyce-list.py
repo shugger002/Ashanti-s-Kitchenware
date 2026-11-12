@@ -13,7 +13,7 @@ PDF = Path(
     "/Users/shugger_dadie/.cursor/projects/Users-shugger-dadie-Asantis/attachments/79aa79df-2b3d-45ac-ac9d-ea65d805f7af/JOYCE_2026-09-05_5TH_Final_List_done.xlsx._-_Google_Sheets.pdf"
 )
 ROOT = Path("/Users/shugger_dadie/Asantis")
-PUBLIC = ROOT / "public" / "products"
+PUBLIC = ROOT / "public" / "stock"
 
 # sku, name, description, stock (T.QTY), category
 ITEMS: list[tuple[str, str, str, int, str]] = [
@@ -122,7 +122,7 @@ def extract_photos() -> dict[str, str]:
             sku = ITEMS[idx][0]
             xref = info["xref"]
             pix = pymupdf.Pixmap(doc, xref)
-            rel = f"/products/{sku}/01.jpg"
+            rel = f"/stock/{sku}/01.jpg"
             save_jpeg(pix, ROOT / "public" / rel.lstrip("/"))
             mapping[sku] = rel
             idx += 1
