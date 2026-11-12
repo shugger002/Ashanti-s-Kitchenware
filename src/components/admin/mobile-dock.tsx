@@ -4,11 +4,12 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Activity, ClipboardList, Home, Package, Settings } from "lucide-react";
 import type { AdminUser } from "@/server/auth/types";
-import { hasPermission } from "@/server/auth/types";
+import { hasPermission, isDeveloper } from "@/server/auth/types";
 import { cn } from "@/lib/utils";
 
 const items = [
   { href: "/admin", label: "Home", icon: Home, permission: "orders.read" as const, exact: true },
+  { href: "/admin", label: "Home", icon: Home, permission: "ops.write" as const, exact: true },
   { href: "/admin/orders", label: "Orders", icon: ClipboardList, permission: "orders.read" as const },
   { href: "/admin/products", label: "Products", icon: Package, permission: "products.read" as const },
   { href: "/admin/ops", label: "Ops", icon: Activity, permission: "ops.write" as const },
@@ -17,7 +18,16 @@ const items = [
 
 export function AdminMobileDock({ user }: { user: AdminUser }) {
   const pathname = usePathname();
-  const visible = items.filter((item) => hasPermission(user.roles, item.permission));
+  const visible: typeof items = [];
+  const seen = new Set<string>();
+  for (const item of items) {
+    if (!hasPermission(user.roles, item.permission) || seen.has(item.href)) continue;
+    seen.add(item.href);
+    visible.push(item);
+  }
+  if (visible.length === 0 && isDeveloper(user.roles)) {
+    visible.push({ href: "/admin/ops", label: "Ops", icon: Activity, permission: "ops.write" as const });
+  }
   if (visible.length === 0) return null;
   return (
     <nav

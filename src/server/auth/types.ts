@@ -39,6 +39,22 @@ export const PERMISSIONS = {
 export type Permission = keyof typeof PERMISSIONS;
 
 export function hasPermission(roles: RoleSlug[], permission: Permission): boolean {
-  const allowed = PERMISSIONS[permission] as readonly RoleSlug[];
+  const allowed = PERMISSIONS[permission] as readonly RoleSlug[] | undefined;
+  if (!allowed) return false;
   return roles.some((role) => allowed.includes(role));
+}
+
+export function normalizeAdminRoles(value: unknown): RoleSlug[] {
+  const raw = Array.isArray(value)
+    ? value
+    : typeof value === "string"
+      ? value.replace(/[{}]/g, "").split(",")
+      : [];
+  return raw
+    .map((role) => String(role).trim())
+    .filter((role): role is RoleSlug => (ROLE_SLUGS as readonly string[]).includes(role));
+}
+
+export function isDeveloper(roles: RoleSlug[]) {
+  return roles.includes("developer") || hasPermission(roles, "ops.write");
 }

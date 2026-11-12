@@ -5,8 +5,9 @@ import { dashboardGrowth } from "@/server/reporting/growth";
 import { HomeGrowth } from "@/components/admin/home-growth";
 import { formatGhs } from "@/lib/money";
 import { customerWhatsAppHref, formatOrderAddress, packLines } from "@/lib/order-whatsapp";
-import { hasPermission } from "@/server/auth/types";
+import { hasPermission, isDeveloper } from "@/server/auth/types";
 import { redirect } from "next/navigation";
+import { DeveloperHome } from "@/components/admin/developer-home";
 import { OrderWhatsAppLink } from "@/components/admin/whatsapp-link";
 import {
   adminButton,
@@ -47,7 +48,8 @@ export default async function AdminHomePage({
   let rangeStats: Awaited<ReturnType<typeof dashboardRange>> | null = null;
   const user = await requireUser();
   if (!hasPermission(user.roles, "orders.read")) {
-    redirect(hasPermission(user.roles, "ops.write") ? "/admin/ops" : "/admin/login");
+    if (isDeveloper(user.roles)) return <DeveloperHome user={user} />;
+    redirect("/admin/login");
   }
   try {
     [metrics, growth, rangeStats] = await Promise.all([dashboardMetrics(), dashboardGrowth(), dashboardRange(range)]);

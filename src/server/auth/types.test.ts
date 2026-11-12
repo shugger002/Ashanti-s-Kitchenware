@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { hasPermission } from "@/server/auth/types";
+import { hasPermission, isDeveloper, normalizeAdminRoles } from "@/server/auth/types";
 
 test("only the developer role can open operations", () => {
   assert.equal(hasPermission(["developer"], "ops.write"), true);
@@ -13,4 +13,9 @@ test("developer does not get the shop desk by default", () => {
   assert.equal(hasPermission(["developer"], "orders.read"), false);
   assert.equal(hasPermission(["developer"], "settings.write"), false);
   assert.equal(hasPermission(["developer"], "users.write"), false);
+});
+
+test("normalizeAdminRoles keeps developer from a postgres array", () => {
+  assert.deepEqual(normalizeAdminRoles(["developer"]), ["developer"]);
+  assert.equal(isDeveloper(["developer"]), true);
 });

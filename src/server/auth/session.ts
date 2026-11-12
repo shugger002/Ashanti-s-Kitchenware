@@ -8,7 +8,7 @@ import {
   isProduction,
 } from "@/server/env";
 import { generateOpaqueToken, hashToken } from "@/server/auth/tokens";
-import type { AdminUser, RoleSlug } from "@/server/auth/types";
+import { normalizeAdminRoles, type AdminUser } from "@/server/auth/types";
 
 type SessionRow = {
   user_id: string;
@@ -53,7 +53,7 @@ export async function getUserFromToken(token: string): Promise<AdminUser | null>
     id: row.user_id,
     email: row.email,
     fullName: row.full_name,
-    roles: (row.roles ?? []) as RoleSlug[],
+    roles: normalizeAdminRoles(row.roles),
   };
 }
 

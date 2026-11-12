@@ -3,7 +3,8 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { authenticateAdmin } from "@/server/auth/login";
-import { setSessionCookie } from "@/server/auth/session";
+import { getUserFromToken, setSessionCookie } from "@/server/auth/session";
+import { hasPermission, isDeveloper } from "@/server/auth/types";
 import { clientIp } from "@/server/http/client-ip";
 
 export type AdminLoginState = { error?: string; email?: string } | null;
@@ -29,6 +30,10 @@ export async function adminLogin(_prev: AdminLoginState, formData: FormData): Pr
     });
     if (!result.ok) return { error: result.error, email };
     await setSessionCookie(result.token);
+    const user = await getUserFromToken(result.token);
+    if (user && isDeveloper(user.roles) && !hasPermission(user.roles, "orders.read")) {
+      redirect("/admin/ops");
+    }
     redirect("/admin");
   } catch (error) {
     if (isNextRedirect(error)) throw error;

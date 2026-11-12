@@ -29,7 +29,7 @@ import {
 import { logoutAdmin } from "@/app/admin/logout/action";
 import { brand } from "@/config/brand";
 import type { AdminUser, Permission } from "@/server/auth/types";
-import { hasPermission } from "@/server/auth/types";
+import { hasPermission, isDeveloper } from "@/server/auth/types";
 import { cn } from "@/lib/utils";
 import { AdminMobileDock } from "@/components/admin/mobile-dock";
 
@@ -46,6 +46,7 @@ const groups: { label: string; items: NavItem[] }[] = [
     label: "Desk",
     items: [
       { href: "/admin", label: "Home", permission: "orders.read", icon: Home, exact: true },
+      { href: "/admin", label: "Home", permission: "ops.write", icon: Home, exact: true },
       { href: "/admin/orders", label: "Orders", permission: "orders.read", icon: ClipboardList },
       { href: "/admin/pack", label: "Pack desk", permission: "orders.read", icon: Box },
       { href: "/admin/products", label: "Edit products", permission: "products.read", icon: Package },
@@ -143,7 +144,7 @@ function Nav({
         {collapsed ? null : (
           <span className="min-w-0">
             <span className="block truncate text-sm font-medium text-white">{brand.name}</span>
-            <span className="block text-[11px] text-white/70">Shop desk</span>
+            <span className="block text-[11px] text-white/70">{isDeveloper(user.roles) && !hasPermission(user.roles, "orders.read") ? "Developer desk" : "Shop desk"}</span>
           </span>
         )}
       </Link>
@@ -155,7 +156,12 @@ function Nav({
       ) : null}
       <nav className="flex flex-1 flex-col gap-5 overflow-y-auto px-3 pb-4" aria-label="Admin">
         {groups.map((group) => {
-          const items = group.items.filter((item) => hasPermission(user.roles, item.permission));
+          const seen = new Set<string>();
+          const items = group.items.filter((item) => {
+            if (!hasPermission(user.roles, item.permission) || seen.has(item.href)) return false;
+            seen.add(item.href);
+            return true;
+          });
           if (items.length === 0) return null;
           return (
             <div key={group.label}>
@@ -190,6 +196,20 @@ function Nav({
             </div>
           );
         })}
+        {isDeveloper(user.roles) && !hasPermission(user.roles, "ops.write") ? (
+          <div>
+            {collapsed ? null : (
+              <p className="px-3 pb-1.5 text-[10px] font-medium uppercase tracking-[0.16em] text-white/60">Develop</p>
+            )}
+            <Link
+              href="/admin/ops"
+              onClick={() => onNavigate?.()}
+              className="flex min-h-11 items-center gap-2.5 rounded-lg px-3 py-2 text-white/85 hover:bg-white/15 hover:text-white"
+            >
+              Operations
+            </Link>
+          </div>
+        ) : null}
       </nav>
     </>
   );
