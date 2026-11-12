@@ -22,12 +22,12 @@ export function ProductCsvForm() {
   return (
     <AdminSection
       title="Add many at once"
-      hint="Load the container list, or upload a CSV, Excel file, or PDF with names, codes, and Ghana Cedi prices. Photos can wait. If you add photos now, name the files with the code, like APA-126.jpg."
+      hint="Load the container list, or upload a CSV, Excel file, or PDF with names, codes, and Ghana Cedi prices. Photographed pieces go live; the rest stay hidden until you add photos named with the code, like APA-126.jpg."
     >
       <div className="grid gap-4 lg:grid-cols-2">
         <div className="rounded-sm border border-[color-mix(in_srgb,var(--accent)_14%,#eadfd4)] bg-white p-4">
           <p className="font-serif text-lg">From this shop’s list</p>
-          <p className="mt-1 text-sm text-muted">Puts the current container pieces on the shop.</p>
+          <p className="mt-1 text-sm text-muted">Puts photographed container pieces on the shop. The rest stay on the desk.</p>
           <button
             type="button"
             className={`${adminButton()} mt-4`}

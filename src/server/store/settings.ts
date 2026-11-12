@@ -58,14 +58,14 @@ const fallback: StorefrontConfig = {
   contact: { ...defaultContact },
   hero: {
     title: "Equip Your Kitchen",
-    subtitle: "",
+    subtitle: "Priced in Ghana Cedis from the Accra shop. Pay with mobile money.",
     ctaLabel: "Shop",
     ctaHref: "/products",
-    placeholder: true,
+    placeholder: false,
   },
   announcement: {
     enabled: true,
-    text: "Demo photography is on this site for layout. Replace with photographed stock before launch.",
+    text: "Collection in Dansoman-Sakaman, Accra. Delivery is quoted on WhatsApp after you order.",
   },
   social: {
     instagram: "",
@@ -102,7 +102,7 @@ async function readStorefrontConfig(): Promise<StorefrontConfig> {
   const fulfillment = storedFulfillment.coverageNote.includes("rate is published")
     ? { ...storedFulfillment, coverageNote: fallback.fulfillment.coverageNote }
     : storedFulfillment;
-  const liveAnnouncement = announcement.text.toLowerCase().includes("logo")
+  const liveAnnouncement = /demo photograph|logo are on this site/i.test(announcement.text)
     ? fallback.announcement
     : announcement;
   const namedContact =

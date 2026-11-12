@@ -208,11 +208,14 @@ export async function importProductsFromCsv(input: {
       sql`SELECT id FROM products WHERE lower(sku) = lower(${row.sku}) AND archived_at IS NULL`,
     );
     if (existing.rows[0]) {
-      if (row.listed) {
-        await query(
-          sql`UPDATE products SET is_active = TRUE, updated_at = now() WHERE id = ${existing.rows[0].id} AND archived_at IS NULL`,
-        );
-      }
+      await query(sql`
+        UPDATE products
+           SET is_active = ${row.listed},
+               is_featured = ${row.featured},
+               is_new = ${row.isNew},
+               updated_at = now()
+         WHERE id = ${existing.rows[0].id} AND archived_at IS NULL
+      `);
       skipped.push(row.sku);
       continue;
     }

@@ -13,6 +13,12 @@ const CATEGORY_SEED = [
   { slug: "home-essentials", name: "Home Essentials", sort: 50 },
 ];
 
+const FEATURED_SKUS = new Set(["J9142", "UC23316", "BF-5092", "HM-2067", "CFXB-80", "SOAP-SENSOR-5"]);
+
+function hasShopPhoto(sku: string) {
+  return Boolean(ASANTE_CONTAINER_PHOTOS[sku]?.files.length);
+}
+
 export async function importAsanteContainerStock(actorId: string): Promise<ProductCsvResult> {
   for (const category of CATEGORY_SEED) {
     await query(sql`
@@ -21,32 +27,30 @@ export async function importAsanteContainerStock(actorId: string): Promise<Produ
       ON CONFLICT (slug) DO NOTHING
     `);
   }
-  const rows = ASANTE_CONTAINER_STOCK.map((item, index) => ({
-    line: index + 2,
-    name: item.name,
-    sku: item.sku,
-    price: item.price,
-    salePrice: null,
-    stock: item.stock,
-    category: item.category,
-    description: item.description,
-    listed: true,
-    featured: false,
-    isNew: false,
-    lowStock: 3,
-    slug: "",
-    imageUrl: "",
-  }));
+  const rows = ASANTE_CONTAINER_STOCK.map((item, index) => {
+    const listed = hasShopPhoto(item.sku);
+    return {
+      line: index + 2,
+      name: item.name,
+      sku: item.sku,
+      price: item.price,
+      salePrice: null,
+      stock: item.stock,
+      category: item.category,
+      description: item.description,
+      listed,
+      featured: listed && FEATURED_SKUS.has(item.sku),
+      isNew: listed,
+      lowStock: 3,
+      slug: "",
+      imageUrl: "",
+    };
+  });
   const result = await importProductsFromCsv({ rows, actorId });
   await query(sql`
     UPDATE products
        SET archived_at = now(), is_active = FALSE
      WHERE archived_at IS NULL AND (sku ILIKE 'DEMO-%' OR slug ILIKE 'demo-%')
-  `);
-  await query(sql`
-    UPDATE products
-       SET is_active = TRUE, updated_at = now()
-     WHERE archived_at IS NULL AND sku NOT ILIKE 'DEMO-%' AND slug NOT ILIKE 'demo-%'
   `);
   const photos = await attachAsanteContainerPhotos();
   const created = result.created.length;
@@ -55,7 +59,7 @@ export async function importAsanteContainerStock(actorId: string): Promise<Produ
     ok: created > 0 || result.skipped.length > 0 || listed > 0,
     message:
       created > 0 || result.skipped.length > 0
-        ? `Loaded the container list onto the shop. Photographs can be added later.`
+        ? `Loaded the container list. ${listed} photographed piece${listed === 1 ? "" : "s"} ${listed === 1 ? "is" : "are"} on the shop; the rest stay on the desk until you add photos.`
         : listed > 0
           ? `Attached photos to ${listed} listed piece${listed === 1 ? "" : "s"}.`
           : result.errors[0] ?? "Could not load the container list.",

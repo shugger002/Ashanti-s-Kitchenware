@@ -3,43 +3,43 @@ export const lifestyleBlocks = [
     title: "Kitchen appliances",
     text: "Blenders, cookers, kettles, and fryers from the Accra shop. Priced in Ghana Cedis.",
     href: "/shop/kitchen-appliances",
-    image: "/demo/blender.jpg",
+    image: "/products/BF-5092/01.jpg",
   },
   {
     title: "Pots and pans",
     text: "Sets and single pots listed from stock. Check size and piece count on the product page.",
     href: "/shop/cookware",
-    image: "/demo/pot-set.jpg",
+    image: "/products/J9142/01.jpg",
   },
   {
     title: "Home pieces",
-    text: "Tableware and storage sold alongside the appliance range.",
-    href: "/shop/tableware",
-    image: "/demo/tableware.jpg",
+    text: "Sunshades and household pieces sold alongside the appliance range.",
+    href: "/shop/home-essentials",
+    image: "/products/178-7/01.jpg",
   },
 ];
 
 export const editorialCollections = [
   {
-    title: "Pots and kettles",
-    text: "A pot set, a heavy pot, and a kettle. Add each piece separately from the current catalogue.",
-    href: "/shop/cookware",
-    image: "/demo/pot-set.jpg",
-    slugs: ["demo-stainless-pot-set", "demo-cast-iron-dutch-oven", "demo-electric-kettle"],
+    title: "Cookware sets",
+    text: "Multi-piece sets from the current container list. Add each set from its own product page.",
+    href: "/shop/cookware-sets",
+    image: "/products/J9142/01.jpg",
+    slugs: ["6-piece-jio-cookware-set", "16-piece-induction-cookware-set", "20-piece-striped-pan-set"],
   },
   {
     title: "The appliance shelf",
-    text: "Blender, air fryer, and rice cooker. Add each piece on its own product page.",
+    text: "Blender, juicer, microwave, and rice cooker from photographed stock.",
     href: "/shop/kitchen-appliances",
-    image: "/demo/blender.jpg",
-    slugs: ["demo-home-blender", "demo-air-fryer", "demo-rice-cooker"],
+    image: "/products/BF-5092/01.jpg",
+    slugs: ["bardefu-blender-8-in-1-bf-5092", "2l-blender", "vertical-slow-juicer-2-in-1", "rice-cooker"],
   },
   {
-    title: "Table and storage",
-    text: "Tableware and a storage rack. Add each piece separately.",
-    href: "/shop/tableware",
-    image: "/demo/tableware.jpg",
-    slugs: ["demo-tableware-set", "demo-kitchen-storage-rack"],
+    title: "Home and outdoor",
+    text: "A 3x3 sunshade and Gree air conditioners listed with photographs.",
+    href: "/shop/home-essentials",
+    image: "/products/178-7/01.jpg",
+    slugs: ["3x3-sunshade", "gree-air-conditioner-2p", "gree-air-conditioner-4p"],
   },
 ];
 
@@ -50,7 +50,7 @@ export const brandValues = [
   },
   {
     title: "Sold as a retailer",
-    text: "Handles, lids, and housings should match the unit on the shelf. Demo listings stay labelled.",
+    text: "Handles, lids, and housings should match the unit on the shelf. Unphotographed container lines stay on the desk until a photo is added.",
   },
   {
     title: "Easy to clean",
