@@ -3,16 +3,17 @@ import { likeContains, sql, sqlAnd } from "@/server/db/sql";
 import { writeAuditLog } from "@/server/auth/audit";
 import { hitRateLimit } from "@/server/auth/rate-limit";
 import { isUuid } from "@/lib/utils";
-import { sendPackedOrderEmail } from "@/server/notifications/order-mail";
+import { restockPaidOrder } from "@/server/inventory/service";
+import { sendPackedOrderEmail, sendRefundedOrderEmail } from "@/server/notifications/order-mail";
 
 export const ORDER_TRANSITIONS: Record<string, string[]> = {
   pending_payment: ["cancelled", "paid"],
-  paid: ["packing", "cancelled"],
-  packing: ["shipped", "ready_for_collection", "cancelled"],
-  shipped: ["delivered"],
-  ready_for_collection: ["collected", "cancelled"],
-  delivered: [],
-  collected: [],
+  paid: ["packing", "refunded"],
+  packing: ["shipped", "ready_for_collection", "cancelled", "refunded"],
+  shipped: ["delivered", "refunded"],
+  ready_for_collection: ["collected", "cancelled", "refunded"],
+  delivered: ["refunded"],
+  collected: ["refunded"],
   cancelled: [],
   refunded: [],
 };
@@ -71,7 +72,7 @@ export async function listOrders(filters: {
   } else if (filters.need === "done") {
     where.push(sql`status IN ('delivered', 'collected')`);
   }
-  if (filters.paymentStatus && ["pending", "unpaid", "paid", "failed", "successful"].includes(filters.paymentStatus)) {
+  if (filters.paymentStatus && ["pending", "unpaid", "paid", "failed", "successful", "refunded"].includes(filters.paymentStatus)) {
     where.push(sql`payment_status = ${filters.paymentStatus}`);
   }
   const result = await query<{
@@ -366,6 +367,22 @@ export async function transitionOrder(input: {
          VALUES (${input.orderId}, ${input.trackingNumber}, ${input.toStatus === "shipped" ? "shipped" : "pending"})
       `);
     }
+    if (input.toStatus === "refunded") {
+      const paid = await db.query<{ payment_status: string }>(
+        sql`SELECT payment_status FROM orders WHERE id = ${input.orderId}`,
+      );
+      if (paid.rows[0]?.payment_status !== "paid") {
+        throw new Error("Only a paid order can be marked refunded.");
+      }
+      await restockPaidOrder(db, { orderId: input.orderId });
+      await db.query(
+        sql`UPDATE orders SET payment_status = 'refunded', updated_at = now() WHERE id = ${input.orderId}`,
+      );
+      await db.query(sql`
+        UPDATE payments SET status = 'refunded', updated_at = now()
+         WHERE order_id = ${input.orderId} AND status = 'successful'
+      `);
+    }
     await writeAuditLog(
       {
         actorUserId: input.actorUserId,
@@ -379,6 +396,9 @@ export async function transitionOrder(input: {
   });
   if (input.toStatus === "shipped" || input.toStatus === "ready_for_collection") {
     await sendPackedOrderEmail(input.orderId, input.toStatus);
+  }
+  if (input.toStatus === "refunded") {
+    await sendRefundedOrderEmail(input.orderId);
   }
 }
 

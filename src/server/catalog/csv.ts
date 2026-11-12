@@ -184,7 +184,7 @@ function parseRowsFromGrid(
       errors.push(`Line ${lineNo} (${sku}): stock must be a whole number.`);
       continue;
     }
-    const listedParsed = parseBool(cell(cells, listedIndex), true);
+    const listedParsed = parseBool(cell(cells, listedIndex), false);
     const featuredParsed = parseBool(cell(cells, featuredIndex), false);
     const newParsed = parseBool(cell(cells, newIndex), false);
     if (listedParsed == null || featuredParsed == null || newParsed == null) {
@@ -236,10 +236,10 @@ function parseAsStackedCells(cells: string[]): CsvProductParseResult | null {
     lines.push([cells[i], cells[i + 1], cells[i + 2]].map((value) => value.replaceAll(",", " ")).join(","));
   }
   if (lines.length < 2) return null;
-  return parseProductCsv(lines.join("\n"));
+  return parseProductCsv(lines.join("\n"), { stacked: true });
 }
 
-export function parseProductCsv(raw: string): CsvProductParseResult {
+export function parseProductCsv(raw: string, options?: { stacked?: boolean }): CsvProductParseResult {
   const text = normalizeCsvText(raw);
   if (!text) return { rows: [], errors: ["The file is empty."] };
   const lines = text.split("\n").filter((line) => line.trim().length > 0);
@@ -292,11 +292,13 @@ export function parseProductCsv(raw: string): CsvProductParseResult {
 
   if (nameIndex >= 0 && skuIndex >= 0 && priceIndex >= 0) {
     const parsed = parseRowsFromGrid(lines, headerAt, headers, nameIndex, skuIndex, priceIndex);
-    if (parsed.rows.length > 0) return parsed;
+    if (parsed.rows.length > 0 || parsed.errors.length > 0) return parsed;
   }
 
-  const stacked = parseAsStackedCells(lines.flatMap((line) => splitCsvLine(line).map((value) => value.trim()).filter(Boolean)));
-  if (stacked && stacked.rows.length > 0) return stacked;
+  if (!options?.stacked) {
+    const stacked = parseAsStackedCells(lines.flatMap((line) => splitCsvLine(line).map((value) => value.trim()).filter(Boolean)));
+    if (stacked && stacked.rows.length > 0) return stacked;
+  }
 
   return {
     rows: [],

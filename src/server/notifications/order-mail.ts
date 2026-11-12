@@ -174,3 +174,42 @@ export async function sendFailedPaymentEmail(orderId: string) {
     console.error("failed payment email failed", error);
   }
 }
+
+export async function sendRefundedOrderEmail(orderId: string) {
+  try {
+    if (!(await claimNotification(`order-refunded:${orderId}`))) return;
+    const loaded = await loadOrder(orderId);
+    if (!loaded) return;
+    const { order, items } = loaded;
+    const { contact } = await getStorefrontConfig();
+    const track = `${getAppUrl()}/orders/track?ref=${encodeURIComponent(order.public_ref)}`;
+    const lines = items.map((item) => `${item.quantity} × ${item.product_name}`).join("\n");
+    if (order.email) {
+      await sendEmail({
+        to: order.email,
+        subject: `Refund for order ${order.public_ref}`,
+        text: [
+          `Hello ${order.full_name},`,
+          "",
+          `Ashanti's Kitchenware has recorded a refund for ${order.public_ref}.`,
+          "The money goes back on the same mobile-money or card path used at checkout. Ask the shop if it has not shown after a few days.",
+          "",
+          lines,
+          "",
+          `Total: ${formatGhs(order.total)}`,
+          `Track: ${track}`,
+        ].join("\n"),
+      });
+    }
+    await sendEmail({
+      to: contact.email,
+      replyTo: order.email ?? undefined,
+      subject: `Refunded ${order.public_ref}`,
+      text: [`Refund recorded for ${order.public_ref}.`, `Phone: ${order.phone}`, "", lines, "", `Total: ${formatGhs(order.total)}`].join(
+        "\n",
+      ),
+    });
+  } catch (error) {
+    console.error("refunded order email failed", error);
+  }
+}

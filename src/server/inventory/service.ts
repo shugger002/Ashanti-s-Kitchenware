@@ -219,6 +219,34 @@ export async function convertReservationToSale(
   }
 }
 
+export async function restockPaidOrder(
+  db: Db,
+  input: { orderId: string },
+): Promise<void> {
+  const items = await db.query<{ product_id: string; variant_id: string | null; quantity: number }>(
+    sql`SELECT product_id, variant_id, quantity FROM order_items WHERE order_id = ${input.orderId}`,
+  );
+  for (const item of items.rows) {
+    const inv = item.variant_id
+      ? await db.query<{ id: string }>(sql`SELECT id FROM inventory WHERE variant_id = ${item.variant_id} FOR UPDATE`)
+      : await db.query<{ id: string }>(
+          sql`SELECT id FROM inventory WHERE product_id = ${item.product_id} AND variant_id IS NULL FOR UPDATE`,
+        );
+    const id = inv.rows[0]?.id;
+    if (!id) continue;
+    await db.query(sql`
+      UPDATE inventory
+       SET on_hand = on_hand + ${item.quantity}, updated_at = now()
+       WHERE id = ${id}
+    `);
+    await db.query(sql`
+      INSERT INTO inventory_movements
+         (inventory_id, delta_on_hand, reason, source, order_id)
+       VALUES (${id}, ${item.quantity}, 'Refund restock', 'restock', ${input.orderId})
+    `);
+  }
+}
+
 export async function releaseReservation(
   db: Db,
   input: { orderId: string },

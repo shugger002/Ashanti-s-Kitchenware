@@ -34,8 +34,8 @@ function money(value: unknown) {
 function nextStepHint(status: string, method: string) {
   if (status === "paid") {
     return method === "collection"
-      ? "Pack first. After that you can mark it ready at the shop, then collected."
-      : "Pack first. After that you can send it out, then mark it delivered.";
+      ? "Pack first. After that you can mark it ready at the shop, then collected. Mark refunded only after the money has gone back on MoMo or card."
+      : "Pack first. After that you can send it out, then mark it delivered. Mark refunded only after the money has gone back on MoMo or card.";
   }
   if (status === "packing") {
     return method === "collection"
@@ -71,7 +71,11 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
   const shippingAmount = Number(order.shipping_amount ?? 0);
   const customerStep = customerTrackIndex(status);
   const pieceCount = data.items.reduce((sum, item) => sum + item.quantity, 0);
-  const danger = allowed.filter((value) => value === "cancelled" || value === "refunded");
+  const danger = allowed.filter((value) => {
+    if (value === "cancelled") return true;
+    if (value === "refunded") return canCapture;
+    return false;
+  });
   const primaryStep = forward[0];
   const laterSteps = forward.slice(1);
   const waDigits = ghanaInternationalMsisdn(text(order.phone));

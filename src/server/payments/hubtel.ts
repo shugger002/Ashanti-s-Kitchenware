@@ -27,8 +27,17 @@ export function isHubtelConfigured(): boolean {
   return Boolean(
     process.env.HUBTEL_CLIENT_ID &&
       process.env.HUBTEL_CLIENT_SECRET &&
-      process.env.HUBTEL_MERCHANT_ACCOUNT_NUMBER,
+      process.env.HUBTEL_MERCHANT_ACCOUNT_NUMBER &&
+      process.env.HUBTEL_WEBHOOK_SECRET,
   );
+}
+
+export function isHubtelWebhookConfigured(): boolean {
+  return Boolean(process.env.HUBTEL_WEBHOOK_SECRET);
+}
+
+export function hubtelCallbackUrl(): string {
+  return `${getAppUrl()}/api/webhooks/hubtel`;
 }
 
 export class HubtelProvider implements PaymentProvider {

@@ -2,7 +2,7 @@ import { requirePermission } from "@/server/auth/authorize";
 import { query } from "@/server/db/pool";
 import { sql } from "@/server/db/sql";
 import { isProduction } from "@/server/env";
-import { isHubtelConfigured } from "@/server/payments/hubtel";
+import { hubtelCallbackUrl, isHubtelConfigured } from "@/server/payments/hubtel";
 import { isMoolreConfigured, isMoolreWebhookConfigured, moolreCallbackUrl } from "@/server/payments/moolre";
 import { adminButton, AdminGlance, AdminPageHeader, AdminSection } from "@/components/admin/ui";
 import { isMailConfigured, sendEmail } from "@/server/notifications/email";
@@ -93,6 +93,19 @@ export default async function ServiceHealthPage({
           </li>
         ))}
       </ul>
+      <AdminSection className="mt-8 max-w-xl" title="Hubtel">
+        <p className="text-sm leading-relaxed text-muted">
+          Hubtel checkout is off until merchant keys and a callback secret exist. Do not invent those keys. When they
+          are set, paste this callback in the Hubtel merchant dashboard.
+        </p>
+        <p className="mt-3 break-all font-mono text-xs">{hubtelCallbackUrl()}</p>
+        {!isHubtelConfigured() ? (
+          <p className="mt-3 text-sm text-accent">
+            HUBTEL_CLIENT_ID, HUBTEL_CLIENT_SECRET, HUBTEL_MERCHANT_ACCOUNT_NUMBER, and HUBTEL_WEBHOOK_SECRET are still
+            empty.
+          </p>
+        ) : null}
+      </AdminSection>
       <AdminSection className="mt-8 max-w-xl" title="Moolre">
         <p className="text-sm leading-relaxed text-muted">
           Mobile-money checkout posts to Moolre, waits for the phone prompt, and marks the order paid only after

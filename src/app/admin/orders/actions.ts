@@ -13,11 +13,13 @@ function touchOrders(orderId: string) {
 }
 
 export async function transitionOrderAction(formData: FormData) {
-  const actor = await requirePermission("orders.write");
+  const toStatus = String(formData.get("toStatus"));
+  const actor =
+    toStatus === "refunded" ? await requirePermission("payments.capture") : await requirePermission("orders.write");
   const orderId = String(formData.get("orderId"));
   await transitionOrder({
     orderId,
-    toStatus: String(formData.get("toStatus")),
+    toStatus,
     actorUserId: actor.id,
     note: String(formData.get("note") ?? ""),
     trackingNumber: String(formData.get("trackingNumber") || "") || undefined,
