@@ -7,10 +7,12 @@ import { getStorefrontConfig } from "@/server/store/settings";
 import { hitRateLimit } from "@/server/auth/rate-limit";
 import { clientIp } from "@/server/http/client-ip";
 
+const noHeaderBreaks = (value: string) => !/[\r\n\0]/.test(value);
+
 const schema = z.object({
-  name: z.string().trim().min(2).max(120),
-  email: z.string().trim().email().max(160),
-  phone: z.string().trim().max(40).optional(),
+  name: z.string().trim().min(2).max(120).refine(noHeaderBreaks),
+  email: z.string().trim().email().max(160).refine(noHeaderBreaks),
+  phone: z.string().trim().max(40).optional().refine((value) => !value || noHeaderBreaks(value)),
   message: z.string().trim().min(10).max(2000),
 });
 

@@ -28,7 +28,15 @@ async function requestMeta() {
 
 function safeNext(value: FormDataEntryValue | null) {
   const next = String(value ?? "");
-  if (next.startsWith("/") && !next.startsWith("//") && !next.includes("\\")) return next;
+  if (
+    next.startsWith("/") &&
+    !next.startsWith("//") &&
+    !next.includes("\\") &&
+    !next.includes("://") &&
+    !next.startsWith("/admin")
+  ) {
+    return next;
+  }
   return "/account";
 }
 

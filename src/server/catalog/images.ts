@@ -2,17 +2,9 @@ import { addProductImage } from "@/server/catalog/admin";
 import { matchProductFromFilename } from "@/server/catalog/image-names";
 import { query } from "@/server/db/pool";
 import { sql } from "@/server/db/sql";
+import { sniffImageType } from "@/lib/secrets";
+import { isUuid } from "@/lib/utils";
 import { assertImageUpload, extensionForType, getStorage, randomObjectKey } from "@/server/storage";
-import { ALLOWED_IMAGE_TYPES } from "@/server/storage/port";
-
-function mimeFromFile(file: File): string {
-  if (ALLOWED_IMAGE_TYPES.includes(file.type as (typeof ALLOWED_IMAGE_TYPES)[number])) return file.type;
-  const ext = file.name.split(".").pop()?.toLowerCase();
-  if (ext === "png") return "image/png";
-  if (ext === "webp") return "image/webp";
-  if (ext === "jpg" || ext === "jpeg") return "image/jpeg";
-  return file.type;
-}
 
 export async function saveProductPhoto(input: {
   productId: string;
@@ -20,9 +12,11 @@ export async function saveProductPhoto(input: {
   alt: string;
   isPrimary: boolean;
 }): Promise<void> {
-  const type = mimeFromFile(input.file);
-  assertImageUpload({ type, size: input.file.size });
+  if (!isUuid(input.productId)) throw new Error("Choose a photo first.");
   const bytes = Buffer.from(await input.file.arrayBuffer());
+  const type = sniffImageType(bytes);
+  if (!type) throw new Error("Only JPEG, PNG, and WebP images are allowed");
+  assertImageUpload({ type, size: input.file.size });
   let alt = input.alt.trim();
   if (!alt) {
     const named = await query<{ name: string }>(sql`SELECT name FROM products WHERE id = ${input.productId} LIMIT 1`);

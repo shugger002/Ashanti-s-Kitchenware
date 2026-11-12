@@ -6,6 +6,7 @@ import { requirePermission } from "@/server/auth/authorize";
 import { createAdminUser } from "@/server/auth/login";
 import { ROLE_SLUGS, type RoleSlug } from "@/server/auth/types";
 import { setStaffActive, setStaffPassword, setStaffRole } from "@/server/auth/staff";
+import { isUuid } from "@/lib/utils";
 
 function touchStaff(userId?: string) {
   revalidatePath("/admin/users");
@@ -44,6 +45,7 @@ export async function addStaffUser(formData: FormData) {
 export async function setStaffActiveAction(formData: FormData) {
   const actor = await requirePermission("users.write");
   const userId = String(formData.get("userId"));
+  if (!isUuid(userId)) return;
   await setStaffActive({
     userId,
     actorUserId: actor.id,
@@ -55,6 +57,7 @@ export async function setStaffActiveAction(formData: FormData) {
 export async function setStaffRoleAction(formData: FormData) {
   const actor = await requirePermission("users.write");
   const userId = String(formData.get("userId"));
+  if (!isUuid(userId)) return;
   await setStaffRole({
     userId,
     actorUserId: actor.id,
@@ -66,6 +69,7 @@ export async function setStaffRoleAction(formData: FormData) {
 export async function setStaffPasswordAction(formData: FormData) {
   const actor = await requirePermission("users.write");
   const userId = String(formData.get("userId"));
+  if (!isUuid(userId)) return;
   await setStaffPassword({
     userId,
     actorUserId: actor.id,

@@ -1,6 +1,7 @@
 import { getAppUrl } from "@/server/env";
 import { ghanaInternationalMsisdn } from "@/lib/phone-gh";
 import { parseMoney } from "@/lib/money";
+import { secretsEqual } from "@/lib/secrets";
 import type {
   CreatePaymentInput,
   CreatePaymentResult,
@@ -79,13 +80,12 @@ export class HubtelProvider implements PaymentProvider {
   }
 
   async parseWebhook(rawBody: Buffer, headers: Headers): Promise<VerifiedPaymentEvent> {
-    const expected = process.env.HUBTEL_WEBHOOK_SECRET;
-    if (expected) {
-      const header = headers.get("authorization") ?? headers.get("x-hubtel-auth") ?? "";
-      const bearer = header.replace(/^Bearer\s+/i, "");
-      if (bearer !== expected && header !== expected) {
-        throw new Error("Invalid Hubtel webhook credential");
-      }
+    const expected = process.env.HUBTEL_WEBHOOK_SECRET?.trim();
+    if (!expected) throw new Error("HUBTEL_WEBHOOK_SECRET is not set");
+    const header = headers.get("authorization") ?? headers.get("x-hubtel-auth") ?? "";
+    const bearer = header.replace(/^Bearer\s+/i, "");
+    if (!secretsEqual(bearer, expected) && !secretsEqual(header, expected)) {
+      throw new Error("Invalid Hubtel webhook credential");
     }
     const payload = JSON.parse(rawBody.toString("utf8")) as Record<string, unknown>;
     const data =

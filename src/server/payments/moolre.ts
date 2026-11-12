@@ -1,4 +1,5 @@
-import { randomBytes, timingSafeEqual } from "node:crypto";
+import { randomBytes } from "node:crypto";
+import { secretsEqual } from "@/lib/secrets";
 import { ghanaLocalMsisdn } from "@/lib/phone-gh";
 import { parseMoney } from "@/lib/money";
 import { getAppUrl } from "@/server/env";
@@ -216,10 +217,7 @@ export class MoolreProvider implements PaymentProvider {
     const payload = JSON.parse(rawBody.toString("utf8")) as MoolreEnvelope & { data?: MoolreTxn };
     const secret = process.env.MOOLRE_WEBHOOK_SECRET;
     if (!secret) throw new Error("MOOLRE_WEBHOOK_SECRET is not set");
-    const given = payload.data?.secret ?? "";
-    const a = Buffer.from(secret);
-    const b = Buffer.from(given);
-    if (a.length !== b.length || !timingSafeEqual(a, b)) {
+    if (!secretsEqual(payload.data?.secret ?? "", secret)) {
       throw new Error("Invalid Moolre callback secret");
     }
     const ref = payload.data?.externalref;

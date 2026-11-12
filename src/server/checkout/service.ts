@@ -10,10 +10,12 @@ import { writeAuditLog } from "@/server/auth/audit";
 import { isDemoListing } from "@/lib/listing";
 import { sendPaidOrderEmails } from "@/server/notifications/order-mail";
 
+const noHeaderBreaks = (value: string) => !/[\r\n\0]/.test(value);
+
 export const checkoutSchema = z.object({
-  fullName: z.string().trim().min(2).max(120),
-  email: z.string().trim().email(),
-  phone: z.string().trim().min(9).max(20),
+  fullName: z.string().trim().min(2).max(120).refine(noHeaderBreaks),
+  email: z.string().trim().email().refine(noHeaderBreaks),
+  phone: z.string().trim().min(9).max(20).refine(noHeaderBreaks),
   deliveryMethod: z.enum(["delivery", "collection"]),
   addressLine1: z.string().trim().max(200).optional(),
   addressLine2: z.string().trim().max(200).optional(),
@@ -39,7 +41,7 @@ export type CheckoutInput = z.infer<typeof checkoutSchema>;
 
 function publicRef(): string {
   const stamp = new Date().toISOString().slice(0, 10).replaceAll("-", "");
-  return `AK-${stamp}-${randomBytes(3).toString("hex").toUpperCase()}`;
+  return `AK-${stamp}-${randomBytes(8).toString("hex").toUpperCase()}`;
 }
 
 export async function placeOrder(input: CheckoutInput, sessionCustomerId?: string) {

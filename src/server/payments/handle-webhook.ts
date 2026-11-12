@@ -7,8 +7,13 @@ import type { PaymentProvider } from "@/server/payments/types";
 
 export async function handlePaymentWebhook(provider: PaymentProvider, request: Request) {
   const raw = Buffer.from(await request.arrayBuffer());
+  let event;
   try {
-    const event = await provider.parseWebhook(raw, request.headers);
+    event = await provider.parseWebhook(raw, request.headers);
+  } catch {
+    return NextResponse.json({ error: "Webhook rejected" }, { status: 400 });
+  }
+  try {
     if (event.successful) {
       await markOrderPaid({
         publicRef: event.providerRef,
@@ -29,7 +34,8 @@ export async function handlePaymentWebhook(provider: PaymentProvider, request: R
       if (order.rows[0]) await sendFailedPaymentEmail(order.rows[0].id);
     }
     return NextResponse.json({ received: true });
-  } catch {
-    return NextResponse.json({ error: "Webhook rejected" }, { status: 400 });
+  } catch (error) {
+    console.error("payment webhook processing failed", error);
+    return NextResponse.json({ error: "Webhook processing failed" }, { status: 500 });
   }
 }
