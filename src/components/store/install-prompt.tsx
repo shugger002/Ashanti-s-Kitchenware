@@ -19,14 +19,22 @@ declare global {
   }
 }
 
+type InstallKind = "android" | "ios-safari" | "ios-other";
+
 function isStandalone() {
   if (window.matchMedia("(display-mode: standalone)").matches) return true;
   return Boolean((window.navigator as Navigator & { standalone?: boolean }).standalone);
 }
 
-function isIosDevice() {
+function installKind(): InstallKind {
   const ua = window.navigator.userAgent;
-  return /iPad|iPhone|iPod/.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  const ios =
+    /iPad|iPhone|iPod/.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  if (!ios) return "android";
+  const inApp = /(FBAN|FBAV|Instagram|Line\/|WhatsApp|Twitter|TikTok|Snapchat|Pinterest)/i.test(ua);
+  const otherIosBrowser = /CriOS|FxiOS|EdgiOS|OPiOS|DuckDuckGo/.test(ua);
+  if (inApp || otherIosBrowser) return "ios-other";
+  return "ios-safari";
 }
 
 export function InstallPrompt() {
@@ -34,12 +42,13 @@ export function InstallPrompt() {
   const addRef = useRef<HTMLButtonElement>(null);
   const [open, setOpen] = useState(false);
   const [host, setHost] = useState("");
-  const [ios, setIos] = useState(false);
+  const [kind, setKind] = useState<InstallKind>("android");
   const [help, setHelp] = useState(false);
 
   useEffect(() => {
+    const nextKind = installKind();
     setHost(window.location.host);
-    setIos(isIosDevice());
+    setKind(nextKind);
     if ("serviceWorker" in navigator) {
       void navigator.serviceWorker.register("/sw.js");
     }
@@ -63,7 +72,10 @@ export function InstallPrompt() {
     window.addEventListener("beforeinstallprompt", onPrompt);
     window.addEventListener("appinstalled", onInstalled);
 
-    const timer = window.setTimeout(() => setOpen(true), 800);
+    const timer = window.setTimeout(() => {
+      setHelp(nextKind !== "android");
+      setOpen(true);
+    }, 800);
     return () => {
       window.clearTimeout(timer);
       window.removeEventListener("beforeinstallprompt", onPrompt);
@@ -75,7 +87,7 @@ export function InstallPrompt() {
     if (!open) return;
     addRef.current?.focus();
     const previous = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
+    document.body.style.overflow = kind === "ios-safari" ? previous : "hidden";
     function onKey(event: KeyboardEvent) {
       if (event.key === "Escape") later();
     }
@@ -84,7 +96,7 @@ export function InstallPrompt() {
       document.body.style.overflow = previous;
       window.removeEventListener("keydown", onKey);
     };
-  }, [open]);
+  }, [open, kind]);
 
   function later() {
     try {
@@ -105,7 +117,7 @@ export function InstallPrompt() {
   }
 
   function addToHome() {
-    if (isIosDevice()) {
+    if (kind !== "android") {
       setHelp(true);
       return;
     }
@@ -124,13 +136,22 @@ export function InstallPrompt() {
 
   if (!open) return null;
 
+  const ios = kind !== "android";
+  const sheetAtTop = ios;
+
   return (
-    <div className="fixed inset-0 z-[80] flex items-end justify-center bg-foreground/40 p-4 sm:items-center">
+    <div
+      className={
+        sheetAtTop
+          ? "pointer-events-none fixed inset-x-0 top-0 z-[80] flex justify-center px-3 pt-[max(0.75rem,env(safe-area-inset-top))]"
+          : "fixed inset-0 z-[80] flex items-end justify-center bg-foreground/40 p-4 sm:items-center"
+      }
+    >
       <div
         role="dialog"
-        aria-modal="true"
+        aria-modal={!sheetAtTop}
         aria-labelledby={titleId}
-        className="w-full max-w-md rounded-[1.75rem] bg-white px-5 pb-6 pt-6 shadow-[0_24px_60px_rgba(26,26,26,0.18)]"
+        className="pointer-events-auto w-full max-w-md rounded-[1.75rem] bg-white px-5 pb-6 pt-6 shadow-[0_24px_60px_rgba(26,26,26,0.18)]"
       >
         <div className="flex items-start gap-3">
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -168,25 +189,38 @@ export function InstallPrompt() {
           ))}
         </ul>
 
-        {help && ios ? (
+        {kind === "ios-other" ? (
+          <ol className="mt-5 space-y-3 text-sm leading-relaxed text-foreground">
+            <li>
+              iPhone only adds this shop from <strong>Safari</strong>. Chrome, Instagram, and WhatsApp cannot.
+            </li>
+            <li>1. Tap the menu or Share, then Open in Safari.</li>
+            <li className="flex gap-3">
+              <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-[#f6f1ea] text-accent">
+                <Share className="size-4" aria-hidden />
+              </span>
+              <span>2. In Safari, tap Share, scroll to Add to Home Screen, then tap Add.</span>
+            </li>
+          </ol>
+        ) : kind === "ios-safari" || (help && ios) ? (
           <ol className="mt-5 space-y-3 text-sm leading-relaxed text-foreground">
             <li className="flex gap-3">
               <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-[#f6f1ea] text-accent">
                 <Share className="size-4" aria-hidden />
               </span>
-              <span>Tap the Share button (square with an arrow).</span>
+              <span>Tap Share at the bottom of Safari (square with an arrow).</span>
             </li>
             <li className="flex gap-3">
               <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-[#f6f1ea] text-sm font-medium">
                 2
               </span>
-              <span>Scroll and tap Add to Home Screen.</span>
+              <span>Scroll the list and tap Add to Home Screen.</span>
             </li>
             <li className="flex gap-3">
               <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-[#f6f1ea] text-sm font-medium">
                 3
               </span>
-              <span>Tap Add.</span>
+              <span>Tap Add. This button cannot place the icon for you on iPhone.</span>
             </li>
           </ol>
         ) : help ? (
@@ -197,15 +231,19 @@ export function InstallPrompt() {
           </ol>
         ) : null}
 
-        <button
-          ref={addRef}
-          type="button"
-          className={buttonClass("primary", "mt-5 h-12 w-full gap-2 rounded-full text-base")}
-          onClick={addToHome}
-        >
-          <Download className="size-4" aria-hidden />
-          Add to Home Screen
-        </button>
+        {kind === "android" ? (
+          <button
+            ref={addRef}
+            type="button"
+            className={buttonClass("primary", "mt-5 h-12 w-full gap-2 rounded-full text-base")}
+            onClick={addToHome}
+          >
+            <Download className="size-4" aria-hidden />
+            Add to Home Screen
+          </button>
+        ) : (
+          <p className="mt-5 text-center text-xs text-muted">Safari Share is below this card, not in it.</p>
+        )}
 
         <button type="button" className="mt-4 flex h-11 w-full items-center justify-center text-sm text-muted" onClick={later}>
           Maybe Later
