@@ -13,7 +13,7 @@ const CATEGORY_SEED = [
   { slug: "home-essentials", name: "Home Essentials", sort: 50 },
 ];
 
-const FEATURED_SKUS = new Set(["J9142", "UC23316", "BF-5092", "HM-2067", "CFXB-80", "SOAP-SENSOR-5"]);
+const FEATURED_SKUS = new Set(["UC-TS0912", "HM-2067", "FB50", "194-16", "FX-8819", "958-4"]);
 
 function hasShopPhoto(sku: string) {
   return Boolean(ASANTE_CONTAINER_PHOTOS[sku]?.files.length);
@@ -47,10 +47,12 @@ export async function importAsanteContainerStock(actorId: string): Promise<Produ
     };
   });
   const result = await importProductsFromCsv({ rows, actorId });
+  const keep = ASANTE_CONTAINER_STOCK.map((item) => item.sku.toLowerCase());
   await query(sql`
     UPDATE products
-       SET archived_at = now(), is_active = FALSE
-     WHERE archived_at IS NULL AND (sku ILIKE 'DEMO-%' OR slug ILIKE 'demo-%')
+       SET archived_at = now(), is_active = FALSE, updated_at = now()
+     WHERE archived_at IS NULL
+       AND NOT (lower(sku) = ANY(${keep}))
   `);
   const photos = await attachAsanteContainerPhotos();
   const created = result.created.length;

@@ -205,16 +205,31 @@ export async function importProductsFromCsv(input: {
 
   for (const row of input.rows) {
     const existing = await query<{ id: string }>(
-      sql`SELECT id FROM products WHERE lower(sku) = lower(${row.sku}) AND archived_at IS NULL`,
+      sql`SELECT id FROM products WHERE lower(sku) = lower(${row.sku}) LIMIT 1`,
     );
     if (existing.rows[0]) {
+      let categoryId: string | null = null;
+      if (row.category) {
+        categoryId = categoryByKey.get(row.category.trim().toLowerCase()) ?? null;
+      }
       await query(sql`
         UPDATE products
-           SET is_active = ${row.listed},
+           SET name = ${row.name},
+               description = ${row.description},
+               category_id = ${categoryId},
+               price = ${row.price},
+               sale_price = ${row.salePrice},
+               is_active = ${row.listed},
                is_featured = ${row.featured},
                is_new = ${row.isNew},
+               archived_at = NULL,
                updated_at = now()
-         WHERE id = ${existing.rows[0].id} AND archived_at IS NULL
+         WHERE id = ${existing.rows[0].id}
+      `);
+      await query(sql`
+        UPDATE inventory
+           SET on_hand = GREATEST(${row.stock}, reserved), updated_at = now()
+         WHERE product_id = ${existing.rows[0].id} AND variant_id IS NULL
       `);
       skipped.push(row.sku);
       continue;

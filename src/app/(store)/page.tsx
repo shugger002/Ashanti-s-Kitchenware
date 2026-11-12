@@ -24,8 +24,8 @@ export default function HomePage() {
       <section className="overflow-hidden bg-background">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src="/products/J9142/01.jpg"
-          alt="JIO 6-piece cookware set from the Accra shop"
+          src="/products/UC-TS0912/01.jpg"
+          alt="12-piece cookware set from the Accra shop"
           width={1470}
           height={1420}
           fetchPriority="high"
