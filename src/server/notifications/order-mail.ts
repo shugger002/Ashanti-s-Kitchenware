@@ -6,6 +6,7 @@ import { getAppUrl } from "@/server/env";
 import { claimNotification } from "@/server/notifications/claim";
 import { escapeHtml, sendEmail } from "@/server/notifications/email";
 import { getStorefrontConfig } from "@/server/store/settings";
+import { recordJobRun } from "@/server/ops/jobs";
 
 type OrderRow = {
   id: string;
@@ -120,8 +121,17 @@ export async function sendPaidOrderEmails(orderId: string) {
         .filter(Boolean)
         .join("\n"),
     });
+    await recordJobRun({ job: "order-paid-email", status: "ok", summary: `Paid mail for ${order.public_ref}`, entityId: orderId });
   } catch (error) {
     console.error("paid order email failed", error);
+    await query(sql`DELETE FROM notification_sends WHERE event = ${`order-paid:${orderId}`}`);
+    await recordJobRun({
+      job: "order-paid-email",
+      status: "failed",
+      summary: "Paid-order mail did not send. Retry from Operations.",
+      entityId: orderId,
+      retryable: true,
+    });
   }
 }
 

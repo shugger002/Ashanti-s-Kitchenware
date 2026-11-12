@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { requirePermission } from "@/server/auth/authorize";
-import { dashboardMetrics } from "@/server/reporting/service";
+import { dashboardMetrics, dashboardRange, type DeskRange } from "@/server/reporting/service";
 import { dashboardGrowth } from "@/server/reporting/growth";
 import { HomeGrowth } from "@/components/admin/home-growth";
 import { formatGhs } from "@/lib/money";
@@ -33,14 +33,36 @@ function accraDateLabel() {
   }).format(new Date());
 }
 
-export default async function AdminHomePage() {
-  const [metrics, growth, user] = await Promise.all([
-    dashboardMetrics(),
-    dashboardGrowth(),
-    requirePermission("orders.read"),
-  ]);
+export default async function AdminHomePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ range?: string }>;
+}) {
+  const params = await searchParams;
+  const range: DeskRange = params.range === "7d" || params.range === "30d" ? params.range : "today";
+  let metricsError = "";
+  let metrics: Awaited<ReturnType<typeof dashboardMetrics>> | null = null;
+  let growth: Awaited<ReturnType<typeof dashboardGrowth>> | null = null;
+  let rangeStats: Awaited<ReturnType<typeof dashboardRange>> | null = null;
+  const user = await requirePermission("orders.read");
+  try {
+    [metrics, growth, rangeStats] = await Promise.all([dashboardMetrics(), dashboardGrowth(), dashboardRange(range)]);
+  } catch {
+    metricsError = "Live desk numbers could not load. Check Connections.";
+  }
   const firstName = (user?.fullName ?? "").trim().split(/\s+/)[0] || "";
   const greeting = /^(store|admin|staff|owner)$/i.test(firstName) ? "Accra desk" : `${firstName || "Staff"}, Accra desk`;
+  if (!metrics || !growth || !rangeStats) {
+    return (
+      <div>
+        <AdminPageHeader title="Accra desk" description={metricsError || "The desk is still opening."} />
+        <p className="mt-6 text-sm text-accent">{metricsError || "Try again in a moment."}</p>
+        <Link href="/admin/ops" className="mt-4 inline-flex min-h-11 text-sm text-accent">
+          Operations
+        </Link>
+      </div>
+    );
+  }
   const canProducts = hasPermission(user.roles, "products.read");
   const canAddProduct = hasPermission(user.roles, "products.write");
   const canInventory = hasPermission(user.roles, "inventory.write");
@@ -123,6 +145,43 @@ export default async function AdminHomePage() {
             </Link>
           </>
         }
+      />
+
+      <div className="mt-6 flex flex-wrap gap-2">
+        {(
+          [
+            ["today", "Today"],
+            ["7d", "7 days"],
+            ["30d", "30 days"],
+          ] as const
+        ).map(([id, label]) => (
+          <Link
+            key={id}
+            href={id === "today" ? "/admin" : `/admin?range=${id}`}
+            className={`inline-flex min-h-11 items-center rounded-full px-4 text-sm ${
+              range === id ? "bg-accent text-white" : "bg-white text-foreground"
+            }`}
+          >
+            {label}
+          </Link>
+        ))}
+      </div>
+      <AdminGlance
+        className="mt-3"
+        items={[
+          { href: "/admin/orders", label: range === "today" ? "Orders today" : `Orders · ${range}`, value: String(rangeStats.orders) },
+          {
+            href: canReports ? "/admin/analytics" : "/admin/orders",
+            label: range === "today" ? "Paid today" : `Paid · ${range}`,
+            value: formatGhs(rangeStats.revenue),
+          },
+          {
+            href: "/admin/orders?status=pending_payment",
+            label: "Unpaid in range",
+            value: String(rangeStats.pending),
+            warn: rangeStats.pending > 0,
+          },
+        ]}
       />
 
       <HomeGrowth growth={growth} canReports={canReports} />

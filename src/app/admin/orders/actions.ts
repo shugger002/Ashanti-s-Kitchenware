@@ -4,6 +4,8 @@ import { revalidatePath } from "next/cache";
 import { requirePermission } from "@/server/auth/authorize";
 import { addOrderNote, transitionOrder } from "@/server/orders/service";
 import { recordManualPayment } from "@/server/checkout/service";
+import { confirmAdminPassword } from "@/server/ops/reauth";
+import { redirect } from "next/navigation";
 
 function touchOrders(orderId: string) {
   revalidatePath("/admin/orders");
@@ -17,6 +19,12 @@ export async function transitionOrderAction(formData: FormData) {
   const actor =
     toStatus === "refunded" ? await requirePermission("payments.capture") : await requirePermission("orders.write");
   const orderId = String(formData.get("orderId"));
+  if (toStatus === "refunded" || toStatus === "cancelled") {
+    const password = String(formData.get("confirmPassword") ?? "");
+    if (!(await confirmAdminPassword(actor.id, password))) {
+      redirect(`/admin/orders/${orderId}?error=` + encodeURIComponent("Enter your admin password to cancel or refund."));
+    }
+  }
   await transitionOrder({
     orderId,
     toStatus,

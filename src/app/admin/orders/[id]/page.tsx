@@ -47,8 +47,15 @@ function nextStepHint(status: string, method: string) {
   return "Choose the step that has just happened.";
 }
 
-export default async function AdminOrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function AdminOrderDetailPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ error?: string }>;
+}) {
   const user = await requirePermission("orders.read");
+  const { error } = await searchParams;
   const canWrite = hasPermission(user.roles, "orders.write");
   const canCapture = hasPermission(user.roles, "payments.capture");
   const { id } = await params;
@@ -127,10 +134,21 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
         <form action={transitionOrderAction} className="max-w-xl print:hidden">
           <AdminSection title="Next step" hint={nextStepHint(status, method)}>
             <input type="hidden" name="orderId" value={id} />
+            {error ? (
+              <p className="mb-4 border border-accent/30 bg-accent/10 px-4 py-3 text-sm text-accent" role="alert">
+                {error}
+              </p>
+            ) : null}
             <label className="block text-sm">
               Rider note (staff only)
               <input name="trackingNumber" className="input mt-1" placeholder="Customers do not see this" />
             </label>
+            {danger.length > 0 ? (
+              <label className="mt-3 block text-sm">
+                Admin password for cancel or refund
+                <input type="password" name="confirmPassword" autoComplete="current-password" className="input mt-1" />
+              </label>
+            ) : null}
             <div className="mt-4 flex flex-col gap-2">
               {primaryStep ? (
                 <button className={adminButton()} type="submit" name="toStatus" value={primaryStep}>

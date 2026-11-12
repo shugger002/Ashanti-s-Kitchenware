@@ -7,6 +7,7 @@ import {
   archiveProduct,
   deleteProductImage,
   DuplicateSkuError,
+  StaleProductError,
   setProductActive,
   setProductImagePrimary,
   upsertProduct,
@@ -77,14 +78,18 @@ export async function saveProduct(formData: FormData) {
         seoDescription: String(formData.get("seoDescription") || "") || null,
         initialStock: formData.get("initialStock") ? Number(formData.get("initialStock")) : 0,
         colors,
+        expectedUpdatedAt: String(formData.get("expectedUpdatedAt") ?? "") || undefined,
       },
       user.id,
       id,
     );
   } catch (error) {
+    const dest = id ? `/admin/products/${id}` : "/admin/products/new";
+    if (error instanceof StaleProductError) {
+      redirect(`${dest}?error=stale`);
+    }
     const kind = uniqueKind(error);
     if (kind) {
-      const dest = id ? `/admin/products/${id}` : "/admin/products/new";
       redirect(`${dest}?error=${kind}`);
     }
     throw error;

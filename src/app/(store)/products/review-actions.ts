@@ -4,12 +4,17 @@ import { headers } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { submitReview } from "@/server/reviews/service";
+import { getOperationsConfig } from "@/server/ops/settings";
 import { hitRateLimit } from "@/server/auth/rate-limit";
 import { clientIp } from "@/server/http/client-ip";
 
 export async function createProductReview(formData: FormData) {
   if (String(formData.get("company") ?? "")) {
     return { ok: true as const };
+  }
+  const ops = await getOperationsConfig();
+  if (!ops.reviewsEnabled) {
+    return { ok: false as const, error: "Reviews are paused on the shop right now." };
   }
   const productId = String(formData.get("productId") ?? "");
   if (!z.string().uuid().safeParse(productId).success) {

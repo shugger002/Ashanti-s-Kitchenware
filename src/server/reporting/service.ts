@@ -183,6 +183,37 @@ export const dashboardMetrics = cache(async () => {
   };
 });
 
+export type DeskRange = "today" | "7d" | "30d";
+
+export async function dashboardRange(range: DeskRange) {
+  const windowSql =
+    range === "7d"
+      ? sql`(created_at AT TIME ZONE 'Africa/Accra')::date >= (CURRENT_TIMESTAMP AT TIME ZONE 'Africa/Accra')::date - 6`
+      : range === "30d"
+        ? sql`(created_at AT TIME ZONE 'Africa/Accra')::date >= (CURRENT_TIMESTAMP AT TIME ZONE 'Africa/Accra')::date - 29`
+        : sql`(created_at AT TIME ZONE 'Africa/Accra')::date = (CURRENT_TIMESTAMP AT TIME ZONE 'Africa/Accra')::date`;
+  const result = await query<{ orders: string; revenue: string; pending: string }>(sql`
+    SELECT
+      count(*) FILTER (WHERE ${windowSql})::text AS orders,
+      COALESCE(SUM(total) FILTER (
+        WHERE ${windowSql}
+          AND payment_status = 'paid'
+          AND status NOT IN ('cancelled','refunded')
+      ), 0)::text AS revenue,
+      count(*) FILTER (
+        WHERE ${windowSql}
+          AND payment_status IN ('pending','unpaid')
+          AND status = 'pending_payment'
+      )::text AS pending
+    FROM orders
+  `);
+  return {
+    orders: Number(result.rows[0]?.orders ?? 0),
+    revenue: Number(result.rows[0]?.revenue ?? 0),
+    pending: Number(result.rows[0]?.pending ?? 0),
+  };
+}
+
 export type AnalyticsPeriod = "today" | "week" | "month";
 
 export function accraCreatedWindow(period: AnalyticsPeriod) {

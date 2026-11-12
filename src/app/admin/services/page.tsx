@@ -5,6 +5,8 @@ import { isProduction } from "@/server/env";
 import { hubtelCallbackUrl, isHubtelConfigured } from "@/server/payments/hubtel";
 import { isMoolreConfigured, isMoolreWebhookConfigured, moolreCallbackUrl } from "@/server/payments/moolre";
 import { adminButton, AdminGlance, AdminPageHeader, AdminSection } from "@/components/admin/ui";
+import Link from "next/link";
+import { formatAccraWhen } from "@/lib/accra-time";
 import { isMailConfigured, sendEmail } from "@/server/notifications/email";
 import { getAnalyticsMeasurementId } from "@/server/env";
 import { getStorefrontConfig } from "@/server/store/settings";
@@ -77,8 +79,14 @@ export default async function ServiceHealthPage({
     <div>
       <AdminPageHeader
         title="Connections"
-        description="Can this shop talk to the database, send mail, store photos, and take payment. Keys are not shown here."
+        description="Can this shop talk to the database, send mail, store photos, and take payment. Keys are not shown here. Pause checkout and retries live on Operations."
+        action={
+          <Link href="/admin/ops" className={adminButton("px-4")}>
+            Operations
+          </Link>
+        }
       />
+      <p className="mt-3 text-xs text-muted">Checked {formatAccraWhen(new Date())} Accra time. No live charge is sent from this page.</p>
       <AdminGlance
         items={[
           { label: "Working", value: rows.filter((row) => row.ok).length },

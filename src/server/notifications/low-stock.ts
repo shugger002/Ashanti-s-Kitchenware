@@ -4,6 +4,7 @@ import { sql } from "@/server/db/sql";
 import { claimNotification } from "@/server/notifications/claim";
 import { sendEmail } from "@/server/notifications/email";
 import { getStorefrontConfig } from "@/server/store/settings";
+import { recordJobRun } from "@/server/ops/jobs";
 
 export type LowStockRow = {
   name: string;
@@ -56,6 +57,12 @@ export async function sendLowStockDigest(options?: { force?: boolean }): Promise
     to: contact.email,
     subject: `Low stock: ${rows.length} ${rows.length === 1 ? "piece" : "pieces"}`,
     text: ["Pieces at or below the stock alert on the Accra desk:", "", lines].join("\n"),
+  });
+  await recordJobRun({
+    job: "low-stock-digest",
+    status: result.sent ? "ok" : "failed",
+    summary: result.sent ? `Low-stock mail for ${rows.length} pieces` : result.reason ?? "Low-stock mail did not send",
+    retryable: !result.sent,
   });
   return { sent: result.sent, count: rows.length, reason: result.reason };
 }

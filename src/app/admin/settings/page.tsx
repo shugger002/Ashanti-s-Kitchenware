@@ -1,12 +1,14 @@
 import { requirePermission } from "@/server/auth/authorize";
 import { shopMap } from "@/config/brand";
 import { getStorefrontConfig, updateSetting } from "@/server/store/settings";
-import { revalidatePath } from "next/cache";
+import { writeAuditLog } from "@/server/auth/audit";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { adminButton, AdminPageHeader, AdminSection } from "@/components/admin/ui";
+import { HomepageEditor } from "@/components/admin/homepage-editor";
 
 async function saveContact(formData: FormData) {
   "use server";
-  await requirePermission("settings.write");
+  const user = await requirePermission("settings.write");
   await updateSetting("contact", {
     legalName: String(formData.get("legalName")),
     tradingName: String(formData.get("tradingName")),
@@ -20,12 +22,19 @@ async function saveContact(formData: FormData) {
     country: String(formData.get("country")),
     mapsUrl: shopMap.url,
   });
+  await writeAuditLog({
+    actorUserId: user.id,
+    action: "settings.contact.update",
+    entityType: "settings",
+    entityId: "contact",
+  });
+  revalidateTag("storefront", { expire: 0 });
   revalidatePath("/");
 }
 
 async function saveHero(formData: FormData) {
   "use server";
-  await requirePermission("settings.write");
+  const user = await requirePermission("settings.write");
   await updateSetting("hero", {
     title: String(formData.get("title")),
     subtitle: String(formData.get("subtitle")),
@@ -37,6 +46,13 @@ async function saveHero(formData: FormData) {
     enabled: formData.get("announcementEnabled") === "on",
     text: String(formData.get("announcementText") ?? ""),
   });
+  await writeAuditLog({
+    actorUserId: user.id,
+    action: "settings.homepage.update",
+    entityType: "settings",
+    entityId: "hero",
+  });
+  revalidateTag("storefront", { expire: 0 });
   revalidatePath("/");
 }
 
@@ -90,25 +106,16 @@ export default async function SettingsPage() {
         </button>
       </form>
       </AdminSection>
-      <AdminSection className="max-w-xl" title="Homepage words">
-      <form action={saveHero} className="space-y-4">
-        <p className="text-sm leading-relaxed text-muted">
-          These sit under the utensils photo. The announcement is the thin strip at the very top of the shop.
-        </p>
-        <Field name="title" label="Intro title" defaultValue={config.hero.title} />
-        <Field name="subtitle" label="Intro text" defaultValue={config.hero.subtitle} as="textarea" />
-        <Field name="ctaLabel" label="Button label" defaultValue={config.hero.ctaLabel} />
-        <Field name="ctaHref" label="Button link" defaultValue={config.hero.ctaHref} />
-        <label className="flex gap-2 text-sm">
-          <input type="checkbox" name="announcementEnabled" defaultChecked={config.announcement.enabled} />
-          Show announcement bar
-        </label>
-        <Field name="announcementText" label="Announcement text" defaultValue={config.announcement.text} />
-        <button className={adminButton()} type="submit">
-          Save homepage
-        </button>
+      <form action={saveHero} className="space-y-6">
+        <HomepageEditor
+          title={config.hero.title}
+          subtitle={config.hero.subtitle}
+          ctaLabel={config.hero.ctaLabel}
+          ctaHref={config.hero.ctaHref}
+          announcementEnabled={config.announcement.enabled}
+          announcementText={config.announcement.text}
+        />
       </form>
-      </AdminSection>
     </div>
   );
 }

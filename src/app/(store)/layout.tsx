@@ -11,17 +11,19 @@ import { WishlistHydrator } from "@/components/store/wishlist-button";
 import { StoreChromeSkeleton } from "@/components/ui/skeleton";
 import { countDemoListings, countOnSaleProducts, listCategories } from "@/server/catalog/queries";
 import { getStorefrontConfig } from "@/server/store/settings";
+import { getOperationsConfig } from "@/server/ops/settings";
 import { AnalyticsTracker } from "@/components/store/analytics-tracker";
 import { getAnalyticsMeasurementId } from "@/server/env";
 
 export const revalidate = 60;
 
 async function StoreShell({ children }: { children: React.ReactNode }) {
-  const [config, categories, promoCount, demoCount] = await Promise.all([
+  const [config, categories, promoCount, demoCount, ops] = await Promise.all([
     getStorefrontConfig(),
     listCategories(),
     countOnSaleProducts(),
     countDemoListings(),
+    getOperationsConfig(),
   ]);
   const demoAnnouncement = config.announcement.text.toLowerCase().includes("demo photograph");
   const categoryLinks = categories.filter((c) => !c.parentId).map((c) => ({ slug: c.slug, name: c.name }));
@@ -35,6 +37,11 @@ async function StoreShell({ children }: { children: React.ReactNode }) {
     <StoreFrame
       announcement={
         <>
+          {ops.checkoutPaused ? (
+            <p className="bg-foreground px-3 py-2 text-center text-[11px] leading-snug text-white sm:px-4 sm:text-xs">
+              {ops.maintenanceMessage}
+            </p>
+          ) : null}
           {config.announcement.enabled && config.announcement.text && !(demoAnnouncement && demoCount === 0) ? (
             <p className="line-clamp-1 bg-accent px-3 py-1.5 text-center text-[10px] uppercase leading-snug tracking-[0.12em] text-white sm:line-clamp-none sm:px-4 sm:py-2 sm:text-xs sm:tracking-[0.14em]">
               {config.announcement.text}

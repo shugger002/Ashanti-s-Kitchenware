@@ -224,7 +224,7 @@ export function StatusPill({
   label,
 }: {
   value: string;
-  tone?: "neutral" | "attention" | "ok" | "muted";
+  tone?: "neutral" | "attention" | "ok" | "muted" | "danger";
   label?: string;
 }) {
   const text = label ?? statusLabel(value);
@@ -233,7 +233,7 @@ export function StatusPill({
       className={cn(
         "inline-flex rounded-sm px-2 py-0.5 text-[11px] font-medium tracking-wide",
         /[A-Z]/.test(text) ? "" : "capitalize",
-        tone === "attention" && "bg-accent/10 text-accent",
+        (tone === "attention" || tone === "danger") && "bg-accent/10 text-accent",
         tone === "ok" && "bg-foreground text-background",
         tone === "muted" && "bg-surface text-muted",
         tone === "neutral" && "border border-border bg-background text-foreground",

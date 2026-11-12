@@ -22,7 +22,15 @@ export type ProductInput = {
   seoDescription: string | null;
   initialStock?: number;
   colors?: { id?: string; name: string; hex: string; stock: number }[];
+  expectedUpdatedAt?: string;
 };
+
+export class StaleProductError extends Error {
+  constructor() {
+    super("This listing was saved from another phone or tab. Reload and try again.");
+    this.name = "StaleProductError";
+  }
+}
 
 export class DuplicateSkuError extends Error {
   constructor(public sku: string) {
@@ -47,16 +55,31 @@ export async function upsertProduct(input: ProductInput, actorId: string, existi
 
     let id = existingId;
     if (id) {
-      await db.query(sql`
-        UPDATE products SET
-           name=${input.name}, sku=${sku}, slug=${slug}, description=${input.description},
-           category_id=${input.categoryId}, price=${price}, sale_price=${salePrice},
-           specifications=${JSON.stringify(input.specifications)}::jsonb, is_active=${input.isActive},
-           is_featured=${input.isFeatured}, is_new=${input.isNew},
-           low_stock_threshold=${input.lowStockThreshold}, seo_title=${input.seoTitle},
-           seo_description=${input.seoDescription}, updated_at=now()
-         WHERE id=${id} AND archived_at IS NULL
-      `);
+      const expected = input.expectedUpdatedAt?.trim();
+      const updated = expected
+        ? await db.query<{ id: string }>(sql`
+            UPDATE products SET
+               name=${input.name}, sku=${sku}, slug=${slug}, description=${input.description},
+               category_id=${input.categoryId}, price=${price}, sale_price=${salePrice},
+               specifications=${JSON.stringify(input.specifications)}::jsonb, is_active=${input.isActive},
+               is_featured=${input.isFeatured}, is_new=${input.isNew},
+               low_stock_threshold=${input.lowStockThreshold}, seo_title=${input.seoTitle},
+               seo_description=${input.seoDescription}, updated_at=now()
+             WHERE id=${id} AND archived_at IS NULL AND updated_at = ${expected}::timestamptz
+             RETURNING id
+          `)
+        : await db.query<{ id: string }>(sql`
+            UPDATE products SET
+               name=${input.name}, sku=${sku}, slug=${slug}, description=${input.description},
+               category_id=${input.categoryId}, price=${price}, sale_price=${salePrice},
+               specifications=${JSON.stringify(input.specifications)}::jsonb, is_active=${input.isActive},
+               is_featured=${input.isFeatured}, is_new=${input.isNew},
+               low_stock_threshold=${input.lowStockThreshold}, seo_title=${input.seoTitle},
+               seo_description=${input.seoDescription}, updated_at=now()
+             WHERE id=${id} AND archived_at IS NULL
+             RETURNING id
+          `);
+      if (!updated.rows[0]) throw new StaleProductError();
     } else {
       const inserted = await db.query<{ id: string }>(sql`
         INSERT INTO products (

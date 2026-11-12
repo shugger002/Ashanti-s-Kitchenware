@@ -146,12 +146,15 @@ export function ProductForm({
       ? "That sheet code is already on another product. Use a different code."
       : error === "slug"
         ? "That shop page address is already used. Change it or leave it blank."
-        : error
-          ? error
-          : null;
+        : error === "stale"
+          ? "Someone else saved this listing first. Reload the page, then save your changes."
+          : error
+            ? error
+            : null;
   return (
     <form action={saveProduct} className="mt-8 max-w-3xl space-y-5">
       {product ? <input type="hidden" name="id" value={product.id} /> : null}
+      {product?.updatedAt ? <input type="hidden" name="expectedUpdatedAt" value={product.updatedAt} /> : null}
       {errorCopy ? (
         <p className="border border-accent/30 bg-accent/10 px-4 py-3 text-sm text-accent" role="alert">
           {errorCopy}

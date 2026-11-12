@@ -501,11 +501,13 @@ export async function getProductBySlug(slug: string, opts?: { includeInactive?: 
     low_stock_threshold: number;
     review_count: string;
     rating_average: string | null;
+    updated_at: string;
   }>(sql`
     SELECT p.id, p.slug, p.name, p.sku, p.description, p.specifications,
             p.price::text AS price, p.sale_price::text AS sale_price, p.currency,
             p.is_new, p.is_featured, p.is_active, p.has_variants,
             p.seo_title, p.seo_description, p.category_id, p.low_stock_threshold,
+            p.updated_at::text AS updated_at,
             c.slug AS category_slug, c.name AS category_name,
             COALESCE((
               SELECT COUNT(*)::text FROM product_reviews r
@@ -601,6 +603,7 @@ export async function getProductBySlug(slug: string, opts?: { includeInactive?: 
     reviewCount: Number(row.review_count),
     ratingAverage: row.rating_average == null ? null : Number(row.rating_average),
     primaryImage: imageList[0] ?? null,
+    updatedAt: row.updated_at,
   };
 }
 

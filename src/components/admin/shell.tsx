@@ -7,6 +7,8 @@ import {
   Activity,
   BarChart3,
   Box,
+  HeartPulse,
+  ScrollText,
   ClipboardList,
   FolderTree,
   Home,
@@ -29,6 +31,7 @@ import { brand } from "@/config/brand";
 import type { AdminUser, Permission } from "@/server/auth/types";
 import { hasPermission } from "@/server/auth/types";
 import { cn } from "@/lib/utils";
+import { AdminMobileDock } from "@/components/admin/mobile-dock";
 
 type NavItem = {
   href: string;
@@ -64,7 +67,9 @@ const groups: { label: string; items: NavItem[] }[] = [
     items: [
       { href: "/admin/analytics", label: "Analytics", permission: "reports.read", icon: BarChart3 },
       { href: "/admin/delivery", label: "Delivery", permission: "settings.write", icon: Truck },
+      { href: "/admin/ops", label: "Operations", permission: "settings.write", icon: HeartPulse },
       { href: "/admin/services", label: "Connections", permission: "settings.write", icon: Activity },
+      { href: "/admin/activity", label: "Activity", permission: "settings.write", icon: ScrollText },
       { href: "/admin/settings", label: "Settings", permission: "settings.write", icon: Settings },
     ],
   },
@@ -324,7 +329,8 @@ export function AdminShell({ user, children }: { user: AdminUser; children: Reac
             <PanelLeft className="h-4 w-4" />
           </button>
         </div>
-        <div className="relative z-10 mx-auto max-w-6xl px-4 py-6 pb-12 sm:px-8 sm:py-10">{children}</div>
+        <div className="relative z-10 mx-auto max-w-6xl px-4 py-6 pb-24 sm:px-8 sm:py-10 lg:pb-12">{children}</div>
+        <AdminMobileDock user={user} />
       </div>
     </div>
   );

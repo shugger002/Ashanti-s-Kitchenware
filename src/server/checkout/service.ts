@@ -9,6 +9,7 @@ import { getAppUrl } from "@/server/env";
 import { writeAuditLog } from "@/server/auth/audit";
 import { isDemoListing } from "@/lib/listing";
 import { sendPaidOrderEmails } from "@/server/notifications/order-mail";
+import { assertCheckoutOpen } from "@/server/ops/settings";
 
 const noHeaderBreaks = (value: string) => !/[\r\n\0]/.test(value);
 
@@ -45,6 +46,7 @@ function publicRef(): string {
 }
 
 export async function placeOrder(input: CheckoutInput, sessionCustomerId?: string) {
+  await assertCheckoutOpen();
   const parsed = checkoutSchema.parse(input);
   if (parsed.deliveryMethod === "delivery") {
     if (!parsed.addressLine1 || !parsed.city || !parsed.region) {

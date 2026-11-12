@@ -66,4 +66,5 @@ export type ProductDetail = ProductCard & {
   variants: ProductVariant[];
   lowStockThreshold: number;
   isActive: boolean;
+  updatedAt?: string;
 };

@@ -3,6 +3,7 @@
 import { headers } from "next/headers";
 import { z } from "zod";
 import { sendEmail } from "@/server/notifications/email";
+import { getOperationsConfig } from "@/server/ops/settings";
 import { getStorefrontConfig } from "@/server/store/settings";
 import { hitRateLimit } from "@/server/auth/rate-limit";
 import { clientIp } from "@/server/http/client-ip";
@@ -15,6 +16,10 @@ export async function subscribeKitchenNotes(
   _prev: { ok: boolean; error?: string; notice?: string } | null,
   formData: FormData,
 ): Promise<{ ok: boolean; error?: string; notice?: string }> {
+  const ops = await getOperationsConfig();
+  if (!ops.newsletterEnabled) {
+    return { ok: false, error: "Stock updates are paused on the shop right now." };
+  }
   if (formData.get("consent") !== "on" && formData.get("consent") !== "true") {
     return { ok: false, error: "Tick the box if you want stock updates." };
   }
