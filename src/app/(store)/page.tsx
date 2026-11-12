@@ -24,8 +24,8 @@ export default function HomePage() {
       <section className="overflow-hidden bg-background">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src="/stock/UC-TS0912/01.jpg"
-          alt="12-piece cookware set from the Accra shop"
+          src="/demo/hero.jpg?v=2"
+          alt="Kitchen utensils hung on a wall and arranged on a counter"
           width={1470}
           height={1420}
           fetchPriority="high"
