@@ -5,8 +5,9 @@ import { dashboardGrowth } from "@/server/reporting/growth";
 import { HomeGrowth } from "@/components/admin/home-growth";
 import { formatGhs } from "@/lib/money";
 import { customerWhatsAppHref, formatOrderAddress, packLines } from "@/lib/order-whatsapp";
-import { hasPermission } from "@/server/auth/types";
+import { hasPermission, isDeveloper } from "@/server/auth/types";
 import { DeveloperHome } from "@/components/admin/developer-home";
+import { getOperationsConfig } from "@/server/ops/settings";
 import { OrderWhatsAppLink } from "@/components/admin/whatsapp-link";
 import {
   adminButton,
@@ -45,12 +46,18 @@ export default async function AdminHomePage({
   let metrics: Awaited<ReturnType<typeof dashboardMetrics>> | null = null;
   let growth: Awaited<ReturnType<typeof dashboardGrowth>> | null = null;
   let rangeStats: Awaited<ReturnType<typeof dashboardRange>> | null = null;
+  let operations: Awaited<ReturnType<typeof getOperationsConfig>> | null = null;
   const user = await requireUser();
   if (!hasPermission(user.roles, "orders.read")) {
     return <DeveloperHome user={user} />;
   }
   try {
-    [metrics, growth, rangeStats] = await Promise.all([dashboardMetrics(), dashboardGrowth(), dashboardRange(range)]);
+    [metrics, growth, rangeStats, operations] = await Promise.all([
+      dashboardMetrics(),
+      dashboardGrowth(),
+      dashboardRange(range),
+      getOperationsConfig(),
+    ]);
   } catch {
     metricsError = "Live desk numbers could not load. Check Connections.";
   }
@@ -72,6 +79,7 @@ export default async function AdminHomePage({
   const canInventory = hasPermission(user.roles, "inventory.write");
   const canReports = hasPermission(user.roles, "reports.read");
   const canCustomers = hasPermission(user.roles, "customers.read");
+  const developer = isDeveloper(user.roles);
 
   const queue = [
     {
@@ -132,7 +140,7 @@ export default async function AdminHomePage({
   return (
     <div>
       <AdminPageHeader
-        title={greeting}
+        title={developer ? `${firstName || "Developer"}, operations desk` : greeting}
         description={`${accraDateLabel()}. Paid takings, what is moving, and the orders still waiting on this desk.`}
         action={
           <>
@@ -147,9 +155,22 @@ export default async function AdminHomePage({
             <Link href="/admin/orders" className={buttonClass("secondary", "h-12 min-h-12 w-full sm:w-auto")}>
               All orders
             </Link>
+            {developer ? (
+              <Link href="/admin/ops" className={buttonClass("secondary", "h-12 min-h-12 w-full sm:w-auto")}>
+                Operations
+              </Link>
+            ) : null}
           </>
         }
       />
+      {operations?.checkoutPaused ? (
+        <p className="mt-4 border border-accent/30 bg-accent/10 px-4 py-3 text-sm text-accent" role="status">
+          Checkout is paused. Carts and existing orders are kept.{" "}
+          <Link href="/admin/ops" className="font-medium underline">
+            Open Operations
+          </Link>
+        </p>
+      ) : null}
 
       <div className="mt-6 flex flex-wrap gap-2">
         {(

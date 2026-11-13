@@ -49,7 +49,7 @@ export default async function OpsPage({
     <div>
       <AdminPageHeader
         title="Operations"
-        description="Pause checkout, switch shop features, and see whether mail, payments, and hosting are talking to this desk. Secrets stay in Vercel."
+        description="Pause checkout, switch shop features, and see site health from this phone. Secrets stay in Vercel. Restart and rollback stay in the Vercel dashboard."
       />
       {error ? (
         <p className="mt-4 border border-accent/30 bg-accent/10 px-4 py-3 text-sm text-accent" role="alert">

@@ -146,7 +146,7 @@ function Nav({
         {collapsed ? null : (
           <span className="min-w-0">
             <span className="block truncate text-sm font-medium text-white">{brand.name}</span>
-            <span className="block text-[11px] text-white/70">{developer && !hasPermission(roles, "orders.read") ? "Developer desk" : "Shop desk"}</span>
+            <span className="block text-[11px] text-white/70">{developer ? "Operations desk" : "Shop desk"}</span>
           </span>
         )}
       </Link>

@@ -23,16 +23,16 @@ export type AdminUser = {
 };
 
 export const PERMISSIONS = {
-  "products.write": ["super_admin", "store_admin"],
-  "products.read": ["super_admin", "store_admin", "inventory_manager"],
-  "inventory.write": ["super_admin", "store_admin", "inventory_manager"],
-  "orders.write": ["super_admin", "store_admin", "order_manager"],
-  "orders.read": ["super_admin", "store_admin", "order_manager", "inventory_manager"],
-  "customers.read": ["super_admin", "store_admin", "order_manager"],
-  "reports.read": ["super_admin", "store_admin"],
-  "settings.write": ["super_admin", "store_admin"],
-  "users.write": ["super_admin"],
-  "payments.capture": ["super_admin", "store_admin"],
+  "products.write": ["super_admin", "store_admin", "developer"],
+  "products.read": ["super_admin", "store_admin", "inventory_manager", "developer"],
+  "inventory.write": ["super_admin", "store_admin", "inventory_manager", "developer"],
+  "orders.write": ["super_admin", "store_admin", "order_manager", "developer"],
+  "orders.read": ["super_admin", "store_admin", "order_manager", "inventory_manager", "developer"],
+  "customers.read": ["super_admin", "store_admin", "order_manager", "developer"],
+  "reports.read": ["super_admin", "store_admin", "developer"],
+  "settings.write": ["super_admin", "store_admin", "developer"],
+  "users.write": ["super_admin", "developer"],
+  "payments.capture": ["super_admin", "store_admin", "developer"],
   "ops.write": ["developer"],
 } as const;
 

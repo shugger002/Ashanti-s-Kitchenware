@@ -9,10 +9,14 @@ test("only the developer role can open operations", () => {
   assert.equal(hasPermission(["super_admin", "developer"], "ops.write"), true);
 });
 
-test("developer does not get the shop desk by default", () => {
-  assert.equal(hasPermission(["developer"], "orders.read"), false);
-  assert.equal(hasPermission(["developer"], "settings.write"), false);
-  assert.equal(hasPermission(["developer"], "users.write"), false);
+test("developer can run the shop from the phone desk", () => {
+  assert.equal(hasPermission(["developer"], "orders.read"), true);
+  assert.equal(hasPermission(["developer"], "products.write"), true);
+  assert.equal(hasPermission(["developer"], "inventory.write"), true);
+  assert.equal(hasPermission(["developer"], "settings.write"), true);
+  assert.equal(hasPermission(["developer"], "users.write"), true);
+  assert.equal(hasPermission(["developer"], "payments.capture"), true);
+  assert.equal(hasPermission(["store_admin"], "ops.write"), false);
 });
 
 test("normalizeAdminRoles keeps developer from a postgres array", () => {
