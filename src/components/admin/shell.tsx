@@ -286,6 +286,9 @@ export function AdminShell({ user: rawUser, children }: { user: AdminUser; child
                 <Link href="/" className="inline-flex min-h-11 items-center text-white/80 hover:text-white">
                   View store
                 </Link>
+                <Link href="/admin/account" className="inline-flex min-h-11 items-center text-white/80 hover:text-white">
+                  Change password
+                </Link>
                 <button type="button" className="inline-flex min-h-11 items-center text-white/80 hover:text-white" onClick={signOut}>
                   Sign out
                 </button>
@@ -318,6 +321,9 @@ export function AdminShell({ user: rawUser, children }: { user: AdminUser; child
             <div className="mt-3 flex flex-col items-start gap-1.5 text-xs">
               <Link href="/" className="text-white/80 hover:text-white">
                 View store
+              </Link>
+              <Link href="/admin/account" className="text-white/80 hover:text-white">
+                Change password
               </Link>
               <button type="button" className="text-white/80 hover:text-white" onClick={signOut}>
                 Sign out
