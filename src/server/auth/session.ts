@@ -15,7 +15,7 @@ type SessionRow = {
   email: string;
   full_name: string;
   is_active: boolean;
-  roles: string[] | null;
+  roles: string | string[] | null;
 };
 
 export async function createSession(input: {
@@ -40,12 +40,14 @@ export async function destroySession(token: string): Promise<void> {
 export async function getUserFromToken(token: string): Promise<AdminUser | null> {
   const result = await query<SessionRow>(sql`
     SELECT u.id AS user_id, u.email, u.full_name, u.is_active,
-            array_remove(array_agg(ur.role_slug), NULL) AS roles
+            COALESCE((
+              SELECT string_agg(ur.role_slug, ',')
+               FROM user_roles ur
+              WHERE ur.user_id = u.id
+            ), '') AS roles
      FROM sessions s
      JOIN users u ON u.id = s.user_id
-     LEFT JOIN user_roles ur ON ur.user_id = u.id
      WHERE s.token_hash = ${hashToken(token)} AND s.expires_at > now()
-     GROUP BY u.id
   `);
   const row = result.rows[0];
   if (!row || !row.is_active) return null;

@@ -17,5 +17,9 @@ test("developer does not get the shop desk by default", () => {
 
 test("normalizeAdminRoles keeps developer from a postgres array", () => {
   assert.deepEqual(normalizeAdminRoles(["developer"]), ["developer"]);
+  assert.deepEqual(normalizeAdminRoles("{developer}"), ["developer"]);
+  assert.deepEqual(normalizeAdminRoles(["{developer}"]), ["developer"]);
+  assert.deepEqual(normalizeAdminRoles("developer"), ["developer"]);
+  assert.equal(hasPermission("{developer}", "ops.write"), true);
   assert.equal(isDeveloper(["developer"]), true);
 });

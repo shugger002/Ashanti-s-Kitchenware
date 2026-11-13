@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { readSessionUser } from "@/server/auth/session";
 import {
+  deskHome,
   hasPermission,
   type AdminUser,
   type Permission,
@@ -15,7 +16,7 @@ export async function requireUser(): Promise<AdminUser> {
 export async function requirePermission(permission: Permission): Promise<AdminUser> {
   const user = await requireUser();
   if (!hasPermission(user.roles, permission)) {
-    redirect(hasPermission(user.roles, "ops.write") ? "/admin/ops" : "/admin");
+    redirect(deskHome(user.roles));
   }
   return user;
 }

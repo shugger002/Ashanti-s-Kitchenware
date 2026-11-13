@@ -38,23 +38,46 @@ export const PERMISSIONS = {
 
 export type Permission = keyof typeof PERMISSIONS;
 
-export function hasPermission(roles: RoleSlug[], permission: Permission): boolean {
-  const allowed = PERMISSIONS[permission] as readonly RoleSlug[] | undefined;
-  if (!allowed) return false;
-  return roles.some((role) => allowed.includes(role));
+function collectRoleTokens(value: unknown, into: string[]) {
+  if (value == null || value === "") return;
+  if (Array.isArray(value)) {
+    for (const item of value) collectRoleTokens(item, into);
+    return;
+  }
+  if (typeof value === "object") {
+    const record = value as Record<string, unknown>;
+    collectRoleTokens(record.role_slug ?? record.slug ?? record.role, into);
+    return;
+  }
+  String(value)
+    .replace(/[{}"']/g, " ")
+    .split(/[\s,]+/)
+    .filter(Boolean)
+    .forEach((token) => into.push(token));
 }
 
 export function normalizeAdminRoles(value: unknown): RoleSlug[] {
-  const raw = Array.isArray(value)
-    ? value
-    : typeof value === "string"
-      ? value.replace(/[{}]/g, "").split(",")
-      : [];
-  return raw
-    .map((role) => String(role).trim())
-    .filter((role): role is RoleSlug => (ROLE_SLUGS as readonly string[]).includes(role));
+  const tokens: string[] = [];
+  collectRoleTokens(value, tokens);
+  const seen = new Set<RoleSlug>();
+  for (const token of tokens) {
+    if ((ROLE_SLUGS as readonly string[]).includes(token)) seen.add(token as RoleSlug);
+  }
+  return [...seen];
 }
 
-export function isDeveloper(roles: RoleSlug[]) {
-  return roles.includes("developer") || hasPermission(roles, "ops.write");
+export function hasPermission(roles: unknown, permission: Permission): boolean {
+  const allowed = PERMISSIONS[permission] as readonly RoleSlug[] | undefined;
+  if (!allowed) return false;
+  return normalizeAdminRoles(roles).some((role) => allowed.includes(role));
+}
+
+export function isDeveloper(roles: unknown) {
+  const list = normalizeAdminRoles(roles);
+  return list.includes("developer") || hasPermission(list, "ops.write");
+}
+
+export function deskHome(roles: unknown) {
+  if (hasPermission(roles, "orders.read") || isDeveloper(roles)) return "/admin" as const;
+  return "/admin" as const;
 }

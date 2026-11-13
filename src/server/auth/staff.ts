@@ -2,7 +2,7 @@ import { query } from "@/server/db/pool";
 import { likeContains, sql, sqlAnd } from "@/server/db/sql";
 import { hashPassword } from "@/server/auth/password";
 import { writeAuditLog } from "@/server/auth/audit";
-import { PERMISSIONS, ROLE_SLUGS, SHOP_ROLE_SLUGS, type RoleSlug } from "@/server/auth/types";
+import { PERMISSIONS, SHOP_ROLE_SLUGS, normalizeAdminRoles, type RoleSlug } from "@/server/auth/types";
 import { isUuid } from "@/lib/utils";
 
 export type StaffNeedFilter = "on" | "pack" | "paid" | "stock" | "blocked" | "all";
@@ -38,8 +38,8 @@ function hasRoleFilter(need: StaffNeedFilter | undefined) {
   return null;
 }
 
-function asRoles(value: string[] | null): RoleSlug[] {
-  return (value ?? []).filter((role): role is RoleSlug => (ROLE_SLUGS as readonly string[]).includes(role));
+function asRoles(value: unknown): RoleSlug[] {
+  return normalizeAdminRoles(value);
 }
 
 export async function listStaff(filters: { q?: string; need?: StaffNeedFilter }): Promise<StaffListItem[]> {

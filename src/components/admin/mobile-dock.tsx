@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Activity, ClipboardList, Home, Package, Settings } from "lucide-react";
 import type { AdminUser } from "@/server/auth/types";
-import { hasPermission, isDeveloper } from "@/server/auth/types";
+import { hasPermission, isDeveloper, normalizeAdminRoles } from "@/server/auth/types";
 import { cn } from "@/lib/utils";
 
 const items = [
@@ -18,14 +18,15 @@ const items = [
 
 export function AdminMobileDock({ user }: { user: AdminUser }) {
   const pathname = usePathname();
+  const roles = normalizeAdminRoles(user.roles);
   const visible: typeof items = [];
   const seen = new Set<string>();
   for (const item of items) {
-    if (!hasPermission(user.roles, item.permission) || seen.has(item.href)) continue;
+    if (!hasPermission(roles, item.permission) || seen.has(item.href)) continue;
     seen.add(item.href);
     visible.push(item);
   }
-  if (visible.length === 0 && isDeveloper(user.roles)) {
+  if (visible.length === 0 && isDeveloper(roles)) {
     visible.push({ href: "/admin/ops", label: "Ops", icon: Activity, permission: "ops.write" as const });
   }
   if (visible.length === 0) return null;

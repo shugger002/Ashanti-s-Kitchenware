@@ -29,7 +29,7 @@ import {
 import { logoutAdmin } from "@/app/admin/logout/action";
 import { brand } from "@/config/brand";
 import type { AdminUser, Permission } from "@/server/auth/types";
-import { hasPermission, isDeveloper } from "@/server/auth/types";
+import { hasPermission, isDeveloper, normalizeAdminRoles } from "@/server/auth/types";
 import { cn } from "@/lib/utils";
 import { AdminMobileDock } from "@/components/admin/mobile-dock";
 
@@ -131,6 +131,8 @@ function Nav({
   showLogoCard?: boolean;
 }) {
   const pathname = usePathname();
+  const roles = normalizeAdminRoles(user.roles);
+  const developer = isDeveloper(roles);
   return (
     <>
       <Link
@@ -144,7 +146,7 @@ function Nav({
         {collapsed ? null : (
           <span className="min-w-0">
             <span className="block truncate text-sm font-medium text-white">{brand.name}</span>
-            <span className="block text-[11px] text-white/70">{isDeveloper(user.roles) && !hasPermission(user.roles, "orders.read") ? "Developer desk" : "Shop desk"}</span>
+            <span className="block text-[11px] text-white/70">{developer && !hasPermission(roles, "orders.read") ? "Developer desk" : "Shop desk"}</span>
           </span>
         )}
       </Link>
@@ -158,7 +160,7 @@ function Nav({
         {groups.map((group) => {
           const seen = new Set<string>();
           const items = group.items.filter((item) => {
-            if (!hasPermission(user.roles, item.permission) || seen.has(item.href)) return false;
+            if (!hasPermission(roles, item.permission) || seen.has(item.href)) return false;
             seen.add(item.href);
             return true;
           });
@@ -196,7 +198,7 @@ function Nav({
             </div>
           );
         })}
-        {isDeveloper(user.roles) && !hasPermission(user.roles, "ops.write") ? (
+        {developer && !hasPermission(roles, "ops.write") ? (
           <div>
             {collapsed ? null : (
               <p className="px-3 pb-1.5 text-[10px] font-medium uppercase tracking-[0.16em] text-white/60">Develop</p>
@@ -215,7 +217,8 @@ function Nav({
   );
 }
 
-export function AdminShell({ user, children }: { user: AdminUser; children: React.ReactNode }) {
+export function AdminShell({ user: rawUser, children }: { user: AdminUser; children: React.ReactNode }) {
+  const user = { ...rawUser, roles: normalizeAdminRoles(rawUser.roles) };
   const router = useRouter();
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
