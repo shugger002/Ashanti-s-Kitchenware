@@ -335,7 +335,16 @@ export async function addProductImage(input: {
   storageKey: string;
   alt: string;
   isPrimary: boolean;
+  replacePrimary?: boolean;
 }): Promise<void> {
+  const previousPrimary =
+    input.isPrimary && input.replacePrimary
+      ? (
+          await query<{ id: string }>(
+            sql`SELECT id FROM product_images WHERE product_id = ${input.productId} AND is_primary = TRUE`,
+          )
+        ).rows.map((row) => row.id)
+      : [];
   if (input.isPrimary) {
     await query(sql`UPDATE product_images SET is_primary = FALSE WHERE product_id = ${input.productId}`);
   }
@@ -343,6 +352,9 @@ export async function addProductImage(input: {
     INSERT INTO product_images (product_id, url, storage_key, alt, is_primary)
      VALUES (${input.productId},${input.url},${input.storageKey},${input.alt},${input.isPrimary})
   `);
+  for (const id of previousPrimary) {
+    await query(sql`DELETE FROM product_images WHERE id = ${id} AND product_id = ${input.productId}`);
+  }
 }
 
 export async function setProductImagePrimary(productId: string, imageId: string): Promise<void> {

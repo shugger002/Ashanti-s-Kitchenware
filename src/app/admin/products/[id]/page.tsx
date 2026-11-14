@@ -63,9 +63,18 @@ export default async function EditProductPage({
           { label: "Shop", value: product.isActive ? "On the shop" : "Hidden", warn: !product.isActive },
         ]}
       />
-      <AdminSection className="mt-8 max-w-3xl" title="Photos" hint="The main photo is what customers see first.">
+      <AdminSection
+        className="mt-8 max-w-3xl"
+        title="Photos"
+        hint={
+          product.images.length > 0
+            ? "Choose a new picture to replace the one customers see first. Other angles stay until you remove them."
+            : "Add a picture of the piece on the shelf. Then tap Show on the shop when it should go live."
+        }
+      >
+        <ImageUpload productId={product.id} productName={product.name} hasPhotos={product.images.length > 0} />
         {product.images.length === 0 ? (
-          <p className="text-sm text-muted">No photos yet. Add a picture of the piece on the shelf.</p>
+          <p className="mt-4 text-sm text-muted">No photos yet.</p>
         ) : (
           <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3">
             {product.images.map((image) => (
@@ -98,7 +107,6 @@ export default async function EditProductPage({
             ))}
           </ul>
         )}
-        <ImageUpload productId={product.id} productName={product.name} />
       </AdminSection>
       <ProductForm categories={categories} product={product} error={error} />
       <AdminSection

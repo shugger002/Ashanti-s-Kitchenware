@@ -30,11 +30,12 @@ export async function runProductCsvImport(formData: FormData, user: AdminUser): 
     revalidatePath("/");
     revalidatePath("/products");
     revalidatePath("/shop", "layout");
+    const published = photosResult.published.length;
     return {
       ok: photosResult.attached.length > 0,
       message:
         photosResult.attached.length > 0
-          ? `Attached ${photosResult.attached.length} photograph${photosResult.attached.length === 1 ? "" : "s"}.`
+          ? `Updated ${photosResult.attached.length} photograph${photosResult.attached.length === 1 ? "" : "s"}${published > 0 ? `. ${published} ${published === 1 ? "piece is" : "pieces are"} now on the shop.` : "."}`
           : "No photographs matched a SKU.",
       ...empty,
       attached: photosResult.attached,
@@ -74,7 +75,8 @@ export async function runProductCsvImport(formData: FormData, user: AdminUser): 
     parsed.rows.length > 0
       ? await importProductsFromCsv({ rows: parsed.rows, actorId: user.id })
       : { created: [], skipped: [], errors: [] as string[] };
-  const photosResult = photos.length > 0 ? await attachPhotosBySku(photos) : { attached: [], unmatched: [], errors: [] };
+  const photosResult =
+    photos.length > 0 ? await attachPhotosBySku(photos) : { attached: [], unmatched: [], errors: [], published: [] };
   revalidateTag("catalog", { expire: 0 });
   revalidatePath("/admin/products");
   revalidatePath("/admin/inventory");
@@ -84,11 +86,12 @@ export async function runProductCsvImport(formData: FormData, user: AdminUser): 
   const errors = [...parsed.errors, ...result.errors, ...photosResult.errors];
   const created = result.created.length;
   const attached = photosResult.attached.length;
+  const published = photosResult.published.length;
   return {
     ok: created > 0 || attached > 0,
     message:
       created > 0 || attached > 0
-        ? `Added ${created} product${created === 1 ? "" : "s"}${attached > 0 ? ` and attached ${attached} photograph${attached === 1 ? "" : "s"}` : ""}.`
+        ? `Added ${created} product${created === 1 ? "" : "s"}${attached > 0 ? ` and updated ${attached} photograph${attached === 1 ? "" : "s"}` : ""}${published > 0 ? `. ${published} ${published === 1 ? "piece is" : "pieces are"} now on the shop` : ""}.`
         : "No new products or photographs were added.",
     created: result.created,
     skipped: result.skipped,

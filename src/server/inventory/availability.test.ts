@@ -3,7 +3,7 @@ import { test } from "node:test";
 import { parseInventoryCsv } from "./csv";
 import { tabularTextToCsv } from "../../lib/table-upload";
 import { parseProductCsv } from "../catalog/csv";
-import { matchProductFromFilename, matchSkuFromFilename } from "../catalog/image-names";
+import { isCanonicalProductPhoto, matchProductFromFilename, matchSkuFromFilename, photoUploadPlan } from "../catalog/image-names";
 
 function available(onHand: number, reserved: number): number {
   return onHand - reserved;
@@ -86,6 +86,24 @@ test("product photo filenames match a SKU", () => {
   assert.equal(matchSkuFromFilename("ak-kettle-2.webp", skus), "AK-KETTLE");
   assert.equal(matchSkuFromFilename("AK_1.png", skus), "AK");
   assert.equal(matchSkuFromFilename("kettle.jpg", skus), null);
+});
+
+test("a sheet-code photo replaces the main picture on a product that already has one", () => {
+  const product = { sku: "APA-126", name: "Mixing Bowl" };
+  assert.equal(isCanonicalProductPhoto("APA-126.jpg", product), true);
+  assert.equal(isCanonicalProductPhoto("apa-126.JPG", product), true);
+  assert.equal(isCanonicalProductPhoto("Mixing Bowl.webp", product), true);
+  assert.equal(isCanonicalProductPhoto("APA-126-2.jpg", product), false);
+  const update = photoUploadPlan(["APA-126-2.jpg", "APA-126.jpg"], product, 1);
+  assert.deepEqual(update, [
+    { index: 1, isPrimary: true, replacePrimary: true },
+    { index: 0, isPrimary: false, replacePrimary: false },
+  ]);
+  const extraOnly = photoUploadPlan(["APA-126-2.jpg"], product, 1);
+  assert.deepEqual(extraOnly, [{ index: 0, isPrimary: false, replacePrimary: false }]);
+  const first = photoUploadPlan(["APA-126-2.jpg", "APA-126.jpg"], product, 0);
+  assert.equal(first[0]?.isPrimary, true);
+  assert.equal(first[0]?.replacePrimary, false);
 });
 
 test("product photo filenames match a product name", () => {

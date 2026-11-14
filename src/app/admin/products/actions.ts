@@ -100,7 +100,8 @@ export async function saveProduct(formData: FormData) {
       productId: savedId,
       file,
       alt: String(formData.get("name") ?? "Product"),
-      isPrimary: !id && index === 0,
+      isPrimary: index === 0,
+      replacePrimary: Boolean(id) && index === 0,
     });
   }
   touchCatalog(savedId);

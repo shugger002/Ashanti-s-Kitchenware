@@ -75,6 +75,9 @@ export function ProductCsvForm() {
             </label>
             <label className="block text-sm">
               Photos
+              <span className="mt-0.5 block text-xs text-muted">
+                Name the file with the sheet code, like APA-126.jpg. That replaces the main photo. A first photo also puts a hidden piece on the shop.
+              </span>
               <input name="images" type="file" accept="image/jpeg,image/png,image/webp" multiple className="admin-file mt-1" />
             </label>
             <button className={adminButton()} type="submit" disabled={pending}>

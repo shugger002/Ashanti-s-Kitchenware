@@ -13,12 +13,13 @@ export async function POST(request: Request) {
   const file = form.get("file");
   const productId = String(form.get("productId") ?? "");
   const alt = String(form.get("alt") ?? "");
-  const isPrimary = form.get("isPrimary") === "on";
+  const replacePrimary = form.get("replacePrimary") === "on";
+  const isPrimary = replacePrimary || form.get("isPrimary") === "on";
   if (!(file instanceof File) || !productId) {
     return NextResponse.json({ ok: false, error: "Choose a photo first." }, { status: 400 });
   }
   try {
-    await saveProductPhoto({ productId, file, alt, isPrimary });
+    await saveProductPhoto({ productId, file, alt, isPrimary, replacePrimary });
     revalidateTag("catalog", { expire: 0 });
     revalidatePath(`/admin/products/${productId}`);
     revalidatePath("/admin/products");

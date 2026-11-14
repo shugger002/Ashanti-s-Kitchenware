@@ -1,5 +1,5 @@
 import { addProductImage } from "@/server/catalog/admin";
-import { matchProductFromFilename } from "@/server/catalog/image-names";
+import { matchProductFromFilename, photoUploadPlan } from "@/server/catalog/image-names";
 import { query } from "@/server/db/pool";
 import { sql } from "@/server/db/sql";
 import { sniffImageType } from "@/lib/secrets";
@@ -11,6 +11,7 @@ export async function saveProductPhoto(input: {
   file: File;
   alt: string;
   isPrimary: boolean;
+  replacePrimary?: boolean;
 }): Promise<void> {
   if (!isUuid(input.productId)) throw new Error("Choose a photo first.");
   const bytes = Buffer.from(await input.file.arrayBuffer());
@@ -33,15 +34,22 @@ export async function saveProductPhoto(input: {
     storageKey: stored.key,
     alt,
     isPrimary: input.isPrimary,
+    replacePrimary: input.replacePrimary,
   });
 }
 
-export async function attachPhotosBySku(files: File[]): Promise<{ attached: string[]; unmatched: string[]; errors: string[] }> {
+export async function attachPhotosBySku(files: File[]): Promise<{
+  attached: string[];
+  unmatched: string[];
+  errors: string[];
+  published: string[];
+}> {
   const usable = files.filter((file) => file instanceof File && file.size > 0);
   const attached: string[] = [];
   const unmatched: string[] = [];
   const errors: string[] = [];
-  if (usable.length === 0) return { attached, unmatched, errors };
+  const published: string[] = [];
+  if (usable.length === 0) return { attached, unmatched, errors, published };
 
   const products = await query<{ id: string; sku: string; name: string; image_count: string }>(sql`
     SELECT p.id, p.sku, p.name,
@@ -67,16 +75,21 @@ export async function attachPhotosBySku(files: File[]): Promise<{ attached: stri
     const product = bySku.get(skuKey);
     if (!product) continue;
     const sorted = [...skuFiles].sort((a, b) => a.name.localeCompare(b.name));
-    let hasPrimary = Number(product.image_count) > 0;
-    for (const file of sorted) {
+    const existingCount = Number(product.image_count);
+    const plan = photoUploadPlan(sorted.map((file) => file.name), product, existingCount);
+    let storedOne = false;
+    for (const step of plan) {
+      const file = sorted[step.index];
+      if (!file) continue;
       try {
         await saveProductPhoto({
           productId: product.id,
           file,
           alt: product.name,
-          isPrimary: !hasPrimary,
+          isPrimary: step.isPrimary,
+          replacePrimary: step.replacePrimary,
         });
-        hasPrimary = true;
+        storedOne = true;
         attached.push(`${product.sku} ← ${file.name}`);
       } catch (error) {
         errors.push(
@@ -84,6 +97,17 @@ export async function attachPhotosBySku(files: File[]): Promise<{ attached: stri
         );
       }
     }
+    if (storedOne && existingCount === 0) {
+      const shown = await query<{ id: string }>(sql`
+        UPDATE products
+           SET is_active = TRUE, updated_at = now()
+         WHERE id = ${product.id}
+           AND archived_at IS NULL
+           AND is_active = FALSE
+        RETURNING id
+      `);
+      if (shown.rows[0]) published.push(product.sku);
+    }
   }
-  return { attached, unmatched, errors };
+  return { attached, unmatched, errors, published };
 }

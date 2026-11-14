@@ -31,6 +31,32 @@ export function matchNameFromFilename(filename: string, names: string[]): string
   return tied.length === 1 ? tied[0].name : null;
 }
 
+export function isCanonicalProductPhoto(filename: string, product: { sku: string; name: string }): boolean {
+  const base = filenameBase(filename);
+  if (!base) return false;
+  if (base.toLowerCase() === product.sku.toLowerCase()) return true;
+  const fileSlug = slugify(base);
+  const nameSlug = slugify(product.name);
+  return Boolean(fileSlug && nameSlug && fileSlug === nameSlug);
+}
+
+export function photoUploadPlan(
+  filenames: string[],
+  product: { sku: string; name: string },
+  existingPhotoCount: number,
+): { index: number; isPrimary: boolean; replacePrimary: boolean }[] {
+  const indexed = filenames.map((filename, index) => ({ filename, index }));
+  const canonical = indexed.filter((row) => isCanonicalProductPhoto(row.filename, product));
+  const extras = indexed.filter((row) => !isCanonicalProductPhoto(row.filename, product));
+  const hadPhoto = existingPhotoCount > 0;
+  let assignedMain = hadPhoto && canonical.length === 0;
+  return [...canonical, ...extras].map((row) => {
+    const isPrimary = !assignedMain;
+    assignedMain = true;
+    return { index: row.index, isPrimary, replacePrimary: isPrimary && hadPhoto };
+  });
+}
+
 export function matchProductFromFilename(
   filename: string,
   products: { sku: string; name: string }[],

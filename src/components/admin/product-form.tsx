@@ -162,7 +162,7 @@ export function ProductForm({
       ) : null}
       {product ? (
         <p className="text-sm leading-relaxed text-muted">
-          Name, price, and photos below are already saved. Change a field and tap Save changes.
+          This listing is already saved. To change the picture customers see, use Update main photo above, then change any other field and tap Save changes.
         </p>
       ) : null}
       <AdminSection
