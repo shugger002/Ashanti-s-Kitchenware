@@ -25,12 +25,8 @@ export async function authenticateAdmin(input: {
   userAgent: string | null;
 }): Promise<{ ok: true; token: string } | { ok: false; error: string }> {
   const email = input.email.trim().toLowerCase();
-  try {
-    if ((await isIpRateLimited(input.ip)) || (await isIdentifierThrottled(email))) {
-      return { ok: false, error: LOGIN_LOCK_MESSAGE };
-    }
-  } catch (error) {
-    console.error("admin login rate limit skipped", error);
+  if ((await isIpRateLimited(input.ip)) || (await isIdentifierThrottled(email))) {
+    return { ok: false, error: LOGIN_LOCK_MESSAGE };
   }
 
   const result = await query<{

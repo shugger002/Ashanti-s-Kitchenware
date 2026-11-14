@@ -91,12 +91,8 @@ export async function authenticateCustomer(input: {
 }): Promise<{ ok: true; token: string } | { ok: false; error: string }> {
   const email = input.email.trim().toLowerCase();
   const key = `customer:${email}`;
-  try {
-    if ((await isIpRateLimited(input.ip)) || (await isIdentifierThrottled(key))) {
-      return { ok: false, error: LOGIN_LOCK_MESSAGE };
-    }
-  } catch (error) {
-    console.error("login rate limit skipped", error);
+  if ((await isIpRateLimited(input.ip)) || (await isIdentifierThrottled(key))) {
+    return { ok: false, error: LOGIN_LOCK_MESSAGE };
   }
   const result = await query<{
     id: string;
