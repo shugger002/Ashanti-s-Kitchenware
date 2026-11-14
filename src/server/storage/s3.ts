@@ -7,17 +7,20 @@ export class S3Storage implements ObjectStoragePort {
   private readonly publicBase: string;
 
   constructor() {
-    const endpoint = process.env.S3_ENDPOINT;
-    this.bucket = process.env.S3_BUCKET ?? "";
-    this.publicBase = (process.env.S3_PUBLIC_BASE_URL ?? "").replace(/\/$/, "");
+    const endpoint = process.env.S3_ENDPOINT?.trim();
+    this.bucket = (process.env.S3_BUCKET ?? "").trim();
+    this.publicBase = (process.env.S3_PUBLIC_BASE_URL ?? "").trim().replace(/\/$/, "");
     this.client = new S3Client({
-      region: process.env.S3_REGION ?? "auto",
+      region: (process.env.S3_REGION ?? "auto").trim() || "auto",
       endpoint: endpoint || undefined,
-      forcePathStyle: process.env.S3_FORCE_PATH_STYLE !== "false",
+      forcePathStyle: process.env.S3_FORCE_PATH_STYLE?.trim() !== "false",
       credentials: {
-        accessKeyId: process.env.S3_ACCESS_KEY_ID ?? "",
-        secretAccessKey: process.env.S3_SECRET_ACCESS_KEY ?? "",
+        accessKeyId: (process.env.S3_ACCESS_KEY_ID ?? "").trim(),
+        secretAccessKey: (process.env.S3_SECRET_ACCESS_KEY ?? "").trim(),
       },
+      // Supabase Storage rejects the default CRC32 checksum and reports a bad signature.
+      requestChecksumCalculation: "WHEN_REQUIRED",
+      responseChecksumValidation: "WHEN_REQUIRED",
     });
   }
 
