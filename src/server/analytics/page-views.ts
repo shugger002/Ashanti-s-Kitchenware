@@ -58,6 +58,7 @@ export async function storeVisitSummary() {
       count(*) FILTER (WHERE created_at >= now() - interval '7 days')::text AS week_views,
       count(DISTINCT visitor_hash) FILTER (WHERE created_at >= now() - interval '7 days')::text AS week_visitors
      FROM store_page_views
+     WHERE created_at >= now() - interval '8 days'
   `);
   const top = await query<{ path: string; views: string }>(sql`
     SELECT path, count(*)::text AS views
@@ -77,13 +78,14 @@ export async function storeVisitSummary() {
 }
 
 function visitCreatedWindow(period: AnalyticsPeriod) {
+  const recent = sql`v.created_at >= now() - interval '32 days'`;
   if (period === "week") {
-    return sql`(v.created_at AT TIME ZONE 'Africa/Accra')::date >= (CURRENT_TIMESTAMP AT TIME ZONE 'Africa/Accra')::date - 6`;
+    return sql`${recent} AND (v.created_at AT TIME ZONE 'Africa/Accra')::date >= (CURRENT_TIMESTAMP AT TIME ZONE 'Africa/Accra')::date - 6`;
   }
   if (period === "month") {
-    return sql`(v.created_at AT TIME ZONE 'Africa/Accra')::date >= (CURRENT_TIMESTAMP AT TIME ZONE 'Africa/Accra')::date - 29`;
+    return sql`${recent} AND (v.created_at AT TIME ZONE 'Africa/Accra')::date >= (CURRENT_TIMESTAMP AT TIME ZONE 'Africa/Accra')::date - 29`;
   }
-  return sql`(v.created_at AT TIME ZONE 'Africa/Accra')::date = (CURRENT_TIMESTAMP AT TIME ZONE 'Africa/Accra')::date`;
+  return sql`${recent} AND (v.created_at AT TIME ZONE 'Africa/Accra')::date = (CURRENT_TIMESTAMP AT TIME ZONE 'Africa/Accra')::date`;
 }
 
 function visitSeriesStart(period: AnalyticsPeriod) {
@@ -134,7 +136,9 @@ export async function storeVisitDetail(period: AnalyticsPeriod) {
            (CURRENT_TIMESTAMP AT TIME ZONE 'Africa/Accra')::date,
            interval '1 day'
          ) AS gs(day)
-         LEFT JOIN store_page_views v ON (v.created_at AT TIME ZONE 'Africa/Accra')::date = gs.day
+         LEFT JOIN store_page_views v
+           ON v.created_at >= (gs.day::timestamp AT TIME ZONE 'Africa/Accra')
+          AND v.created_at < ((gs.day + 1)::timestamp AT TIME ZONE 'Africa/Accra')
          GROUP BY gs.day
          ORDER BY gs.day
       `),

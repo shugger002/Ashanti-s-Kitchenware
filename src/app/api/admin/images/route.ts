@@ -28,9 +28,15 @@ export async function POST(request: Request) {
     revalidatePath("/shop", "layout");
     return NextResponse.json({ ok: true });
   } catch (error) {
-    return NextResponse.json(
-      { ok: false, error: error instanceof Error ? error.message : "Upload failed" },
-      { status: 400 },
-    );
+    const code = typeof error === "object" && error && "code" in error ? String(error.code) : "";
+    const message =
+      code === "23505"
+        ? "The main photo was just updated. Refresh and try again."
+        : code === "23514"
+          ? "Save the photo as a normal JPEG, PNG, or WebP."
+          : error instanceof Error
+            ? error.message
+            : "Upload failed";
+    return NextResponse.json({ ok: false, error: message }, { status: 400 });
   }
 }

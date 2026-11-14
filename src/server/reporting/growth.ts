@@ -220,7 +220,9 @@ export const dashboardGrowth = cache(async (): Promise<DashboardGrowth> => {
          (CURRENT_TIMESTAMP AT TIME ZONE 'Africa/Accra')::date,
          interval '1 day'
        ) AS gs(day)
-       LEFT JOIN store_page_views v ON (v.created_at AT TIME ZONE 'Africa/Accra')::date = gs.day
+       LEFT JOIN store_page_views v
+         ON v.created_at >= (gs.day::timestamp AT TIME ZONE 'Africa/Accra')
+        AND v.created_at < ((gs.day + 1)::timestamp AT TIME ZONE 'Africa/Accra')
        GROUP BY gs.day
        ORDER BY gs.day
     `);
