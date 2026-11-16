@@ -105,7 +105,7 @@ export function ProductReviews({
         <button
           type="submit"
           disabled={pending}
-          className="inline-flex h-12 w-full items-center justify-center rounded-sm bg-accent px-4 text-sm font-medium text-white transition-[transform,opacity] duration-150 active:scale-[0.98] disabled:opacity-50 sm:w-auto dark:text-background"
+          className="inline-flex h-12 w-full items-center justify-center rounded-sm bg-accent px-4 text-sm font-medium text-white transition-[transform,opacity] duration-150 active:scale-[0.98] disabled:opacity-50 sm:w-auto"
         >
           {pending ? "Sending…" : "Submit review"}
         </button>

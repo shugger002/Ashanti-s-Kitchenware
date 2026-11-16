@@ -10,7 +10,7 @@ export function outOfStockImageClass(className?: string) {
 export function OutOfStockOverlay({ compact = false }: { compact?: boolean }) {
   return (
     <span
-      className="pointer-events-none absolute inset-0 z-[8] flex items-center justify-center bg-white/40"
+      className="pointer-events-none absolute inset-0 z-[8] flex items-center justify-center bg-black/30"
       aria-hidden
     >
       <span

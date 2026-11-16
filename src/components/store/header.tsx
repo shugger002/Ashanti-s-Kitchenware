@@ -85,7 +85,7 @@ export function StoreHeader({
   const whatsappDigits = defaultContact.whatsappE164.replace(/\D/g, "");
 
   return (
-    <header className="sticky top-0 z-40 border-b border-border bg-background">
+    <header className="sticky top-0 z-40 border-b border-border bg-background dark:bg-surface/95 dark:backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-6xl items-center gap-3 px-4 lg:gap-8 lg:px-8">
         <button
           type="button"
@@ -98,7 +98,7 @@ export function StoreHeader({
           {menuOpen ? <X className="h-5 w-5" strokeWidth={1.75} /> : <Menu className="h-5 w-5" strokeWidth={1.75} />}
         </button>
         <Link href="/" className="flex min-w-0 flex-1 items-center lg:flex-none" aria-label={brand.name}>
-          <StoreLogo className="h-10 w-auto max-w-[min(13.5rem,calc(100vw-11rem))] sm:max-w-[14rem] lg:h-11 lg:max-w-[16rem]" />
+          <StoreLogo className="h-10 w-auto max-w-[min(12rem,calc(100vw-14.5rem))] sm:max-w-[14rem] lg:h-11 lg:max-w-[16rem]" />
         </Link>
         <nav className="hidden flex-1 items-center justify-center gap-7 text-[13px] lg:flex" aria-label="Primary">
           {desktop.map((item) => {
@@ -137,9 +137,7 @@ export function StoreHeader({
         </nav>
 
         <div className="ml-auto flex items-center gap-3">
-          <span className="hidden lg:inline-flex">
-            <ThemeToggle />
-          </span>
+          <ThemeToggle />
           <button
             type="button"
             aria-label="Search products"
@@ -174,7 +172,7 @@ export function StoreHeader({
             <div className="fixed inset-0 z-[80]" id="store-menu">
               <button
                 type="button"
-                className="absolute inset-0 bg-foreground/35"
+                className="absolute inset-0 bg-ink/50"
                 aria-label="Close menu"
                 onClick={() => onMenuOpenChange(false)}
               />

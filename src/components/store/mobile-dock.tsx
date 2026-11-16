@@ -22,7 +22,7 @@ export function MobileDock({ signedIn = false }: { signedIn?: boolean }) {
 
   return (
     <nav
-      className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-4 border-t border-border bg-surface pb-[max(0.35rem,env(safe-area-inset-bottom))] text-[11px] lg:hidden"
+      className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-4 border-t border-border bg-surface pb-[max(0.35rem,env(safe-area-inset-bottom))] text-[11px] lg:hidden dark:bg-surface/95 dark:shadow-[0_-10px_28px_rgba(12,8,6,0.45)] dark:backdrop-blur-md"
       aria-label="Mobile shortcuts"
     >
       <Link href="/" className={cn(item, pathname === "/" && "text-accent")} aria-current={pathname === "/" ? "page" : undefined}>

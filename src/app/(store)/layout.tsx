@@ -38,19 +38,19 @@ async function StoreShell({ children }: { children: React.ReactNode }) {
       announcement={
         <>
           {ops.checkoutPaused ? (
-            <p className="bg-foreground px-3 py-2 text-center text-[11px] leading-snug text-white sm:px-4 sm:text-xs">
+            <p className="bg-ink px-3 py-2 text-center text-[11px] leading-snug text-white sm:px-4 sm:text-xs">
               {ops.maintenanceMessage}
             </p>
           ) : null}
           {config.announcement.enabled && config.announcement.text && !(demoAnnouncement && demoCount === 0) ? (
-            <p className="line-clamp-1 bg-accent px-3 py-1.5 text-center text-[10px] uppercase leading-snug tracking-[0.12em] text-white sm:line-clamp-none sm:px-4 sm:py-2 sm:text-xs sm:tracking-[0.14em]">
+            <p className="line-clamp-1 bg-accent px-3 py-1.5 text-center text-[10px] uppercase leading-snug tracking-[0.12em] text-white sm:line-clamp-none sm:px-4 sm:py-2 sm:text-xs sm:tracking-[0.14em] dark:bg-surface dark:text-foreground">
               {config.announcement.text}
             </p>
           ) : null}
           {promoCount > 0 ? (
             <a
               href="/promo"
-              className="block bg-foreground px-3 py-1.5 text-center text-[10px] uppercase leading-snug tracking-[0.12em] text-white sm:px-4 sm:py-2 sm:text-xs sm:tracking-[0.14em]"
+              className="block bg-ink px-3 py-1.5 text-center text-[10px] uppercase leading-snug tracking-[0.12em] text-white sm:px-4 sm:py-2 sm:text-xs sm:tracking-[0.14em] dark:bg-[#322922] dark:text-foreground"
             >
               <span className="sm:hidden">
                 Promo: {promoCount} reduced GHS {promoCount === 1 ? "price" : "prices"}

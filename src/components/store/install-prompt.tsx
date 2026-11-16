@@ -144,14 +144,14 @@ export function InstallPrompt() {
       className={
         sheetAtTop
           ? "pointer-events-none fixed inset-x-0 top-0 z-[80] flex justify-center px-3 pt-[max(0.75rem,env(safe-area-inset-top))]"
-          : "fixed inset-0 z-[80] flex items-end justify-center bg-foreground/40 p-4 sm:items-center"
+          : "fixed inset-0 z-[80] flex items-end justify-center bg-ink/50 p-4 sm:items-center"
       }
     >
       <div
         role="dialog"
         aria-modal={!sheetAtTop}
         aria-labelledby={titleId}
-        className="pointer-events-auto w-full max-w-md rounded-[1.75rem] bg-white px-5 pb-6 pt-6 shadow-[0_24px_60px_rgba(26,26,26,0.18)]"
+        className="pointer-events-auto w-full max-w-md rounded-[1.75rem] bg-surface px-5 pb-6 pt-6 text-foreground shadow-[var(--shadow)]"
       >
         <div className="flex items-start gap-3">
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -179,9 +179,9 @@ export function InstallPrompt() {
           ].map((item) => (
             <li
               key={item.label}
-              className="flex flex-col items-center rounded-2xl bg-[#f6f1ea] px-2 py-4 text-center"
+              className="flex flex-col items-center rounded-2xl bg-background px-2 py-4 text-center"
             >
-              <span className="flex size-10 items-center justify-center rounded-full bg-white text-accent">
+              <span className="flex size-10 items-center justify-center rounded-full bg-surface text-accent">
                 <item.icon className="size-5" aria-hidden />
               </span>
               <span className="mt-2 text-[11px] font-medium leading-tight text-foreground">{item.label}</span>
@@ -196,7 +196,7 @@ export function InstallPrompt() {
             </li>
             <li>1. Tap the menu or Share, then Open in Safari.</li>
             <li className="flex gap-3">
-              <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-[#f6f1ea] text-accent">
+              <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-background text-accent">
                 <Share className="size-4" aria-hidden />
               </span>
               <span>2. In Safari, tap Share, scroll to Add to Home Screen, then tap Add.</span>
@@ -205,19 +205,19 @@ export function InstallPrompt() {
         ) : kind === "ios-safari" || (help && ios) ? (
           <ol className="mt-5 space-y-3 text-sm leading-relaxed text-foreground">
             <li className="flex gap-3">
-              <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-[#f6f1ea] text-accent">
+              <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-background text-accent">
                 <Share className="size-4" aria-hidden />
               </span>
               <span>Tap Share at the bottom of Safari (square with an arrow).</span>
             </li>
             <li className="flex gap-3">
-              <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-[#f6f1ea] text-sm font-medium">
+              <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-background text-sm font-medium">
                 2
               </span>
               <span>Scroll the list and tap Add to Home Screen.</span>
             </li>
             <li className="flex gap-3">
-              <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-[#f6f1ea] text-sm font-medium">
+              <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-background text-sm font-medium">
                 3
               </span>
               <span>Tap Add. This button cannot place the icon for you on iPhone.</span>

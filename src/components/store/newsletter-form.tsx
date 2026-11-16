@@ -41,28 +41,28 @@ export function NewsletterForm({ compact = false, invert = false }: { compact?: 
           type="email"
           required
           placeholder="Email address"
-          className={invert ? "input bg-white text-foreground placeholder:text-muted" : "input"}
+          className={invert ? "input bg-white text-[#1a1a1a] placeholder:text-[#5f5a54] dark:bg-background dark:text-foreground dark:placeholder:text-muted" : "input"}
         />
       )}
-      <label className={`flex gap-2 text-xs leading-relaxed ${invert ? "text-white" : "text-muted"}`}>
-        <input type="checkbox" name="consent" required className={`mt-0.5 ${invert ? "accent-white" : "accent-accent"}`} />
+      <label className={`flex gap-2 text-xs leading-relaxed ${invert ? "text-white dark:text-muted" : "text-muted"}`}>
+        <input type="checkbox" name="consent" required className={`mt-0.5 ${invert ? "accent-white dark:accent-accent" : "accent-accent"}`} />
         I want stock updates. This is not a discount unless the shop later publishes one.
       </label>
       {compact ? null : (
         <Button
           type="submit"
           variant={invert ? "secondary" : "primary"}
-          className={invert ? "h-12 w-full bg-white text-accent hover:bg-white/90" : "h-12 w-full sm:w-auto"}
+          className={invert ? "h-12 w-full bg-white text-accent hover:bg-white/90 dark:bg-accent dark:text-white dark:hover:bg-accent-hover" : "h-12 w-full sm:w-auto"}
           disabled={pending}
         >
           {pending ? "Sending…" : "Subscribe"}
         </Button>
       )}
       {state?.error ? (
-        <p className={`text-sm sm:col-span-2 ${invert ? "text-white" : "text-accent"}`}>{state.error}</p>
+        <p className={`text-sm sm:col-span-2 ${invert ? "text-white dark:text-foreground" : "text-accent"}`}>{state.error}</p>
       ) : null}
       {state?.notice ? (
-        <p className={`text-sm sm:col-span-2 ${invert ? "text-white/90" : "text-muted"}`}>{state.notice}</p>
+        <p className={`text-sm sm:col-span-2 ${invert ? "text-white/90 dark:text-muted" : "text-muted"}`}>{state.notice}</p>
       ) : null}
     </form>
   );

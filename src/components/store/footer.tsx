@@ -194,22 +194,22 @@ export function StoreFooter({
         </div>
       </div>
 
-      <div className="bg-foreground text-white/70">
+      <div className="bg-ink text-white/70 dark:bg-background dark:text-muted">
         <div className="mx-auto flex max-w-6xl flex-col gap-2 px-4 py-3 text-xs lg:flex-row lg:items-center lg:justify-between lg:gap-3 lg:px-8 lg:py-5">
           <p>
             © {new Date().getFullYear()} {contact.legalName || brand.name} · Accra, Ghana
           </p>
           <nav className="flex flex-wrap items-center gap-x-4 gap-y-1" aria-label="Policies">
-            <Link href="/privacy" className="inline-flex min-h-9 items-center hover:text-white lg:min-h-11">
+            <Link href="/privacy" className="inline-flex min-h-9 items-center hover:text-white lg:min-h-11 dark:hover:text-foreground">
               Privacy
             </Link>
-            <Link href="/terms" className="inline-flex min-h-9 items-center hover:text-white lg:min-h-11">
+            <Link href="/terms" className="inline-flex min-h-9 items-center hover:text-white lg:min-h-11 dark:hover:text-foreground">
               Terms
             </Link>
-            <Link href="/cookies" className="inline-flex min-h-9 items-center hover:text-white lg:min-h-11">
+            <Link href="/cookies" className="inline-flex min-h-9 items-center hover:text-white lg:min-h-11 dark:hover:text-foreground">
               Cookies
             </Link>
-            <CookieSettingsButton className="inline-flex min-h-9 items-center text-xs text-white/70 hover:text-white" />
+            <CookieSettingsButton className="inline-flex min-h-9 items-center text-xs text-white/70 hover:text-white dark:text-muted dark:hover:text-foreground" />
             {socialLinks.map(([label, href]) => (
               <a
                 key={label}
@@ -217,7 +217,7 @@ export function StoreFooter({
                 rel="noreferrer"
                 target="_blank"
                 aria-label={label}
-                className="inline-flex size-9 items-center justify-center rounded-sm text-white/80 hover:text-white"
+                className="inline-flex size-9 items-center justify-center rounded-sm text-white/80 hover:text-white dark:text-muted dark:hover:text-foreground"
               >
                 <SocialIcon name={label} />
               </a>

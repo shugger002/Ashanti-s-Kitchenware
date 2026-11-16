@@ -53,24 +53,24 @@ export function PromoDiscountedSection({
 
   return (
     <section id="promo" className={isPage ? "pb-20" : undefined}>
-      <div className="bg-accent px-4 py-8 text-center text-white md:px-5 md:py-16">
-        <p className="text-xs uppercase tracking-[0.22em] text-white/80">Promo · Accra</p>
-        <Heading className="mt-3 text-2xl text-white md:text-5xl">
+      <div className="store-slab bg-accent px-4 py-8 text-center text-white md:px-5 md:py-16 dark:bg-surface dark:text-foreground">
+        <p className="text-xs uppercase tracking-[0.22em] text-white/80 dark:text-muted">Promo · Accra</p>
+        <Heading className="mt-3 text-2xl text-white md:text-5xl dark:text-foreground">
           {cut > 0 ? `Up to ${cut}% off selected pieces` : "Sale prices, on the listing"}
         </Heading>
-        <p className="mx-auto mt-4 max-w-xl text-sm leading-relaxed text-white/90 md:text-base">
+        <p className="mx-auto mt-4 max-w-xl text-sm leading-relaxed text-white/90 md:text-base dark:text-muted">
           {count} {count === 1 ? "piece has" : "pieces have"} a reduced Ghana Cedi price the shop actually entered.
           Not a blanket discount. Demo listings stay labelled.
         </p>
         {isPage ? (
           <Link
             href="/products"
-            className={`${buttonClass("secondary", "mt-8 bg-white text-accent hover:bg-white/90")}`}
+            className={`${buttonClass("secondary", "mt-8 bg-white text-accent hover:bg-white/90 dark:bg-accent dark:text-white dark:hover:bg-accent-hover")}`}
           >
             View all products
           </Link>
         ) : (
-          <Link href="/promo" className={`${buttonClass("secondary", "mt-6 h-12 w-full bg-white text-accent hover:bg-white/90 sm:mt-8 sm:w-auto")}`}>
+          <Link href="/promo" className={`${buttonClass("secondary", "mt-6 h-12 w-full bg-white text-accent hover:bg-white/90 sm:mt-8 sm:w-auto dark:bg-accent dark:text-white dark:hover:bg-accent-hover")}`}>
             Shop every reduced price
           </Link>
         )}

@@ -11,8 +11,11 @@ const marks = [
 export function LogoMarquee() {
   const loop = [...marks, ...marks];
   return (
-    <section className="overflow-hidden bg-accent py-3 text-white md:py-4" aria-label="Brands">
-      <p className="text-center font-serif text-sm tracking-[0.2em] md:text-base">BRANDS</p>
+    <section
+      className="ak-brands overflow-hidden border-y border-transparent bg-accent py-4 text-white md:py-5 dark:border-border dark:bg-surface dark:text-foreground"
+      aria-label="Brands"
+    >
+      <p className="text-center font-serif text-xs tracking-[0.22em] text-white/80 md:text-sm dark:text-muted">BRANDS</p>
       <div
         className="ak-logo-marquee-wrap mt-2 overflow-hidden touch-pan-y md:mt-3"
         style={{

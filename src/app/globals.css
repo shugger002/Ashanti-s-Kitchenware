@@ -13,23 +13,55 @@
   --brass: #c8102e;
   --sage: #c8102e;
   --shadow: 0 12px 32px rgba(26, 26, 26, 0.08);
+  --ink: #1a1a1a;
   --store-dock: 5.75rem;
   color-scheme: light;
 }
 
 html.dark {
-  --background: #141414;
-  --foreground: #fafafa;
-  --surface: #1c1c1c;
-  --muted: #b5b5b5;
-  --border: #333333;
-  --accent: #e23b4d;
-  --accent-hover: #ef5a69;
-  --ring: #e23b4d;
-  --brass: #e23b4d;
-  --sage: #e23b4d;
-  --shadow: 0 18px 44px rgba(0, 0, 0, 0.45);
+  --background: #1b1714;
+  --foreground: #f6f1ea;
+  --surface: #28221d;
+  --muted: #cfc3b8;
+  --border: #40362f;
+  --accent: #c8102e;
+  --accent-hover: #a30d25;
+  --ring: #f0b4b8;
+  --brass: #f0b4b8;
+  --sage: #f0b4b8;
+  --ink: #14110e;
+  --shadow: 0 16px 36px rgba(12, 8, 6, 0.38);
   color-scheme: dark;
+}
+
+html.dark body {
+  background:
+    radial-gradient(1100px 380px at 50% -12%, rgba(232, 206, 176, 0.09), transparent 62%),
+    var(--background);
+}
+
+html.dark:not(:has(.admin-desk)) :is(.text-accent, .hover\:text-accent:hover):not(.bg-white) {
+  color: #f0b4b8;
+}
+
+html.dark .ak-brands,
+html.dark .store-slab {
+  background-color: var(--surface);
+  color: var(--foreground);
+  border-color: var(--border);
+}
+
+html.dark .ak-brands p,
+html.dark .store-slab p,
+html.dark .store-slab .text-white\/80,
+html.dark .store-slab .text-white\/90,
+html.dark .ak-brands .text-white\/80 {
+  color: var(--muted);
+}
+
+html.dark .store-slab :where(h1, h2, h3),
+html.dark .store-slab .text-white {
+  color: var(--foreground);
 }
 
 html:has(.admin-desk),
@@ -252,6 +284,7 @@ html:has(.admin-desk).dark,
   --color-accent-hover: var(--accent-hover);
   --color-brass: var(--brass);
   --color-sage: var(--sage);
+  --color-ink: var(--ink);
   --font-sans: var(--font-figtree);
   --font-serif: var(--font-newsreader);
 }

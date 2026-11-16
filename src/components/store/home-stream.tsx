@@ -12,7 +12,7 @@ export async function HomeIntroAndAisles() {
   const aisles = categories.filter((category) => !category.parentId);
 
   return (
-    <section className="border-y border-border py-8 md:py-16">
+    <section className="border-y border-border bg-background py-10 md:py-16">
       <div className="mx-auto max-w-6xl px-4 text-center lg:px-8">
         <h2 className="text-2xl text-pretty md:text-5xl">{config.hero.title}</h2>
         {config.hero.subtitle ? (
@@ -130,17 +130,17 @@ export async function HomeArrivals() {
 export async function HomeNewsletter() {
   const config = await getStorefrontConfig();
   return (
-    <section className="bg-accent px-4 py-10 text-center text-white md:px-5 md:py-20">
-      <h2 className="text-2xl text-white md:text-3xl">New stock, when we have it.</h2>
-      <p className="mx-auto mt-3 max-w-lg text-sm text-white/90">
+    <section className="store-slab bg-accent px-4 py-10 text-center text-white md:px-5 md:py-20 dark:bg-surface dark:text-foreground">
+      <h2 className="text-2xl text-white md:text-3xl dark:text-foreground">New stock, when we have it.</h2>
+      <p className="mx-auto mt-3 max-w-lg text-sm text-white/90 dark:text-muted">
         Email updates for restocks and listed appliances. A first-order discount is offered only when the shop publishes one.
       </p>
       <div className="mx-auto mt-8 max-w-md text-left">
         <NewsletterForm invert />
       </div>
-      <p className="mt-10 text-sm text-white/90">
+      <p className="mt-10 text-sm text-white/90 dark:text-muted">
         {[config.contact.addressLine1, config.contact.city].filter(Boolean).join(", ")}.{" "}
-        <Link href="/contact" className="text-white underline underline-offset-2">
+        <Link href="/contact" className="text-white underline underline-offset-2 dark:text-foreground">
           Write to us
         </Link>
         .

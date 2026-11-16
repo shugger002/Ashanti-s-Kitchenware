@@ -21,7 +21,7 @@ export default function HomePage() {
 
   return (
     <div>
-      <section className="overflow-hidden bg-background">
+      <section className="relative overflow-hidden bg-background">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src="/demo/hero.jpg?v=2"
@@ -32,6 +32,10 @@ export default function HomePage() {
           decoding="async"
           className="h-[min(42dvh,18rem)] w-full object-cover object-[center_42%] md:h-[min(85dvh,calc(100vw*710/735))]"
         />
+        <div className="pointer-events-none absolute inset-0 hidden dark:block">
+          <div className="absolute inset-x-0 top-0 h-14 bg-gradient-to-b from-background/50 to-transparent" />
+          <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-background/55 to-transparent" />
+        </div>
       </section>
 
       <h1 className="sr-only">Ashanti's Kitchenware, kitchen appliances in Accra</h1>
@@ -81,13 +85,13 @@ export default function HomePage() {
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={story.image} alt="" className="h-full min-h-[14rem] w-full object-cover md:min-h-[520px]" />
           </div>
-          <div className="flex flex-col justify-center bg-accent px-4 py-10 text-white md:px-14 md:py-14">
-            <p className="text-xs uppercase tracking-[0.22em] text-white/80">From the Accra shop</p>
-            <h2 className="mt-3 text-2xl text-white md:mt-4 md:text-4xl">{story.title}</h2>
-            <p className="mt-4 max-w-md text-sm leading-relaxed text-white/90 md:text-base">{story.text}</p>
+          <div className="store-slab flex flex-col justify-center bg-accent px-4 py-10 text-white md:px-14 md:py-14 dark:bg-surface dark:text-foreground">
+            <p className="text-xs uppercase tracking-[0.22em] text-white/80 dark:text-muted">From the Accra shop</p>
+            <h2 className="mt-3 text-2xl text-white md:mt-4 md:text-4xl dark:text-foreground">{story.title}</h2>
+            <p className="mt-4 max-w-md text-sm leading-relaxed text-white/90 md:text-base dark:text-muted">{story.text}</p>
             <Link
               href={story.href}
-              className={`${buttonClass("secondary", "mt-6 h-12 w-full bg-white text-accent hover:bg-white/90 md:mt-8 md:w-fit")}`}
+              className={`${buttonClass("secondary", "mt-6 h-12 w-full bg-white text-accent hover:bg-white/90 md:mt-8 md:w-fit dark:bg-accent dark:text-white dark:hover:bg-accent-hover")}`}
             >
               Shop appliances
             </Link>
