@@ -14,6 +14,7 @@ export const metadata = pageMeta({
   title: "Your account",
   description: "Orders and details for your Ashanti's Kitchenware account.",
   path: "/account",
+  index: false,
 });
 
 function initials(name: string) {

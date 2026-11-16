@@ -3,8 +3,8 @@ import { CategoryBrowse } from "@/components/store/category-browse";
 import type { CatalogSearch } from "@/components/store/catalog-page";
 
 export const metadata = pageMeta({
-  title: "Store",
-  description: "Browse kitchen appliances from Ashanti's Kitchenware in Accra, priced in Ghana Cedis.",
+  title: "Shop",
+  description: "Shop kitchen appliances by aisle at Ashanti's Kitchenware in Accra. Prices are in Ghana Cedis.",
   path: "/shop",
 });
 

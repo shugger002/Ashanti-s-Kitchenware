@@ -8,6 +8,7 @@ export const metadata = pageMeta({
   title: "Reset password",
   description: "Request a staff password reset.",
   path: "/admin/forgot-password",
+  index: false,
 });
 
 export default function ForgotPasswordPage() {

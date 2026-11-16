@@ -11,6 +11,7 @@ export const metadata = pageMeta({
   title: "Order received",
   description: "Your Ashanti's Kitchenware order has been received.",
   path: "/checkout/success",
+  index: false,
 });
 
 export default async function SuccessPage({

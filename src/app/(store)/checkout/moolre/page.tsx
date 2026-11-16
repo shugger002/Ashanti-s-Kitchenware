@@ -6,6 +6,7 @@ export const metadata = pageMeta({
   title: "Confirm Moolre payment",
   description: "Enter the SMS code Moolre sent so we can send the mobile-money prompt.",
   path: "/checkout/moolre",
+  index: false,
 });
 
 export default async function MoolreOtpPage({

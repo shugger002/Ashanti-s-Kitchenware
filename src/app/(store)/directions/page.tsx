@@ -1,6 +1,7 @@
 import { shopMap } from "@/config/brand";
 import { buttonClass } from "@/components/ui/button";
-import { jsonLdText, pageMeta } from "@/lib/seo";
+import { absoluteUrl, jsonLdText, pageMeta } from "@/lib/seo";
+import { getAppUrl } from "@/server/env";
 import { getStorefrontConfig } from "@/server/store/settings";
 
 export const metadata = pageMeta({
@@ -22,7 +23,9 @@ export default async function DirectionsPage() {
     name: contact.tradingName || contact.legalName,
     telephone: contact.phoneE164,
     email: contact.email,
-    url: mapsUrl,
+    url: getAppUrl(),
+    image: absoluteUrl("/demo/hero.jpg"),
+    hasMap: mapsUrl,
     address: {
       "@type": "PostalAddress",
       streetAddress: contact.addressLine1,
@@ -34,6 +37,12 @@ export default async function DirectionsPage() {
       "@type": "GeoCoordinates",
       latitude: shopMap.lat,
       longitude: shopMap.lng,
+    },
+    openingHoursSpecification: {
+      "@type": "OpeningHoursSpecification",
+      dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+      opens: "07:00",
+      closes: "19:00",
     },
   };
 

@@ -2,8 +2,8 @@ import { pageMeta } from "@/lib/seo";
 import { CatalogPage } from "@/components/store/catalog-page";
 
 export const metadata = pageMeta({
-  title: "Store",
-  description: "Browse kitchen appliances from Ashanti's Kitchenware in Accra, priced in Ghana Cedis.",
+  title: "All products",
+  description: "Every kitchen appliance currently listed at Ashanti's Kitchenware, priced in Ghana Cedis.",
   path: "/products",
 });
 

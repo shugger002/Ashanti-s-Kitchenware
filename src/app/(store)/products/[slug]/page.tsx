@@ -8,7 +8,7 @@ import { ProductReviews } from "@/components/store/product-reviews";
 import { RecentlyViewed } from "@/components/store/recently-viewed";
 import { TrackViewed } from "@/components/store/track-viewed";
 import { formatGhs } from "@/lib/money";
-import { jsonLdText, pageMeta } from "@/lib/seo";
+import { absoluteUrl, faqJsonLd, jsonLdText, pageMeta } from "@/lib/seo";
 import { getAppUrl } from "@/server/env";
 import { getProductBySlug, relatedProducts } from "@/server/catalog/queries";
 import { listPublishedReviews } from "@/server/reviews/service";
@@ -25,6 +25,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     title: product.seoTitle || product.name,
     description: product.seoDescription || product.description.slice(0, 160) || product.name,
     path: `/products/${product.slug}`,
+    image: product.primaryImage?.url,
   });
 }
 
@@ -35,33 +36,60 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
   const price = Number(product.salePrice ?? product.price);
   const demo = isDemoListing(product.sku, product.slug);
   const average = product.ratingAverage;
+  const productUrl = `${getAppUrl()}/products/${product.slug}`;
+  const images = product.images.map((image) => absoluteUrl(image.url));
+  const crumbs = [
+    { name: "Home", path: "/" },
+    { name: "Shop", path: "/shop" },
+    ...(product.categorySlug && product.categoryName
+      ? [{ name: product.categoryName, path: `/shop/${product.categorySlug}` }]
+      : []),
+    { name: product.name, path: `/products/${product.slug}` },
+  ];
   const jsonLd = {
     "@context": "https://schema.org",
-    "@type": "Product",
-    name: product.name,
-    sku: product.sku,
-    description: product.description,
-    image: product.images.map((i) => i.url),
-    ...(demo
-      ? {}
-      : {
-          offers: {
-            "@type": "Offer",
-            priceCurrency: "GHS",
-            price,
-            availability: product.available > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
-            url: `${getAppUrl()}/products/${product.slug}`,
-          },
-        }),
-    ...(average && product.reviewCount > 0 && !demo
-      ? {
-          aggregateRating: {
-            "@type": "AggregateRating",
-            ratingValue: average.toFixed(1),
-            reviewCount: product.reviewCount,
-          },
-        }
-      : {}),
+    "@graph": [
+      {
+        "@type": "Product",
+        name: product.name,
+        sku: product.sku,
+        description: product.description,
+        url: productUrl,
+        ...(images.length > 0 ? { image: images } : {}),
+        brand: { "@type": "Brand", name: "Ashanti's Kitchenware" },
+        ...(demo
+          ? {}
+          : {
+              offers: {
+                "@type": "Offer",
+                priceCurrency: "GHS",
+                price: price.toFixed(2),
+                availability: product.available > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+                url: productUrl,
+                seller: { "@type": "Organization", name: "Ashanti's Kitchenware" },
+              },
+            }),
+        ...(average && product.reviewCount > 0 && !demo
+          ? {
+              aggregateRating: {
+                "@type": "AggregateRating",
+                ratingValue: average.toFixed(1),
+                reviewCount: product.reviewCount,
+              },
+            }
+          : {}),
+      },
+      {
+        "@type": "BreadcrumbList",
+        itemListElement: crumbs.map((crumb, index) => ({
+          "@type": "ListItem",
+          position: index + 1,
+          name: crumb.name,
+          item: `${getAppUrl()}${crumb.path}`,
+        })),
+      },
+      faqJsonLd(faqs),
+    ],
   };
 
   const faqs = [

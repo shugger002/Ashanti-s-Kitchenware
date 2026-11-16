@@ -32,8 +32,15 @@ export const metadata: Metadata = {
     template: `%s | ${brand.name}`,
   },
   description:
-    "Kitchen appliances from the Accra shop, priced in Ghana Cedis.",
+    "Ashanti's Kitchenware sells kitchen appliances in Accra, priced in Ghana Cedis. Collect from the Dansoman-Sakaman shop.",
   metadataBase: new URL(getAppUrl()),
+  openGraph: {
+    siteName: brand.name,
+    locale: "en_GH",
+    type: "website",
+    images: [{ url: "/demo/hero.jpg", alt: "Kitchen utensils hung on a wall and arranged on a counter" }],
+  },
+  twitter: { card: "summary_large_image" },
   appleWebApp: {
     capable: true,
     title: brand.name,

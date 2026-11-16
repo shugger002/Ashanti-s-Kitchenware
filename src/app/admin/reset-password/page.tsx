@@ -7,6 +7,7 @@ export const metadata = pageMeta({
   title: "Set a new password",
   description: "Complete a staff password reset.",
   path: "/admin/reset-password",
+  index: false,
 });
 
 export default async function ResetPasswordPage({

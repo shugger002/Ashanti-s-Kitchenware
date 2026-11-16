@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { pageMeta } from "@/lib/seo";
+import { faqJsonLd, jsonLdText, pageMeta } from "@/lib/seo";
 
 export const metadata = pageMeta({
   title: "FAQ",
@@ -41,6 +41,10 @@ const faqs = [
 export default function FaqPage() {
   return (
     <div className="mx-auto max-w-3xl px-4 py-8 pb-24 lg:px-8 lg:py-16">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: jsonLdText({ "@context": "https://schema.org", ...faqJsonLd(faqs) }) }}
+      />
       <h1 className="text-3xl md:text-4xl">Questions</h1>
       <ul className="mt-10 space-y-4">
         {faqs.map((item) => (

@@ -1,0 +1,21 @@
+# Ashanti's Kitchenware
+
+Ashanti's Kitchenware is a kitchen appliance shop in Accra, Ghana. Prices on the site are in Ghana Cedis.
+
+- Website: https://ashantiskitchenware.com
+- Address: 108 Dansoman-Sakaman, Alui Mahama Street, Blue Lagoon Loop, Accra, Greater Accra, Ghana
+- Hours: Monday to Saturday, 7 a.m. to 7 p.m. Closed Sunday.
+- Phone and WhatsApp: +233 20 194 4235
+- Email: ashantiskitchenware@gmail.com
+- Collection: at the shop
+- Delivery: the shop confirms the charge and timing on WhatsApp after the order. Checkout does not add a delivery fee.
+- Returns: faulty, damaged, or incorrect items can be requested within 7 days of delivery
+
+## Pages
+
+- Shop: https://ashantiskitchenware.com/shop
+- All products: https://ashantiskitchenware.com/products
+- Questions: https://ashantiskitchenware.com/faq
+- Directions: https://ashantiskitchenware.com/directions
+- Contact: https://ashantiskitchenware.com/contact
+- Guides: https://ashantiskitchenware.com/journal

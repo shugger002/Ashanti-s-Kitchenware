@@ -6,6 +6,7 @@ export const metadata = pageMeta({
   title: "Sign in",
   description: "Sign in to your Ashanti's Kitchenware account, or continue as a guest.",
   path: "/login",
+  index: false,
 });
 
 export default function LoginLayout({ children }: { children: React.ReactNode }) {

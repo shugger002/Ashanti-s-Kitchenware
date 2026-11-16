@@ -4,16 +4,30 @@ import { notFound } from "next/navigation";
 import { NewsletterForm } from "@/components/store/newsletter-form";
 import { ProductRail } from "@/components/store/product-rail";
 import { getJournalArticle, journalArticles } from "@/content/journal";
-import { jsonLdText, pageMeta } from "@/lib/seo";
+import { absoluteUrl, jsonLdText, pageMeta } from "@/lib/seo";
 import { getAppUrl } from "@/server/env";
 import { getProductBySlug } from "@/server/catalog/queries";
 import { ProductRailSkeleton } from "@/components/ui/skeleton";
+
+function articleDate(label: string) {
+  const match = label.match(/^(\d{1,2}) ([A-Za-z]+) (\d{4})$/);
+  if (!match) return null;
+  const months = ["january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december"];
+  const month = months.indexOf(match[2].toLowerCase());
+  if (month < 0) return null;
+  return `${match[3]}-${String(month + 1).padStart(2, "0")}-${match[1].padStart(2, "0")}`;
+}
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const article = getJournalArticle(slug);
   if (!article) return pageMeta({ title: "Guides", description: "Article not found", path: `/journal/${slug}` });
-  return pageMeta({ title: article.title, description: article.excerpt, path: `/journal/${article.slug}` });
+  return pageMeta({
+    title: article.title,
+    description: article.excerpt,
+    path: `/journal/${article.slug}`,
+    image: article.image,
+  });
 }
 
 export default async function JournalArticlePage({ params }: { params: Promise<{ slug: string }> }) {
@@ -21,12 +35,16 @@ export default async function JournalArticlePage({ params }: { params: Promise<{
   const article = getJournalArticle(slug);
   if (!article) notFound();
   const related = journalArticles.filter((item) => item.slug !== article.slug);
+  const published = articleDate(article.date);
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Article",
     headline: article.title,
-    datePublished: "2026-10-11",
+    description: article.excerpt,
+    image: absoluteUrl(article.image),
+    ...(published ? { datePublished: published } : {}),
     author: { "@type": "Organization", name: "Ashanti's Kitchenware" },
+    publisher: { "@type": "Organization", name: "Ashanti's Kitchenware" },
     url: `${getAppUrl()}/journal/${article.slug}`,
   };
 

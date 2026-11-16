@@ -14,6 +14,7 @@ export const metadata = pageMeta({
   title: "Checkout",
   description: "Complete your Ashanti's Kitchenware order.",
   path: "/checkout",
+  index: false,
 });
 
 export default async function CheckoutPage() {

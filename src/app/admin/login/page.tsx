@@ -6,6 +6,7 @@ export const metadata = pageMeta({
   title: "Staff sign in",
   description: "Administrator sign in for Ashanti's Kitchenware.",
   path: "/admin/login",
+  index: false,
 });
 
 export default function AdminLoginPage() {

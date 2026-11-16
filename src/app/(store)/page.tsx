@@ -6,13 +6,13 @@ import { HomeIntroSkeleton, HomeRailBlockSkeleton, Skeleton } from "@/components
 import { buttonClass } from "@/components/ui/button";
 import { brandValues, editorialCollections, lifestyleBlocks } from "@/content/collections";
 import { journalArticles } from "@/content/journal";
-import { pageMeta } from "@/lib/seo";
+import { jsonLdText, pageMeta, shopGraph } from "@/lib/seo";
 import { mediaZoomClass } from "@/lib/utils";
 
 export const metadata = pageMeta({
   title: "Kitchen appliances in Accra",
   description:
-    "Kitchen appliances from the Accra shop, priced in Ghana Cedis.",
+    "Ashanti's Kitchenware sells kitchen appliances in Accra, priced in Ghana Cedis. Collect from the Dansoman-Sakaman shop, or ask about delivery on WhatsApp.",
   path: "/",
 });
 
@@ -21,6 +21,7 @@ export default function HomePage() {
 
   return (
     <div>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdText(shopGraph()) }} />
       <section className="relative overflow-hidden bg-background">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
