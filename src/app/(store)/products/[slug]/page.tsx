@@ -36,6 +36,20 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
   const price = Number(product.salePrice ?? product.price);
   const demo = isDemoListing(product.sku, product.slug);
   const average = product.ratingAverage;
+  const faqs = [
+    {
+      q: "When will it arrive?",
+      a: "Collection is at the Accra shop. Delivery charge and timing are confirmed on WhatsApp after you order. Checkout does not add a delivery fee.",
+    },
+    {
+      q: "Can I return it?",
+      a: "Faulty, damaged, or incorrect items can be returned within 7 days of delivery. See the refund policy for conditions.",
+    },
+    {
+      q: "How do I pay?",
+      a: "Checkout uses Hubtel and/or Moolre when those accounts are configured. We do not store card or mobile-money credentials.",
+    },
+  ];
   const productUrl = `${getAppUrl()}/products/${product.slug}`;
   const images = product.images.map((image) => absoluteUrl(image.url));
   const crumbs = [
@@ -91,21 +105,6 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
       faqJsonLd(faqs),
     ],
   };
-
-  const faqs = [
-    {
-      q: "When will it arrive?",
-      a: "Collection is at the Accra shop. Delivery charge and timing are confirmed on WhatsApp after you order. Checkout does not add a delivery fee.",
-    },
-    {
-      q: "Can I return it?",
-      a: "Faulty, damaged, or incorrect items can be returned within 7 days of delivery. See the refund policy for conditions.",
-    },
-    {
-      q: "How do I pay?",
-      a: "Checkout uses Hubtel and/or Moolre when those accounts are configured. We do not store card or mobile-money credentials.",
-    },
-  ];
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-6 pb-32 lg:px-8 lg:py-12 lg:pb-12">
