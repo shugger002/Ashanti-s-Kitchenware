@@ -52,13 +52,7 @@ async function StoreShell({ children }: { children: React.ReactNode }) {
               href="/promo"
               className="block bg-ink px-3 py-1.5 text-center text-[10px] uppercase leading-snug tracking-[0.12em] text-white sm:px-4 sm:py-2 sm:text-xs sm:tracking-[0.14em] dark:bg-[#322922] dark:text-foreground"
             >
-              <span className="sm:hidden">
-                Promo: {promoCount} reduced GHS {promoCount === 1 ? "price" : "prices"}
-              </span>
-              <span className="hidden sm:inline">
-                Promo and discounted: {promoCount} {promoCount === 1 ? "piece has" : "pieces have"} a reduced Ghana
-                Cedi price.
-              </span>
+              {promoCount} {promoCount === 1 ? "item is" : "items are"} on promo.
             </a>
           ) : null}
         </>
