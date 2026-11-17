@@ -263,6 +263,20 @@ export async function placeOrder(input: CheckoutInput, sessionCustomerId?: strin
   };
 }
 
+function referenceToStore(
+  input: { provider: string; providerRef: string; payload: Record<string, unknown> },
+  orderRef: string,
+) {
+  const data = input.payload.data;
+  const fromMoolre =
+    input.provider === "moolre" && data && typeof data === "object" && "transactionid" in data
+      ? String((data as { transactionid?: string | number | null }).transactionid ?? "")
+      : "";
+  if (fromMoolre && fromMoolre !== orderRef) return fromMoolre;
+  if (input.providerRef && input.providerRef !== orderRef) return input.providerRef;
+  return "";
+}
+
 export async function markOrderPaid(input: {
   publicRef: string;
   providerRef: string;
@@ -284,8 +298,9 @@ export async function markOrderPaid(input: {
       id: string;
       payment_status: string;
       total: string;
+      public_ref: string;
     }>(sql`
-      SELECT id, payment_status, total::text FROM orders
+      SELECT id, payment_status, total::text, public_ref FROM orders
        WHERE public_ref = ${input.publicRef}
           OR public_ref = regexp_replace(${input.publicRef}, '\\.m[a-f0-9]{6}$', '', 'i')
           OR id IN (SELECT order_id FROM payments WHERE provider_ref = ${input.publicRef})
@@ -298,9 +313,12 @@ export async function markOrderPaid(input: {
     if (parseMoney(row.total) !== parseMoney(input.amountGhs)) {
       throw new Error("Paid amount does not match order total");
     }
+    const recordedRef = referenceToStore(input, row.public_ref);
     await db.query(sql`UPDATE orders SET payment_status = 'paid', status = 'paid', updated_at = now() WHERE id = ${row.id}`);
     await db.query(sql`
-      UPDATE payments SET status = 'successful', provider_ref = ${input.providerRef}, updated_at = now()
+      UPDATE payments SET status = 'successful',
+             provider_ref = CASE WHEN ${recordedRef} <> '' THEN ${recordedRef} ELSE provider_ref END,
+             updated_at = now()
        WHERE order_id = ${row.id}
     `);
     await db.query(sql`

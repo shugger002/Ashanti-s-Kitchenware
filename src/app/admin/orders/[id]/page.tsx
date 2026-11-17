@@ -3,6 +3,7 @@ import { requirePermission } from "@/server/auth/authorize";
 import { hasPermission } from "@/server/auth/types";
 import { getOrderById, ORDER_TRANSITIONS } from "@/server/orders/service";
 import { addOrderNoteAction, capturePaymentAction, transitionOrderAction } from "@/app/admin/orders/actions";
+import { syncMoolreOrder, type MoolreDeskState } from "@/server/payments/moolre-sync";
 import { formatGhs } from "@/lib/money";
 import { formatAccraWhen } from "@/lib/accra-time";
 import { ghanaInternationalMsisdn } from "@/lib/phone-gh";
@@ -29,6 +30,15 @@ function text(value: unknown) {
 
 function money(value: unknown) {
   return formatGhs(Number(value ?? 0));
+}
+
+function moolreNote(state: MoolreDeskState) {
+  if (state === "pending") return "Moolre is still waiting for the customer to approve the prompt.";
+  if (state === "failed") return "Moolre declined this debit.";
+  if (state === "mismatch") return "Moolre reports a payment, but the amount does not match this order.";
+  if (state === "unknown") return "Moolre has no final result for this payment yet.";
+  if (state === "unreachable") return "Moolre could not be checked just now. This desk still shows the last status it stored.";
+  return "";
 }
 
 function nextStepHint(status: string, method: string) {
@@ -59,6 +69,7 @@ export default async function AdminOrderDetailPage({
   const canWrite = hasPermission(user.roles, "orders.write");
   const canCapture = hasPermission(user.roles, "payments.capture");
   const { id } = await params;
+  const moolre = await syncMoolreOrder(id);
   const data = await getOrderById(id);
   if (!data) notFound();
   const order = data.order;
@@ -226,12 +237,19 @@ export default async function AdminOrderDetailPage({
             </div>
           </AdminSection>
 
+          {paymentStatus !== "paid" && moolreNote(moolre) && !canCapture ? (
+            <AdminSection title="Moolre">
+              <p className="text-sm text-muted">{moolreNote(moolre)}</p>
+            </AdminSection>
+          ) : null}
+
           {canCapture && paymentStatus !== "paid" ? (
             <form action={capturePaymentAction}>
               <AdminSection
                 title="Mark as paid"
                 hint="Use this only if you can see the real payment on Hubtel, Moolre, or the bank. Type the payment number from there."
               >
+                {moolreNote(moolre) ? <p className="mb-4 text-sm text-muted">{moolreNote(moolre)}</p> : null}
                 <input type="hidden" name="orderId" value={id} />
                 <label className="block text-sm">
                   Payment number

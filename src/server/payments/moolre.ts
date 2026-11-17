@@ -124,6 +124,43 @@ function asTxn(data: unknown): MoolreTxn | null {
   return data as MoolreTxn;
 }
 
+/** Moolre txstatus: 1 paid, 0 still in progress, 2 declined. Paid also requires code SS01. */
+export function moolreCollectionState(code: string, txstatus: number | undefined): "paid" | "pending" | "failed" | "unknown" {
+  if (code === "SS01" && txstatus === 1) return "paid";
+  if (txstatus === 2) return "failed";
+  if (txstatus === 0) return "pending";
+  return "unknown";
+}
+
+export type MoolreLookup = {
+  state: "paid" | "pending" | "failed" | "unknown";
+  amountGhs: number | null;
+  transactionId: string | null;
+  externalRef: string | null;
+  code: string;
+  message: string;
+};
+
+export async function lookupMoolreCollection(externalRef: string): Promise<MoolreLookup> {
+  const { account } = credentials();
+  const result = await moolrePost("/open/transact/status", {
+    type: 1,
+    idtype: 1,
+    id: externalRef,
+    accountnumber: account,
+  });
+  const txn = asTxn(result.json.data);
+  const amount = Number(txn?.amount ?? txn?.value ?? NaN);
+  return {
+    state: moolreCollectionState(result.code, txn?.txstatus),
+    amountGhs: Number.isFinite(amount) && amount > 0 ? amount : null,
+    transactionId: txn?.transactionid ? String(txn.transactionid) : null,
+    externalRef: txn?.externalref ? String(txn.externalref) : null,
+    code: result.code,
+    message: (result.json.message || "").trim(),
+  };
+}
+
 export class MoolreProvider implements PaymentProvider {
   readonly id = "moolre" as const;
 
@@ -190,26 +227,16 @@ export class MoolreProvider implements PaymentProvider {
   }
 
   async verifyByExternalRef(publicRef: string): Promise<VerifiedPaymentEvent | null> {
-    const { account } = credentials();
-    const result = await moolrePost("/open/transact/status", {
-      type: 1,
-      idtype: 1,
-      id: publicRef,
-      accountnumber: account,
-    });
-    const txn = asTxn(result.json.data);
-    if (!txn) return null;
-    const successful = result.code === "SS01" && txn.txstatus === 1;
-    const amount = Number(txn.amount ?? txn.value ?? 0);
-    if (!successful || !Number.isFinite(amount) || amount <= 0) return null;
+    const lookup = await lookupMoolreCollection(publicRef);
+    if (lookup.state !== "paid" || lookup.amountGhs == null) return null;
     return {
       provider: this.id,
-      providerEventId: String(txn.transactionid ?? `moolre-status:${publicRef}`),
-      providerRef: String(txn.transactionid ?? publicRef),
-      eventType: result.code,
+      providerEventId: lookup.transactionId ?? `moolre-status:${publicRef}`,
+      providerRef: lookup.transactionId ?? publicRef,
+      eventType: lookup.code,
       successful: true,
-      amountGhs: amount,
-      payload: result.json as unknown as Record<string, unknown>,
+      amountGhs: lookup.amountGhs,
+      payload: { code: lookup.code, message: lookup.message, externalref: lookup.externalRef },
     };
   }
 

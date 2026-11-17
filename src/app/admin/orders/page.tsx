@@ -1,4 +1,5 @@
 import { requirePermission } from "@/server/auth/authorize";
+import { syncOpenMoolreOrders } from "@/server/payments/moolre-sync";
 import { hasPermission } from "@/server/auth/types";
 import { countOrderGlance, listOrders, ORDER_TRANSITIONS, type OrderNeedFilter } from "@/server/orders/service";
 import { OrderListCard } from "@/components/admin/order-list-card";
@@ -35,8 +36,9 @@ export default async function AdminOrdersPage({
   const needParam = parseNeed(params.need);
   const need: OrderNeedFilter | undefined =
     allStages || status || payment || searching ? undefined : needParam || "work";
-  const [user, orders, glance] = await Promise.all([
-    requirePermission("orders.read"),
+  const user = await requirePermission("orders.read");
+  await syncOpenMoolreOrders();
+  const [orders, glance] = await Promise.all([
     listOrders({
       q,
       status: status || undefined,

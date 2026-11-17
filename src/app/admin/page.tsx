@@ -8,6 +8,7 @@ import { customerWhatsAppHref, formatOrderAddress, packLines } from "@/lib/order
 import { hasPermission, isDeveloper } from "@/server/auth/types";
 import { DeveloperHome } from "@/components/admin/developer-home";
 import { getOperationsConfig } from "@/server/ops/settings";
+import { syncOpenMoolreOrders } from "@/server/payments/moolre-sync";
 import { OrderWhatsAppLink } from "@/components/admin/whatsapp-link";
 import {
   adminButton,
@@ -52,6 +53,7 @@ export default async function AdminHomePage({
     return <DeveloperHome user={user} />;
   }
   try {
+    await syncOpenMoolreOrders();
     [metrics, growth, rangeStats, operations] = await Promise.all([
       dashboardMetrics(),
       dashboardGrowth(),
