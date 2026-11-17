@@ -281,29 +281,39 @@ type TrackOrderRow = {
   delivery_method: string;
 };
 
-export async function findOrdersForTracking(queryText: string, ip: string | null): Promise<{
+export async function findOrdersForTracking(input: {
+  phone: string;
+  ref?: string;
+  ip: string | null;
+}): Promise<{
   orders: { order: TrackOrderRow; items: { id: string; product_name: string; quantity: number }[] }[];
   error?: string;
 }> {
-  const q = queryText.trim();
-  if (!q) return { orders: [] };
-  if (await hitRateLimit(`track:${ip ?? "unknown"}`, 12, ip)) {
+  const ref = input.ref?.trim() ?? "";
+  const digits = input.phone.replace(/\D/g, "");
+  if (!ref && digits.length < 9) return { orders: [] };
+  if (await hitRateLimit(`track:${input.ip ?? "unknown"}`, 12, input.ip)) {
     return { orders: [], error: "Too many lookups. Try again in 15 minutes." };
   }
+  if (digits.length < 9) {
+    return { orders: [], error: "Enter the phone number from checkout as well." };
+  }
+  const lastNine = digits.slice(-9);
 
-  if (ORDER_REF.test(q)) {
-    const byRef = await query<TrackOrderRow>(
-      sql`SELECT id, public_ref, status, payment_status, total::text, phone, delivery_method
-     FROM orders WHERE lower(public_ref) = lower(${q}) LIMIT 1`,
-    );
+  if (ref) {
+    if (!ORDER_REF.test(ref)) return { orders: [] };
+    const byRef = await query<TrackOrderRow>(sql`
+      SELECT id, public_ref, status, payment_status, total::text, phone, delivery_method
+       FROM orders
+      WHERE lower(public_ref) = lower(${ref})
+        AND right(regexp_replace(phone, '[^0-9]', '', 'g'), 9) = ${lastNine}
+      LIMIT 1
+    `);
     return {
       orders: await Promise.all(byRef.rows.map(async (order) => ({ order, items: await orderItems(order.id) }))),
     };
   }
 
-  const digits = q.replace(/\D/g, "");
-  if (digits.length < 9) return { orders: [] };
-  const lastNine = digits.slice(-9);
   const byPhone = await query<TrackOrderRow>(sql`
     SELECT id, public_ref, status, payment_status, total::text, phone, delivery_method
      FROM orders WHERE right(regexp_replace(phone, '[^0-9]', '', 'g'), 9) = ${lastNine}

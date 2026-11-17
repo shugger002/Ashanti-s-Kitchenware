@@ -3,7 +3,8 @@ import { markOrderPaid } from "@/server/checkout/service";
 import { sendFailedPaymentEmail } from "@/server/notifications/order-mail";
 import { query } from "@/server/db/pool";
 import { sql } from "@/server/db/sql";
-import type { PaymentProvider } from "@/server/payments/types";
+import { confirmMoolreCallback } from "@/server/payments/moolre";
+import type { PaymentProvider, VerifiedPaymentEvent } from "@/server/payments/types";
 
 export async function handlePaymentWebhook(provider: PaymentProvider, request: Request) {
   const raw = Buffer.from(await request.arrayBuffer());
@@ -14,15 +15,18 @@ export async function handlePaymentWebhook(provider: PaymentProvider, request: R
     return NextResponse.json({ error: "Webhook rejected" }, { status: 400 });
   }
   try {
-    if (event.successful) {
+    const confirmed = event.successful ? await confirmedPayment(event) : { ok: false as const };
+    if (confirmed.ok) {
       await markOrderPaid({
         publicRef: event.providerRef,
-        providerRef: event.providerRef,
+        providerRef: confirmed.providerRef,
         providerEventId: event.providerEventId,
         provider: event.provider,
-        amountGhs: event.amountGhs,
+        amountGhs: confirmed.amountGhs,
         payload: event.payload,
       });
+    } else if ("retry" in confirmed && confirmed.retry) {
+      return NextResponse.json({ error: "Payment is not confirmed yet" }, { status: 503 });
     } else if (event.providerRef) {
       const order = await query<{ id: string }>(sql`
         SELECT id FROM orders
@@ -38,4 +42,19 @@ export async function handlePaymentWebhook(provider: PaymentProvider, request: R
     console.error("payment webhook processing failed", error);
     return NextResponse.json({ error: "Webhook processing failed" }, { status: 500 });
   }
+}
+
+async function confirmedPayment(event: VerifiedPaymentEvent): Promise<
+  { ok: true; amountGhs: number; providerRef: string } | { ok: false; retry: boolean }
+> {
+  if (event.provider !== "moolre") {
+    return { ok: true, amountGhs: event.amountGhs, providerRef: event.providerRef };
+  }
+  const checked = await confirmMoolreCallback(event);
+  if (!checked.paid) return { ok: false, retry: checked.retry };
+  return {
+    ok: true,
+    amountGhs: checked.amountGhs,
+    providerRef: checked.transactionId || event.providerRef,
+  };
 }

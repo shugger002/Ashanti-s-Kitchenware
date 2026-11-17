@@ -16,14 +16,17 @@ export function middleware(request: NextRequest) {
 
   const { pathname } = request.nextUrl;
   const publicAdmin = ["/admin/login", "/admin/forgot-password", "/admin/reset-password"];
-  if (pathname.startsWith("/admin") && !publicAdmin.includes(pathname)) {
-    if (!request.cookies.get(COOKIE)?.value) {
-      const url = request.nextUrl.clone();
-      url.pathname = "/admin/login";
-      return NextResponse.redirect(url);
-    }
+  if (pathname.startsWith("/api/admin") && !request.cookies.get(COOKIE)?.value) {
+    return NextResponse.json({ ok: false }, { status: 401 });
   }
-  return NextResponse.next();
+  if (pathname.startsWith("/admin") && !publicAdmin.includes(pathname) && !request.cookies.get(COOKIE)?.value) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/admin/login";
+    return NextResponse.redirect(url);
+  }
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set("x-pathname", pathname);
+  return NextResponse.next({ request: { headers: requestHeaders } });
 }
 
 export const config = {

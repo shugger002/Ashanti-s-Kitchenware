@@ -141,6 +141,24 @@ export type MoolreLookup = {
   message: string;
 };
 
+/** A callback is paid only when Moolre's own status check says the debit succeeded. */
+export async function confirmMoolreCallback(input: {
+  providerRef: string;
+  payload: Record<string, unknown>;
+}): Promise<{ paid: true; amountGhs: number; transactionId: string | null } | { paid: false; retry: boolean }> {
+  const data = input.payload.data;
+  const external =
+    data && typeof data === "object" && "externalref" in data
+      ? String((data as { externalref?: string }).externalref ?? "")
+      : "";
+  const lookup = await lookupMoolreCollection(external || input.providerRef);
+  if (lookup.state === "paid" && lookup.amountGhs != null) {
+    return { paid: true, amountGhs: lookup.amountGhs, transactionId: lookup.transactionId };
+  }
+  if (lookup.state === "failed") return { paid: false, retry: false };
+  return { paid: false, retry: true };
+}
+
 export async function lookupMoolreCollection(externalRef: string): Promise<MoolreLookup> {
   const { account } = credentials();
   const result = await moolrePost("/open/transact/status", {

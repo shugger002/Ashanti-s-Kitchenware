@@ -18,10 +18,14 @@ export default async function TrackPage({
   searchParams: Promise<{ q?: string; ref?: string; phone?: string }>;
 }) {
   const params = await searchParams;
-  const q = (params.q || [params.ref, params.phone].filter(Boolean).join(" ")).trim();
+  const legacy = (params.q || "").trim();
+  const phone = (params.phone || (legacy && !/^AK-/i.test(legacy) ? legacy : "")).trim();
+  const ref = (params.ref || (legacy && /^AK-/i.test(legacy) ? legacy : "")).trim();
   const ip = clientIp(await headers());
   const [lookup, config] = await Promise.all([
-    q ? findOrdersForTracking(q, ip) : Promise.resolve({ orders: [], error: undefined as string | undefined }),
+    phone || ref
+      ? findOrdersForTracking({ phone, ref, ip })
+      : Promise.resolve({ orders: [], error: undefined as string | undefined }),
     getStorefrontConfig(),
   ]);
   const found = lookup.orders;
@@ -32,27 +36,31 @@ export default async function TrackPage({
     <div className="mx-auto max-w-xl px-4 py-8 pb-24 lg:px-8 lg:py-12">
       <h1 className="text-3xl md:text-4xl">Track order</h1>
       <p className="mt-3 text-sm leading-relaxed text-muted">
-        Phone number from checkout, or your order number (AK-…).
+        Use the phone number from checkout. Add the order number if you have it. The order number alone is not enough.
       </p>
       <form className="mt-8 space-y-4" method="get">
         <label className="block text-sm">
-          Phone or order number
+          Phone number
           <input
-            name="q"
-            defaultValue={q}
+            name="phone"
+            defaultValue={phone}
             required
             inputMode="tel"
             autoComplete="tel"
-            placeholder="020… or AK-…"
+            placeholder="020…"
             className="input mt-1"
           />
+        </label>
+        <label className="block text-sm">
+          Order number
+          <input name="ref" defaultValue={ref} placeholder="AK-…" autoCapitalize="characters" className="input mt-1" />
         </label>
         <button className={buttonClass("primary", "h-12 w-full sm:w-auto")} type="submit">
           See my order
         </button>
       </form>
       {lookup.error ? <p className="mt-6 text-sm text-accent">{lookup.error}</p> : null}
-      {q && !lookup.error && found.length === 0 ? (
+      {(phone || ref) && !lookup.error && found.length === 0 ? (
         <p className="mt-6 text-sm text-muted">No order for that phone or number.</p>
       ) : null}
       {found.map(({ order, items }) => (
