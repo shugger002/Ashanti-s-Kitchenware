@@ -238,7 +238,10 @@ export class MoolreProvider implements PaymentProvider {
       throw new Error("That SMS code was not accepted. Wait for a new SMS from Moolre and try again.");
     }
     const message = (result.json.message || "").trim();
-    if (message && message.length <= 160 && !message.includes("{")) {
+    if (/merchant account setup|account setup incomplete/i.test(message)) {
+      throw new Error("Mobile money is not switched on for this shop yet. WhatsApp the shop to complete the order.");
+    }
+    if (message && message.length <= 160 && !message.includes("{") && !/233596070822/.test(message)) {
       throw new Error(message);
     }
     throw new Error("Moolre could not start the mobile-money prompt");
