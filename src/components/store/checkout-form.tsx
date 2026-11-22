@@ -12,7 +12,6 @@ import { isDemoListing } from "@/lib/listing";
 import { defaultContact } from "@/config/brand";
 import type { PaymentOption } from "@/server/payments/types";
 import { shopperError } from "@/lib/user-error";
-import { CheckoutPageSkeleton } from "@/components/ui/skeleton";
 import { inferMomoChannel } from "@/lib/phone-gh";
 import { cn } from "@/lib/utils";
 
@@ -182,14 +181,12 @@ export function CheckoutForm({
     errorRef.current?.scrollIntoView({ block: "center", behavior: "smooth" });
   }, [error]);
 
-  const subtotal = items.reduce((sum, line) => sum + line.unitPrice * line.quantity, 0);
+  const orderReady = live;
+  const lines = orderReady ? items : [];
+  const subtotal = lines.reduce((sum, line) => sum + line.unitPrice * line.quantity, 0);
   const total = subtotal;
 
-  if (!live) {
-    return <CheckoutPageSkeleton />;
-  }
-
-  if (items.length === 0) {
+  if (orderReady && items.length === 0) {
     return (
       <div className="mx-auto max-w-xl px-4 py-16">
         <h1 className="font-sans text-3xl font-bold uppercase tracking-[0.12em]">Checkout</h1>
@@ -202,8 +199,8 @@ export function CheckoutForm({
   }
 
   const payCta = paymentsReady ? (
-    <Button type="submit" className="h-12 w-full text-base" disabled={pending}>
-      {pending ? "Placing order…" : `Pay now · ${formatGhs(total)}`}
+    <Button type="submit" className="h-12 w-full text-base" disabled={pending || !orderReady}>
+      {pending ? "Placing order…" : orderReady ? `Pay now · ${formatGhs(total)}` : "Pay now"}
     </Button>
   ) : (
     <a
@@ -212,14 +209,16 @@ export function CheckoutForm({
       target="_blank"
       rel="noopener noreferrer"
     >
-      WhatsApp to order · {formatGhs(total)}
+      {orderReady ? `WhatsApp to order · ${formatGhs(total)}` : "WhatsApp to order"}
     </a>
   );
 
-  const summary = (
+  const summary = !orderReady ? (
+    <p className="text-sm text-muted">Your order</p>
+  ) : (
     <div className="space-y-5">
       <ul className="space-y-4">
-        {items.map((line) => (
+        {lines.map((line) => (
           <li key={`${line.productId}-${line.variantId}`} className="flex gap-3 text-sm">
             <div className="relative size-16 shrink-0">
               {line.imageUrl ? (
@@ -317,6 +316,8 @@ export function CheckoutForm({
       }}
     >
       <div className="border-b border-border lg:hidden">
+        {orderReady ? (
+        <>
         <button
           type="button"
           className="flex min-h-12 w-full items-center gap-3 px-4 py-3 text-sm"
@@ -324,7 +325,7 @@ export function CheckoutForm({
           aria-expanded={summaryOpen}
         >
           <span className="flex min-w-0 flex-1 items-center gap-2">
-            {items.slice(0, 3).map((line) =>
+            {lines.slice(0, 3).map((line) =>
               line.imageUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
@@ -341,13 +342,17 @@ export function CheckoutForm({
               ),
             )}
             <span className="flex items-center gap-1 text-muted">
-              {items.length === 1 ? "1 piece" : `${items.length} pieces`}
+              {lines.length === 1 ? "1 piece" : `${lines.length} pieces`}
               <ChevronDown className={`size-4 transition-transform ${summaryOpen ? "rotate-180" : ""}`} />
             </span>
           </span>
           <span className="shrink-0 font-medium tabular-nums">{formatGhs(total)}</span>
         </button>
         {summaryOpen ? <div className="max-h-[45vh] overflow-y-auto border-t border-border px-4 py-4">{summary}</div> : null}
+        </>
+        ) : (
+          <p className="px-4 py-3 text-sm text-muted">Your order</p>
+        )}
       </div>
 
       <div className="mx-auto w-full max-w-xl px-4 pb-28 pt-8 lg:mx-0 lg:max-w-xl lg:px-8 lg:pb-12 lg:pt-10">

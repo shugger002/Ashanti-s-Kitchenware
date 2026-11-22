@@ -1,4 +1,4 @@
-const CACHE = "ak-shell-v9";
+const CACHE = "ak-shell-v10";
 const PRECACHE = ["/", "/icons/app-192.png", "/icons/app-512.png"];
 
 self.addEventListener("install", (event) => {
@@ -20,20 +20,6 @@ self.addEventListener("activate", (event) => {
   );
 });
 
-// Keep a fetch handler so Chrome treats the shop as installable.
-// Do not intercept Next.js assets or data — that can stall the app.
-self.addEventListener("fetch", (event) => {
-  if (event.request.method !== "GET") return;
-  if (event.request.mode !== "navigate") return;
-  const url = new URL(event.request.url);
-  if (url.origin !== self.location.origin) return;
-  if (url.pathname.startsWith("/admin") || url.pathname.startsWith("/api/")) return;
-  event.respondWith(
-    fetch(event.request).catch(async () => {
-      if (url.pathname === "/" || url.pathname === "") {
-        return (await caches.match("/")) || Response.error();
-      }
-      return Response.error();
-    }),
-  );
-});
+// A fetch listener keeps the shop installable. Do not call respondWith:
+// wrapping every navigation makes each tap wait for the worker.
+self.addEventListener("fetch", () => {});

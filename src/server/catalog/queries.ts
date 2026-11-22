@@ -479,6 +479,14 @@ export async function listAdminProducts(filters: {
 
 export async function getProductBySlug(slug: string, opts?: { includeInactive?: boolean }): Promise<ProductDetail | null> {
   if (!process.env.DATABASE_URL) return getDemoProduct(slug);
+  if (opts?.includeInactive) return loadProductBySlug(slug, opts);
+  return unstable_cache(() => loadProductBySlug(slug), ["product-by-slug", slug], {
+    revalidate: 60,
+    tags: ["catalog"],
+  })();
+}
+
+async function loadProductBySlug(slug: string, opts?: { includeInactive?: boolean }): Promise<ProductDetail | null> {
   const result = await query<{
     id: string;
     slug: string;
@@ -523,39 +531,39 @@ export async function getProductBySlug(slug: string, opts?: { includeInactive?: 
   const row = result.rows[0];
   if (!row) return null;
 
-  const images = await query<{
-    id: string;
-    url: string;
-    alt: string;
-    is_primary: boolean;
-    storage_key: string;
-  }>(sql`
-    SELECT id, url, alt, is_primary, storage_key FROM product_images
-     WHERE product_id = ${row.id} ORDER BY is_primary DESC, sort_order ASC
-  `);
-
-  const variants = await query<{
-    id: string;
-    sku: string;
-    name: string;
-    attributes: Record<string, string>;
-    price_override: string | null;
-    is_active: boolean;
-    on_hand: string | null;
-    reserved: string | null;
-  }>(sql`
-    SELECT v.id, v.sku, v.name, v.attributes, v.price_override::text, v.is_active,
-            i.on_hand::text, i.reserved::text
-     FROM product_variants v
-     LEFT JOIN inventory i ON i.variant_id = v.id
-     WHERE v.product_id = ${row.id}
-     ORDER BY v.name
-  `);
-
-  const inv = await query<{ on_hand: string; reserved: string }>(sql`
-    SELECT COALESCE(SUM(on_hand),0)::text AS on_hand, COALESCE(SUM(reserved),0)::text AS reserved
-     FROM inventory WHERE product_id = ${row.id}
-  `);
+  const [images, variants, inv] = await Promise.all([
+    query<{
+      id: string;
+      url: string;
+      alt: string;
+      is_primary: boolean;
+      storage_key: string;
+    }>(sql`
+      SELECT id, url, alt, is_primary, storage_key FROM product_images
+       WHERE product_id = ${row.id} ORDER BY is_primary DESC, sort_order ASC
+    `),
+    query<{
+      id: string;
+      sku: string;
+      name: string;
+      attributes: Record<string, string>;
+      price_override: string | null;
+      is_active: boolean;
+      on_hand: string | null;
+      reserved: string | null;
+    }>(sql`
+      SELECT v.id, v.sku, v.name, v.attributes, v.price_override::text, v.is_active,
+              i.on_hand::text, i.reserved::text
+       FROM product_variants v
+       LEFT JOIN inventory i ON i.variant_id = v.id
+       WHERE v.product_id = ${row.id}
+       ORDER BY v.name
+    `),
+    query<{ on_hand: string; reserved: string }>(sql`
+      SELECT COALESCE(SUM(on_hand),0)::text AS on_hand, COALESCE(SUM(reserved),0)::text AS reserved
+       FROM inventory WHERE product_id = ${row.id}
+    `),
+  ]);
 
   const imageList: ProductImage[] = images.rows.map((img) => ({
     id: img.id,

@@ -290,7 +290,7 @@ html:has(.admin-desk).dark,
 }
 
 html {
-  scroll-behavior: smooth;
+  scroll-behavior: auto;
 }
 
 @keyframes ak-logo-marquee {

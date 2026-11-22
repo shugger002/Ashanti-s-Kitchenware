@@ -30,7 +30,7 @@ export default async function CheckoutPage() {
   const loaded = await Promise.race([
     loadCheckoutPage().catch(() => null),
     new Promise<null>((resolve) => {
-      setTimeout(() => resolve(null), 1200);
+      setTimeout(() => resolve(null), 150);
     }),
   ]);
   const customer = loaded?.customer ?? null;
