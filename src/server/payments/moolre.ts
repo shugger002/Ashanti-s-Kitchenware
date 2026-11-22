@@ -49,15 +49,21 @@ function credentials() {
   return { user, key, account };
 }
 
-async function moolrePost(path: "/open/transact/payment" | "/open/transact/status", body: Record<string, unknown>) {
+async function moolrePost(
+  path: "/open/transact/payment" | "/open/transact/status",
+  body: Record<string, unknown>,
+  options?: { idempotencyKey?: string },
+) {
   const { user, key } = credentials();
+  const headers: Record<string, string> = {
+    "X-API-USER": user,
+    "X-API-PUBKEY": key,
+    "Content-Type": "application/json",
+  };
+  if (options?.idempotencyKey) headers["Idempotency-Key"] = options.idempotencyKey;
   const response = await fetch(`https://api.moolre.com${path}`, {
     method: "POST",
-    headers: {
-      "X-API-USER": user,
-      "X-API-PUBKEY": key,
-      "Content-Type": "application/json",
-    },
+    headers,
     body: JSON.stringify(body),
   });
   let json: MoolreEnvelope;
@@ -199,20 +205,11 @@ export class MoolreProvider implements PaymentProvider {
     }
 
     if (result.code === "TP17") {
-      result = await moolrePost("/open/transact/payment", collectionBody(input, { externalref: usedRef }));
-      if (result.code === "TP13" || result.code === "TP14") {
-        result = await moolrePost(
-          "/open/transact/payment",
-          collectionBody(input, { otpCode: input.otpCode, externalref: usedRef }),
-        );
-      }
-      if (result.code === "TP13" || result.code === "TP14") {
-        usedRef = promptExternalRef(input.publicRef);
-        result = await moolrePost(
-          "/open/transact/payment",
-          collectionBody(input, { otpCode: input.otpCode, externalref: usedRef }),
-        );
-      }
+      result = await moolrePost(
+        "/open/transact/payment",
+        collectionBody(input, { externalref: usedRef }),
+        { idempotencyKey: usedRef },
+      );
     }
 
     return this.interpretPrompt(input, result, usedRef);
@@ -224,7 +221,7 @@ export class MoolreProvider implements PaymentProvider {
     usedRef: string,
   ): CreatePaymentResult {
     const blocked = new Set(["TP13", "TP14", "TP17", "TP01", "AIN01", "AIN03"]);
-    if (result.code === "TR099" || (String(result.json.status) === "1" && !blocked.has(result.code))) {
+    if (result.code === "TR099" || result.code === "TP18" || (String(result.json.status) === "1" && !blocked.has(result.code))) {
       return promptSent(input, usedRef);
     }
     console.error("[moolre] payment not prompted", { code: result.code, message: result.json.message });
