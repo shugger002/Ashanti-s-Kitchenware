@@ -32,7 +32,9 @@ function isTransientDbError(error: unknown) {
     code === "08006" ||
     message.includes("connection terminated") ||
     message.includes("timeout expired") ||
-    message.includes("server closed the connection")
+    message.includes("server closed the connection") ||
+    message.includes("max clients reached") ||
+    message.includes("too many clients")
   );
 }
 
