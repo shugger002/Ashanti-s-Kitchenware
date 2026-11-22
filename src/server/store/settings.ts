@@ -54,7 +54,7 @@ export type StorefrontConfig = {
   fulfillment: FulfillmentSettings;
 };
 
-const fallback: StorefrontConfig = {
+export const storefrontFallback: StorefrontConfig = {
   contact: { ...defaultContact },
   hero: {
     title: "Equip Your Kitchen",
@@ -93,44 +93,44 @@ async function readJson<T>(key: string, fallbackValue: T): Promise<T> {
 
 async function readStorefrontConfig(): Promise<StorefrontConfig> {
   const [contact, hero, announcement, social, storedFulfillment] = await Promise.all([
-    readJson("contact", fallback.contact),
-    readJson("hero", fallback.hero),
-    readJson("announcement", fallback.announcement),
-    readJson("social", fallback.social),
-    readJson("fulfillment", fallback.fulfillment),
+    readJson("contact", storefrontFallback.contact),
+    readJson("hero", storefrontFallback.hero),
+    readJson("announcement", storefrontFallback.announcement),
+    readJson("social", storefrontFallback.social),
+    readJson("fulfillment", storefrontFallback.fulfillment),
   ]);
   const fulfillment = storedFulfillment.coverageNote.includes("rate is published")
-    ? { ...storedFulfillment, coverageNote: fallback.fulfillment.coverageNote }
+    ? { ...storedFulfillment, coverageNote: storefrontFallback.fulfillment.coverageNote }
     : storedFulfillment;
   const liveAnnouncement = /demo photograph|logo are on this site/i.test(announcement.text)
-    ? fallback.announcement
+    ? storefrontFallback.announcement
     : announcement;
   const namedContact =
     contact.legalName === "Ashantis Kitchenware" || contact.tradingName === "Ashantis Kitchenware"
-      ? { ...contact, legalName: fallback.contact.legalName, tradingName: fallback.contact.tradingName }
+      ? { ...contact, legalName: storefrontFallback.contact.legalName, tradingName: storefrontFallback.contact.tradingName }
       : contact;
   const mallAddress = /accra mall/i.test(namedContact.addressLine1);
   const liveContact = {
     ...namedContact,
     email: /@(ashantiskitchenware|ashantisakitchenware)\.com$/i.test(namedContact.email)
-      ? fallback.contact.email
+      ? storefrontFallback.contact.email
       : namedContact.email,
-    addressLine1: mallAddress ? fallback.contact.addressLine1 : namedContact.addressLine1,
-    mapsUrl: namedContact.mapsUrl || fallback.contact.mapsUrl,
+    addressLine1: mallAddress ? storefrontFallback.contact.addressLine1 : namedContact.addressLine1,
+    mapsUrl: namedContact.mapsUrl || storefrontFallback.contact.mapsUrl,
   };
   const cookingCopy = /what are you cooking|cooking tonight|\bcooking\b|\bcook\b|recipe|kitchen tip|kitchen note/i;
   const strippedSubtitle = /blenders,\s*cookers|accra mall shop, priced/i.test(hero.subtitle) ? "" : hero.subtitle;
   const liveHero = cookingCopy.test(`${hero.title} ${strippedSubtitle}`)
-    ? { ...fallback.hero, title: "Equip Your Kitchen", subtitle: "" }
+    ? { ...storefrontFallback.hero, title: "Equip Your Kitchen", subtitle: "" }
     : {
         ...hero,
         title: hero.title.replace(/what are you cooking tonight\??/i, "Equip Your Kitchen"),
         subtitle: strippedSubtitle,
       };
   const liveSocial = {
-    ...fallback.social,
+    ...storefrontFallback.social,
     ...social,
-    tiktok: social.tiktok?.trim() || fallback.social.tiktok,
+    tiktok: social.tiktok?.trim() || storefrontFallback.social.tiktok,
   };
   return { contact: liveContact, hero: liveHero, announcement: liveAnnouncement, social: liveSocial, fulfillment };
 }

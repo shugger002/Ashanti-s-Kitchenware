@@ -6,7 +6,7 @@ import { useAfterHydrate, useCart } from "@/components/store/cart-provider";
 import { hydrateWishlist, toggleWishlist } from "@/components/store/wishlist-store";
 import { RecentlyViewed } from "@/components/store/recently-viewed";
 import { formatGhs } from "@/lib/money";
-import { buttonClass } from "@/components/ui/button";
+import { CheckoutLink } from "@/components/store/checkout-link";
 import { Button } from "@/components/ui/button";
 import { QuantityStepper } from "@/components/store/quantity-stepper";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -101,17 +101,13 @@ export default function CartPage() {
             damaged, or incorrect items.
           </p>
           <div className="hidden gap-3 lg:flex">
-            <Link href="/checkout" className={buttonClass("primary")}>
-              Checkout · {formatGhs(subtotal)}
-            </Link>
+            <CheckoutLink label={`Checkout · ${formatGhs(subtotal)}`} />
             <Button type="button" variant="ghost" onClick={clear}>
               Clear cart
             </Button>
           </div>
           <div className="fixed inset-x-0 bottom-[var(--store-dock)] z-50 border-t border-border bg-background px-4 py-3 pr-16 lg:hidden">
-            <Link href="/checkout" className={buttonClass("primary", "h-12 w-full text-base")}>
-              Checkout · {formatGhs(subtotal)}
-            </Link>
+            <CheckoutLink label={`Checkout · ${formatGhs(subtotal)}`} className="h-12 w-full text-base" />
           </div>
         </div>
       )}

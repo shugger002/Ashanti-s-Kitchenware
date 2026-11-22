@@ -1,4 +1,4 @@
-import { revalidatePath, revalidateTag } from "next/cache";
+import { revalidatePath, revalidateTag, unstable_cache } from "next/cache";
 import { query } from "@/server/db/pool";
 import { sql } from "@/server/db/sql";
 import { writeAuditLog } from "@/server/auth/audit";
@@ -42,10 +42,18 @@ export function parseOperations(value: unknown): OperationsConfig {
   };
 }
 
-export async function getOperationsConfig(): Promise<OperationsConfig> {
-  try {
+const readOperationsConfig = unstable_cache(
+  async () => {
     const result = await query<{ value: unknown }>(sql`SELECT value FROM store_settings WHERE key = 'operations'`);
     return parseOperations(result.rows[0]?.value);
+  },
+  ["operations-config"],
+  { revalidate: 60, tags: ["storefront"] },
+);
+
+export async function getOperationsConfig(): Promise<OperationsConfig> {
+  try {
+    return await readOperationsConfig();
   } catch {
     return DEFAULT_OPERATIONS;
   }

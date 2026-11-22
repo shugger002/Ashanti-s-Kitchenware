@@ -2,8 +2,8 @@ import { CheckoutForm } from "@/components/store/checkout-form";
 import { CheckoutPaper, CheckoutShell } from "@/components/store/checkout-shell";
 import { pageMeta } from "@/lib/seo";
 import { readStoreCustomer } from "@/server/customers/session";
-import { getStorefrontConfig } from "@/server/store/settings";
-import { getOperationsConfig } from "@/server/ops/settings";
+import { getStorefrontConfig, storefrontFallback } from "@/server/store/settings";
+import { DEFAULT_OPERATIONS, getOperationsConfig } from "@/server/ops/settings";
 import { listConfiguredPaymentProviders } from "@/server/payments";
 import Link from "next/link";
 import { buttonClass } from "@/components/ui/button";
@@ -17,12 +17,25 @@ export const metadata = pageMeta({
   index: false,
 });
 
-export default async function CheckoutPage() {
+async function loadCheckoutPage() {
   const [customer, config, ops] = await Promise.all([
     readStoreCustomer(),
     getStorefrontConfig(),
     getOperationsConfig(),
   ]);
+  return { customer, config, ops };
+}
+
+export default async function CheckoutPage() {
+  const loaded = await Promise.race([
+    loadCheckoutPage().catch(() => null),
+    new Promise<null>((resolve) => {
+      setTimeout(() => resolve(null), 1200);
+    }),
+  ]);
+  const customer = loaded?.customer ?? null;
+  const config = loaded?.config ?? storefrontFallback;
+  const ops = loaded?.ops ?? DEFAULT_OPERATIONS;
   if (ops.checkoutPaused) {
     return (
       <CheckoutShell>

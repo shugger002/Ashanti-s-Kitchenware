@@ -7,7 +7,7 @@ import { useCart } from "@/components/store/cart-provider";
 import { hydrateWishlist, toggleWishlist } from "@/components/store/wishlist-store";
 import { pushToast } from "@/components/store/toast-store";
 import { formatGhs } from "@/lib/money";
-import { buttonClass } from "@/components/ui/button";
+import { CheckoutLink } from "@/components/store/checkout-link";
 import { QuantityStepper } from "@/components/store/quantity-stepper";
 
 export function CartDrawer() {
@@ -42,7 +42,7 @@ export function CartDrawer() {
           {items.length === 0 ? (
             <div className="pt-8">
               <p className="text-pretty text-muted">My cart is empty.</p>
-              <Link href="/shop" onClick={closeDrawer} className="mt-3 inline-flex min-h-11 items-center text-sm text-accent">
+              <Link href="/shop" className="mt-3 inline-flex min-h-11 items-center text-sm text-accent">
                 Continue shopping
               </Link>
             </div>
@@ -52,7 +52,6 @@ export function CartDrawer() {
                 <li key={`${line.productId}-${line.variantId}`} className="flex gap-3 py-4 first:pt-0 last:pb-0">
                   <Link
                     href={`/products/${line.slug}`}
-                    onClick={closeDrawer}
                     className="relative h-[4.5rem] w-[4.5rem] shrink-0 overflow-hidden bg-surface outline outline-black/10 dark:outline-white/10"
                   >
                     {line.imageUrl ? (
@@ -68,7 +67,6 @@ export function CartDrawer() {
                     <div className="flex items-start justify-between gap-2">
                       <Link
                         href={`/products/${line.slug}`}
-                        onClick={closeDrawer}
                         className="font-serif text-base leading-snug tracking-tight text-pretty"
                       >
                         {line.name}
@@ -123,10 +121,8 @@ export function CartDrawer() {
             <p className="mt-2 text-pretty text-xs leading-relaxed text-muted">
               Delivery is quoted on WhatsApp after checkout. Returns for faulty items within 7 days.
             </p>
-            <Link href="/checkout" onClick={closeDrawer} className={buttonClass("primary", "mt-4 h-12 w-full text-base")}>
-              Checkout · {formatGhs(subtotal)}
-            </Link>
-            <Link href="/cart" onClick={closeDrawer} className="mt-1 block min-h-11 py-2 text-center text-sm text-muted">
+            <CheckoutLink label={`Checkout · ${formatGhs(subtotal)}`} className="mt-4 h-12 w-full text-base" />
+            <Link href="/cart" className="mt-1 block min-h-11 py-2 text-center text-sm text-muted">
               View cart
             </Link>
           </div>

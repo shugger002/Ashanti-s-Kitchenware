@@ -1,7 +1,8 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { useEffect, type ReactNode } from "react";
 import { usePathname } from "next/navigation";
+import { setCartDrawerOpen } from "@/components/store/cart-store";
 
 export function StoreFrame({
   announcement,
@@ -17,6 +18,9 @@ export function StoreFrame({
   extras: ReactNode;
 }) {
   const path = usePathname();
+  useEffect(() => {
+    setCartDrawerOpen(false);
+  }, [path]);
   if (path.startsWith("/checkout")) {
     return <>{children}</>;
   }
