@@ -56,7 +56,10 @@ export default async function SuccessPage({
   return (
     <CheckoutShell>
       <CheckoutPaper>
-        <h1 className="text-3xl text-balance md:text-4xl">
+        <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-accent">
+          {paymentStatus === "paid" ? "Paid" : promptFailed ? "Not taken" : waitingForPrompt ? "Waiting" : "Recorded"}
+        </p>
+        <h1 className="mt-2 font-sans text-3xl font-bold uppercase tracking-[0.08em] text-balance">
           {paymentStatus === "paid"
             ? "Paid"
             : promptFailed
@@ -65,7 +68,7 @@ export default async function SuccessPage({
                 ? "Approve on your phone"
                 : "Order received"}
         </h1>
-        <p className="mt-4 text-pretty text-muted">
+        <p className="mt-4 max-w-prose text-pretty text-sm leading-6 text-muted">
           {paymentStatus === "paid"
             ? "Payment has been confirmed. We will contact you about fulfilment."
             : promptFailed
@@ -75,40 +78,49 @@ export default async function SuccessPage({
                 : "Your order is recorded. It is not marked paid until Hubtel or Moolre confirms it, or the store records a verified payment."}
         </p>
         {waitingForPrompt && ref ? <MoolreAwait publicRef={ref} /> : null}
-        {ref ? (
-          <p className="mt-4 text-sm">
+        {order || lines.length > 0 ? (
+          <div className="mt-8 border border-border bg-surface px-4 py-5 sm:px-6">
+            {ref ? (
+              <p className="text-sm">
+                <span className="block text-[11px] font-medium uppercase tracking-[0.16em] text-muted">Order</span>
+                <span className="mt-1 block font-medium">{ref}</span>
+              </p>
+            ) : null}
+            {order ? (
+              <p className="mt-3 text-sm text-muted">
+                {order.delivery_method === "collection" ? "Collection at the shop." : "Delivery quoted on WhatsApp."}
+              </p>
+            ) : null}
+            {lines.length > 0 ? (
+              <ul className="mt-5 space-y-4 border-t border-border pt-5 text-sm">
+                {lines.map((line) => (
+                  <li key={`${line.sku}-${line.product_name}`} className="flex justify-between gap-4">
+                    <span className="min-w-0">
+                      {line.slug ? (
+                        <Link href={`/products/${line.slug}`} className="font-medium hover:text-accent">
+                          {line.product_name}
+                        </Link>
+                      ) : (
+                        <span className="font-medium">{line.product_name}</span>
+                      )}
+                      <span className="mt-0.5 block text-xs text-muted">
+                        {line.sku} · {line.quantity}
+                      </span>
+                    </span>
+                    <span className="shrink-0 tabular-nums">{formatGhs(line.line_total)}</span>
+                  </li>
+                ))}
+                <li className="flex items-baseline justify-between border-t border-border pt-4">
+                  <span className="text-[11px] font-medium uppercase tracking-[0.16em]">Due now</span>
+                  <span className="price">{formatGhs(order?.total ?? 0)}</span>
+                </li>
+              </ul>
+            ) : null}
+          </div>
+        ) : ref ? (
+          <p className="mt-6 text-sm">
             Order reference <strong>{ref}</strong>
           </p>
-        ) : null}
-        {order ? (
-          <p className="mt-1 text-sm text-muted">
-            {order.delivery_method === "collection" ? "Collection at the shop." : "Delivery quoted on WhatsApp."}
-          </p>
-        ) : null}
-        {lines.length > 0 ? (
-          <ul className="mt-6 space-y-3 border-t border-border pt-6 text-sm">
-            {lines.map((line) => (
-              <li key={`${line.sku}-${line.product_name}`} className="flex justify-between gap-3">
-                <span className="min-w-0">
-                  {line.slug ? (
-                    <Link href={`/products/${line.slug}`} className="hover:text-accent">
-                      {line.product_name}
-                    </Link>
-                  ) : (
-                    line.product_name
-                  )}
-                  <span className="mt-0.5 block text-xs text-muted">
-                    {line.sku} · {line.quantity}
-                  </span>
-                </span>
-                <span className="shrink-0 tabular-nums">{formatGhs(line.line_total)}</span>
-              </li>
-            ))}
-            <li className="flex justify-between border-t border-border pt-3 font-medium">
-              <span>Due now</span>
-              <span className="tabular-nums">{formatGhs(order?.total ?? 0)}</span>
-            </li>
-          </ul>
         ) : null}
         <p className="mt-6 text-sm">
           Use{" "}
@@ -117,7 +129,7 @@ export default async function SuccessPage({
           </Link>{" "}
           with your phone or this order number.
         </p>
-        <Link href="/shop" className={buttonClass("primary", "mt-8 h-12 w-full sm:w-auto")}>
+        <Link href="/shop" className={buttonClass("primary", "mt-8 h-12 w-full")}>
           Continue shopping
         </Link>
       </CheckoutPaper>

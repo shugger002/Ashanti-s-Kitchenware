@@ -48,10 +48,11 @@ export function MoolreOtpForm({
     >
       <input type="hidden" name="ref" value={publicRef} />
       <input type="hidden" name="momoChannel" value={momoChannel} />
-      <p className="text-sm text-muted">
-        Order <span className="font-medium text-foreground">{publicRef}</span>
-        {" · "}
-        {NETWORK[momoChannel]}
+      <p className="border border-border bg-surface px-4 py-3 text-sm">
+        <span className="block text-[11px] font-medium uppercase tracking-[0.16em] text-muted">Order</span>
+        <span className="mt-1 block font-medium">
+          {publicRef} · {NETWORK[momoChannel]}
+        </span>
       </p>
       <label className="block text-sm">
         SMS code
@@ -64,7 +65,7 @@ export function MoolreOtpForm({
           maxLength={6}
           value={otp}
           onChange={(event) => setOtp(event.target.value.replace(/\D/g, "").slice(0, 6))}
-          className="input mt-1"
+          className="input mt-2 text-center font-sans text-2xl tracking-[0.45em]"
         />
       </label>
       {error ? <p className="text-sm text-red-800">{error}</p> : null}

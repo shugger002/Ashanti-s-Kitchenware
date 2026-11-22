@@ -27,7 +27,8 @@ export default async function CheckoutPage() {
     return (
       <CheckoutShell>
         <CheckoutPaper>
-          <h1 className="font-serif text-3xl">Checkout is paused</h1>
+          <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-accent">Checkout</p>
+          <h1 className="mt-2 font-sans text-3xl font-bold uppercase tracking-[0.08em]">Checkout is paused</h1>
           <p className="mt-4 max-w-prose text-sm leading-relaxed text-muted">{ops.maintenanceMessage}</p>
           <p className="mt-3 text-sm text-muted">Your cart is still saved on this phone.</p>
           <Link href="/cart" className={buttonClass("primary", "mt-6 h-12")}>

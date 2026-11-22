@@ -19,8 +19,9 @@ export default async function MoolreOtpPage({
   return (
     <CheckoutShell>
       <CheckoutPaper>
-        <h1 className="text-3xl text-balance">Confirm your number</h1>
-        <p className="mt-3 text-pretty text-sm text-muted">
+        <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-accent">Mobile money</p>
+        <h1 className="mt-2 font-sans text-3xl font-bold uppercase tracking-[0.08em] text-balance">Confirm your number</h1>
+        <p className="mt-4 max-w-prose text-pretty text-sm leading-6 text-muted">
           Moolre sent an SMS code for a first-time payer. Enter it here. We still do not mark the order paid until
           Moolre confirms the mobile-money debit.
         </p>

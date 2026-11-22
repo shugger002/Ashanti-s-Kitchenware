@@ -38,7 +38,7 @@ const GHANA_REGIONS = [
 ] as const;
 
 const choiceClass =
-  "flex min-h-12 cursor-pointer items-center gap-3 border border-border bg-surface px-4 py-3.5 text-sm has-[:checked]:border-accent";
+  "flex min-h-12 cursor-pointer items-center gap-3 border border-border bg-surface px-4 py-3.5 text-sm has-[:checked]:border-accent has-[:checked]:bg-accent/5";
 
 function splitName(fullName: string) {
   const parts = fullName.trim().split(/\s+/);
@@ -79,7 +79,7 @@ function Section({
   return (
     <section className={cn("py-8", !last && "border-b border-border")}>
       <div className="mb-5 flex items-baseline justify-between gap-3">
-        <h2 className="text-2xl text-balance">{title}</h2>
+        <h2 className="font-sans text-sm font-semibold uppercase tracking-[0.16em]">{title}</h2>
         {extra}
       </div>
       <div className="space-y-3">{children}</div>
@@ -192,7 +192,7 @@ export function CheckoutForm({
   if (items.length === 0) {
     return (
       <div className="mx-auto max-w-xl px-4 py-16">
-        <h1 className="text-3xl text-balance">Checkout</h1>
+        <h1 className="font-sans text-3xl font-bold uppercase tracking-[0.12em]">Checkout</h1>
         <p className="mt-3 text-pretty text-muted">My cart is empty.</p>
         <Link href="/shop" className={buttonClass("primary", "mt-8")}>
           Continue shopping
@@ -352,7 +352,7 @@ export function CheckoutForm({
 
       <div className="mx-auto w-full max-w-xl px-4 pb-28 pt-8 lg:mx-0 lg:max-w-xl lg:px-8 lg:pb-12 lg:pt-10">
         <header className="border-b border-border pb-8">
-          <h1 className="text-3xl text-balance md:text-4xl">Checkout</h1>
+          <h1 className="font-sans text-3xl font-bold uppercase tracking-[0.12em]">Checkout</h1>
           <p className="mt-2 max-w-md text-pretty text-sm text-muted">
             Pay for the pieces now. Delivery, if you want it, is quoted on WhatsApp after this order.
           </p>
@@ -631,14 +631,14 @@ export function CheckoutForm({
         <input type="hidden" name="idempotencyKey" value={idempotencyKey} />
       </div>
 
-      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] lg:hidden">
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-surface px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-[0_-10px_28px_rgba(40,16,18,0.06)] lg:hidden">
         {error ? <p className="mb-2 text-sm text-red-800">{error}</p> : null}
         {payCta}
       </div>
 
       <aside className="hidden border-l border-border bg-surface lg:block">
         <div className="sticky top-0 flex min-h-[calc(100dvh-4.5rem)] flex-col px-7 py-10">
-          <h2 className="mb-6 text-2xl">Your order</h2>
+          <h2 className="mb-6 font-sans text-sm font-semibold uppercase tracking-[0.16em]">Your order</h2>
           <div className="flex-1">{summary}</div>
           <div className="mt-8 space-y-3 border-t border-border pt-6">
             {error ? <p className="text-sm text-red-800">{error}</p> : null}

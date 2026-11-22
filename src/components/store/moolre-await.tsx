@@ -32,7 +32,7 @@ export function MoolreAwait({ publicRef }: { publicRef: string }) {
   }, [publicRef, router]);
 
   return (
-    <p className="mt-3 text-sm text-muted">
+    <p className="mt-5 border border-border bg-surface px-4 py-3 text-sm text-muted">
       {checks === 0
         ? "Waiting for Moolre to confirm the debit."
         : "Still waiting for the phone approval. Keep this page open."}
