@@ -16,7 +16,7 @@ export function MoolreAwait({ publicRef }: { publicRef: string }) {
       if (cancelled || n > 40) return;
       const result = await confirmMoolreDebit(publicRef);
       if (cancelled) return;
-      if (result.paid) {
+      if (result.paid || result.failed) {
         router.refresh();
         return;
       }

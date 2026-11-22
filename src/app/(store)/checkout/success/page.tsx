@@ -50,21 +50,31 @@ export default async function SuccessPage({
       ).rows
     : [];
   const paymentStatus = order?.payment_status ?? "pending";
+  const waitingForPrompt = paymentStatus !== "paid" && paymentStatus !== "failed" && awaiting === "momo";
+  const promptFailed = paymentStatus === "failed" && awaiting === "momo";
 
   return (
     <CheckoutShell>
       <CheckoutPaper>
         <h1 className="text-3xl text-balance md:text-4xl">
-          {paymentStatus === "paid" ? "Paid" : awaiting === "momo" ? "Approve on your phone" : "Order received"}
+          {paymentStatus === "paid"
+            ? "Paid"
+            : promptFailed
+              ? "Payment was not approved"
+              : waitingForPrompt
+                ? "Approve on your phone"
+                : "Order received"}
         </h1>
         <p className="mt-4 text-pretty text-muted">
           {paymentStatus === "paid"
             ? "Payment has been confirmed. We will contact you about fulfilment."
-            : awaiting === "momo"
-              ? "Approve the Moolre prompt on your phone. This page is not proof of payment. We mark the order paid only after Moolre confirms the debit."
-              : "Your order is recorded. It is not marked paid until Hubtel or Moolre confirms it, or the store records a verified payment."}
+            : promptFailed
+              ? "Moolre closed this debit without taking the money. The order is not paid. Start checkout again and use the newest SMS code."
+              : waitingForPrompt
+                ? "Approve the Moolre prompt on your phone. This page is not proof of payment. We mark the order paid only after Moolre confirms the debit."
+                : "Your order is recorded. It is not marked paid until Hubtel or Moolre confirms it, or the store records a verified payment."}
         </p>
-        {paymentStatus !== "paid" && awaiting === "momo" && ref ? <MoolreAwait publicRef={ref} /> : null}
+        {waitingForPrompt && ref ? <MoolreAwait publicRef={ref} /> : null}
         {ref ? (
           <p className="mt-4 text-sm">
             Order reference <strong>{ref}</strong>
