@@ -15,7 +15,21 @@ type MoolreEnvelope = {
   code?: string;
   message?: string | null;
   data?: unknown;
+  meta?: { requestid?: string };
 };
+
+const MOOLRE_CHANNEL = {
+  "13": "MTN",
+  "6": "TELECEL",
+  "7": "AT",
+} as const;
+
+/** Moolre still accepts 13, 6 and 7, but the prompt is sent with the network name. */
+export function moolreChannelName(channel: string | undefined) {
+  if (channel === "6" || channel === "TELECEL") return MOOLRE_CHANNEL["6"];
+  if (channel === "7" || channel === "AT") return MOOLRE_CHANNEL["7"];
+  return MOOLRE_CHANNEL["13"];
+}
 
 type MoolreTxn = {
   txstatus?: number;
@@ -93,7 +107,7 @@ function collectionBody(
   const externalref = extra?.externalref ?? input.publicRef;
   return {
     type: 1,
-    channel: input.momoChannel ?? "13",
+    channel: moolreChannelName(input.momoChannel),
     currency: "GHS",
     payer: ghanaLocalMsisdn(input.phone),
     amount: parseMoney(input.amountGhs).toFixed(2),
@@ -224,7 +238,11 @@ export class MoolreProvider implements PaymentProvider {
     if (result.code === "TR099" || result.code === "TP18" || (String(result.json.status) === "1" && !blocked.has(result.code))) {
       return promptSent(input, usedRef);
     }
-    console.error("[moolre] payment not prompted", { code: result.code, message: result.json.message });
+    console.error("[moolre] payment not prompted", {
+      code: result.code,
+      message: result.json.message,
+      requestId: result.json.meta?.requestid ?? "",
+    });
     if (result.code === "TP13") {
       throw new Error("This order already started a Moolre payment. Approve the prompt on the phone, or wait for confirmation.");
     }

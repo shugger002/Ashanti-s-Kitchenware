@@ -128,10 +128,9 @@ export default async function ServiceHealthPage({
           <p className="mt-3 text-sm text-accent">MOOLRE_WEBHOOK_SECRET is empty. Status checks can still confirm a debit; the callback cannot.</p>
         ) : null}
         <p className="mt-3 text-sm leading-relaxed text-muted">
-          Collections still need Moolre to enable the API service on the ASHANTI'S ENTERPRISE wallet. Until that is done,
-          checkout answers “Merchant Account Setup Incomplete” and no mobile-money prompt is sent. Finish that step in
-          the Moolre dashboard, or call Moolre support. Hubtel stays off until merchant keys exist. Do not paste private
-          keys here.
+          Account 11074306077738 is the live wallet. If checkout still says mobile money is not switched on, Moolre
+          refused the prompt with code UP02. Quote that code, the order number, and this account to Moolre support.
+          Hubtel stays off until merchant keys exist. Do not paste private keys here.
         </p>
       </AdminSection>
       <AdminSection className="mt-8 max-w-xl" title="Shop email">
