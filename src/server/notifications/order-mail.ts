@@ -174,8 +174,8 @@ export async function sendFailedPaymentEmail(orderId: string) {
       text: [
         `Hello ${order.full_name},`,
         "",
-        `We could not confirm payment for order ${order.public_ref}. The order is not treated as paid.`,
-        "Try checkout again, or WhatsApp the shop.",
+        `Payment for order ${order.public_ref} was not approved because the mobile money number did not have enough balance. No money was taken.`,
+        "Add money to the phone, then start checkout again. You can also WhatsApp the shop.",
         "",
         `Track: ${track}`,
       ].join("\n"),

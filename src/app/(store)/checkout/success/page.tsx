@@ -69,7 +69,7 @@ export default async function SuccessPage({
           {paymentStatus === "paid"
             ? "Payment has been confirmed. We will contact you about fulfilment."
             : promptFailed
-              ? "Moolre closed this debit without taking the money. The order is not paid. Start checkout again and use the newest SMS code."
+              ? "Payment was not approved because the mobile money number did not have enough balance. No money was taken. Add money to the phone, then start checkout again and use the newest SMS code."
               : waitingForPrompt
                 ? "Approve the Moolre prompt on your phone. This page is not proof of payment. We mark the order paid only after Moolre confirms the debit."
                 : "Your order is recorded. It is not marked paid until Hubtel or Moolre confirms it, or the store records a verified payment."}
