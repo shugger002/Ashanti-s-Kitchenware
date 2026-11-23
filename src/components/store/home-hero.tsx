@@ -13,6 +13,8 @@ function toSlide(product: ProductCard): HeroSlide | null {
   const imageUrl = product.primaryImage?.url;
   if (!imageUrl || isDemoListing(product.sku, product.slug) || product.available <= 0) return null;
   return {
+    id: product.slug,
+    kind: "product",
     slug: product.slug,
     name: product.name,
     imageUrl,
@@ -22,6 +24,14 @@ function toSlide(product: ProductCard): HeroSlide | null {
     discount: discountOf(product),
   };
 }
+
+const shopPhotograph: HeroSlide = {
+  id: "shop-photograph",
+  kind: "photo",
+  name: "Kitchen utensils",
+  imageUrl: "/demo/hero.jpg?v=2",
+  imageAlt: "Kitchen utensils hung on a wall and arranged on a counter",
+};
 
 export async function HomeHero() {
   const [sale, featured] = await Promise.all([
@@ -38,24 +48,6 @@ export async function HomeHero() {
     if (chosen.length >= 6) break;
   }
   const promoFirst = [...chosen.filter((product) => discountOf(product) > 0), ...chosen.filter((product) => discountOf(product) === 0)];
-  const slides = promoFirst.map(toSlide).filter((slide): slide is HeroSlide => slide !== null);
-
-  if (slides.length === 0) {
-    return (
-      <section className="relative overflow-hidden bg-background">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="/demo/hero.jpg?v=2"
-          alt="Kitchen utensils hung on a wall and arranged on a counter"
-          width={1470}
-          height={1420}
-          fetchPriority="high"
-          decoding="async"
-          className="h-[min(42dvh,18rem)] w-full object-cover object-[center_42%] md:h-[min(85dvh,calc(100vw*710/735))]"
-        />
-      </section>
-    );
-  }
-
-  return <HeroSlideshow slides={slides} />;
+  const products = promoFirst.map(toSlide).filter((slide): slide is HeroSlide => slide !== null);
+  return <HeroSlideshow slides={[shopPhotograph, ...products]} />;
 }
