@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import Link from "next/link";
+import { HomeHero } from "@/components/store/home-hero";
 import { LogoMarquee } from "@/components/store/logo-marquee";
 import { HomeArrivals, HomeCatalog, HomeIntroAndAisles, HomeNewsletter } from "@/components/store/home-stream";
 import { HomeIntroSkeleton, HomeRailBlockSkeleton, Skeleton } from "@/components/ui/skeleton";
@@ -22,22 +23,18 @@ export default function HomePage() {
   return (
     <div>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdText(shopGraph()) }} />
-      <section className="relative overflow-hidden bg-background">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="/demo/hero.jpg?v=2"
-          alt="Kitchen utensils hung on a wall and arranged on a counter"
-          width={1470}
-          height={1420}
-          fetchPriority="high"
-          decoding="async"
-          className="h-[min(42dvh,18rem)] w-full object-cover object-[center_42%] md:h-[min(85dvh,calc(100vw*710/735))]"
-        />
-        <div className="pointer-events-none absolute inset-0 hidden dark:block">
-          <div className="absolute inset-x-0 top-0 h-14 bg-gradient-to-b from-background/50 to-transparent" />
-          <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-background/55 to-transparent" />
-        </div>
-      </section>
+      <Suspense
+        fallback={
+          <div
+            className="h-[min(46dvh,20rem)] bg-surface md:h-[min(48vw,32rem)]"
+            aria-busy="true"
+            role="status"
+            aria-label="Loading shop pieces"
+          />
+        }
+      >
+        <HomeHero />
+      </Suspense>
 
       <h1 className="sr-only">Ashanti's Kitchenware, kitchen appliances in Accra</h1>
 
