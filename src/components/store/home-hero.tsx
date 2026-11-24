@@ -42,6 +42,14 @@ const shopPhotograph: HeroSlide = {
   imageAlt: "Kitchen utensils hung on a wall and arranged on a counter",
 };
 
+/** Wide photographs made for the slideshow, matched to pieces already in the shop. */
+const slidePhotos: Record<string, string> = {
+  "2L-blender": "/slides/blender.jpg",
+  "electric-kettle-2-0l-st-8856": "/slides/kettle.jpg",
+  "rice-cooker-mixed-colour": "/slides/rice-cooker.jpg",
+  "12-piece-cookware-set": "/slides/cookware.jpg",
+};
+
 export async function HomeHero() {
   const [sale, featured] = await Promise.all([
     searchProducts({ onSale: true, inStock: true, pageSize: 12 }),
@@ -57,10 +65,16 @@ export async function HomeHero() {
   const photos = await sharpestPhotos(chosen.map((product) => product.id));
   const slides: HeroSlide[] = [];
   const promoFirst = [...chosen.filter((product) => discountOf(product) > 0), ...chosen.filter((product) => discountOf(product) === 0)];
-  for (const product of promoFirst) {
+  const curatedFirst = [
+    ...promoFirst.filter((product) => slidePhotos[product.slug]),
+    ...promoFirst.filter((product) => !slidePhotos[product.slug]),
+  ];
+  for (const product of curatedFirst) {
+    const override = slidePhotos[product.slug];
     const photo = photos[product.id];
-    if (!photo) continue;
-    slides.push(toSlide(product, photo.url, photo.alt || product.primaryImage?.alt || product.name));
+    const imageUrl = override || photo?.url;
+    if (!imageUrl) continue;
+    slides.push(toSlide(product, imageUrl, photo?.alt || product.primaryImage?.alt || product.name));
     if (slides.length >= 5) break;
   }
   return <HeroSlideshow slides={[shopPhotograph, ...slides]} />;
