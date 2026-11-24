@@ -80,14 +80,27 @@ export function HeroSlideshow({ slides }: { slides: HeroSlide[] }) {
                   className="h-full w-full object-cover object-[center_42%]"
                 />
               ) : (
-                <Image
-                  src={slide.imageUrl}
-                  alt={slide.imageAlt}
-                  fill
-                  priority={slideIndex === 0}
-                  sizes="100vw"
-                  className="object-cover object-center"
-                />
+                slide.imageUrl.startsWith("/") ? (
+                  // Local stock photos stay at their own pixels. The optimizer was softening them.
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={slide.imageUrl}
+                    alt={slide.imageAlt}
+                    fetchPriority={slideIndex === 0 ? "high" : "auto"}
+                    decoding="async"
+                    className="h-full w-full object-cover object-center"
+                  />
+                ) : (
+                  <Image
+                    src={slide.imageUrl}
+                    alt={slide.imageAlt}
+                    fill
+                    priority={slideIndex === 0}
+                    quality={90}
+                    sizes="100vw"
+                    className="object-cover object-center"
+                  />
+                )
               )}
               {slide.kind === "product" && slide.slug ? (
                 <Link href={`/products/${slide.slug}`} tabIndex={active ? 0 : -1} className="absolute inset-0">
