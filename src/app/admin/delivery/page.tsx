@@ -50,7 +50,7 @@ export default async function DeliveryPage({
     <div>
       <AdminPageHeader
         title="Delivery"
-        description="Do not charge delivery at checkout. Quote the fee on WhatsApp. Shop pickup is Ready at the shop, then Collected."
+        description="A rate that is turned on is added at checkout. With none turned on, you still quote delivery on WhatsApp. Shop pickup is Ready at the shop, then Collected."
       />
       <AdminGlance
         items={[
@@ -136,7 +136,9 @@ export default async function DeliveryPage({
       {need === "send" ? (
         <form action={saveFulfillmentAction} className="mt-6 max-w-xl admin-panel space-y-4">
           <h2 className="font-serif text-xl">How we send</h2>
-          <p className="text-sm text-muted">Customers are not charged these choices at checkout. You still quote on WhatsApp.</p>
+          <p className="text-sm text-muted">
+            Pickup and coverage are separate from the rates on Staff notes. A rate that is on is charged at checkout.
+          </p>
           <fieldset className="space-y-2 text-sm">
             <legend className="font-medium">Where we send</legend>
             <label className="flex gap-2">
@@ -150,7 +152,7 @@ export default async function DeliveryPage({
                 value="nationwide"
                 defaultChecked={fulfillment.coverage === "nationwide"}
               />
-              Nationwide — still quote on WhatsApp
+              Nationwide
             </label>
           </fieldset>
           <label className="flex gap-2 text-sm">
@@ -159,7 +161,7 @@ export default async function DeliveryPage({
           </label>
           <label className="flex gap-2 text-sm">
             <input type="checkbox" name="deliveryEnabled" defaultChecked={fulfillment.deliveryEnabled} />
-            Offer delivery (price on WhatsApp, not at checkout)
+            Offer delivery
           </label>
           <label className="block text-sm">
             Note customers see at checkout
@@ -174,12 +176,12 @@ export default async function DeliveryPage({
       {need === "notes" ? (
         <div className="mt-6 space-y-8">
           <p className="max-w-xl text-sm text-muted">
-            Staff reminder, not charged. The customer never pays this amount at checkout. Quote on WhatsApp.
+            A rate that is on is added to delivery orders at checkout. Turn it off to quote that area on WhatsApp instead.
           </p>
           {rates.length === 0 ? (
             <EmptyState
               title="No staff price notes"
-              body="That is fine. Delivery is still offered, and you quote the charge on WhatsApp."
+              body="Delivery is still offered. Until a rate is turned on, you quote the charge on WhatsApp."
             />
           ) : (
             <>
@@ -198,7 +200,7 @@ export default async function DeliveryPage({
                       />
                     </div>
                     <p className="font-serif tabular-nums">{formatGhs(Number(rate.amount))}</p>
-                    <p className="text-xs text-muted">Staff reminder, not charged</p>
+                    <p className="text-xs text-muted">{rate.isActive && rate.zoneActive ? "Charged at checkout" : "Not charged"}</p>
                     <form action={toggleStaffNoteAction}>
                       <input type="hidden" name="rateId" value={rate.id} />
                       <input type="hidden" name="active" value={rate.isActive ? "false" : "true"} />
@@ -217,7 +219,7 @@ export default async function DeliveryPage({
                   <tr className="border-b border-border bg-surface text-xs text-muted">
                     <th className="px-4 py-3 font-medium">Area</th>
                     <th className="px-4 py-3 font-medium">Name</th>
-                    <th className="px-4 py-3 font-medium">Reminder</th>
+                    <th className="px-4 py-3 font-medium">Rate</th>
                     <th className="px-4 py-3 font-medium">Status</th>
                     <th className="px-4 py-3 font-medium">Note</th>
                   </tr>
@@ -232,7 +234,9 @@ export default async function DeliveryPage({
                       <td className="px-4 py-3">{rate.name}</td>
                       <td className="px-4 py-3">
                         <span className="tabular-nums">{formatGhs(Number(rate.amount))}</span>
-                        <span className="mt-0.5 block text-xs text-muted">Not charged</span>
+                        <span className="mt-0.5 block text-xs text-muted">
+                          {rate.isActive && rate.zoneActive ? "Charged at checkout" : "Not charged"}
+                        </span>
                       </td>
                       <td className="px-4 py-3">
                         <StatusPill
@@ -256,7 +260,7 @@ export default async function DeliveryPage({
             </>
           )}
           <form action={addStaffNoteAction} className="max-w-xl admin-panel space-y-3">
-            <h2 className="font-serif text-xl">Add a staff reminder</h2>
+            <h2 className="font-serif text-xl">Add a delivery rate</h2>
             <label className="block text-sm">
               Area
               <input name="zoneName" required placeholder="Accra" className="input mt-1" />
@@ -270,12 +274,12 @@ export default async function DeliveryPage({
               <input name="rateName" required placeholder="Usual Accra drop" className="input mt-1" />
             </label>
             <label className="block text-sm">
-              Reminder amount (GH₵)
-              <span className="mt-0.5 block text-xs text-muted">Not charged at checkout.</span>
+              Amount (GH₵)
+              <span className="mt-0.5 block text-xs text-muted">Charged at checkout while this rate is on.</span>
               <input name="amount" type="number" step="0.01" min="0" required className="input mt-1" />
             </label>
             <button className={adminButton()} type="submit">
-              Save note
+              Save rate
             </button>
           </form>
         </div>

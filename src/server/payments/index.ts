@@ -6,6 +6,13 @@ import type { PaymentOption, PaymentProvider, PaymentProviderId } from "@/server
 
 export function listConfiguredPaymentProviders(): PaymentOption[] {
   const options: PaymentOption[] = [];
+  if (isMoolreConfigured()) {
+    options.push({
+      id: "moolre",
+      label: "Moolre",
+      description: "Mobile money prompt on your phone (MTN, Telecel, or AT). Approve it with your PIN. The order is paid only after Moolre confirms.",
+    });
+  }
   if (isHubtelConfigured()) {
     options.push({
       id: "hubtel",
@@ -13,11 +20,11 @@ export function listConfiguredPaymentProviders(): PaymentOption[] {
       description: "Card, mobile money, and GHQR on Hubtel. You leave this page to pay. This shop does not collect card numbers.",
     });
   }
-  if (isMoolreConfigured()) {
+  if (process.env.PAYSTACK_SECRET_KEY) {
     options.push({
-      id: "moolre",
-      label: "Moolre",
-      description: "Mobile money prompt on your phone (MTN, Telecel, or AT). Approve it with your PIN. The order is paid only after Moolre confirms.",
+      id: "paystack",
+      label: "Paystack",
+      description: "Card or mobile money on Paystack. You leave this page to pay. This shop does not collect card numbers.",
     });
   }
   return options;

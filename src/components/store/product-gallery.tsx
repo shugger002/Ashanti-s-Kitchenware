@@ -38,7 +38,7 @@ export function ProductGallery({
         <img
           src={current.url}
           alt={current.alt || name}
-          className={outOfStock ? outOfStockImageClass() : "h-full w-full object-cover"}
+          className={outOfStock ? outOfStockImageClass("object-contain") : "h-full w-full bg-background object-contain p-4"}
         />
         {outOfStock ? <OutOfStockOverlay /> : null}
       </button>

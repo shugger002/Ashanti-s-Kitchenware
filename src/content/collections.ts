@@ -62,6 +62,6 @@ export const brandValues = [
   },
   {
     title: "Clear shipping",
-    text: "Collection at the Accra shop, or delivery quoted on WhatsApp after you order. No invented free-shipping thresholds.",
+    text: "Collection at the Accra shop, or a published delivery rate at checkout. If no rate is published, delivery is quoted on WhatsApp. No free-shipping threshold.",
   },
 ];

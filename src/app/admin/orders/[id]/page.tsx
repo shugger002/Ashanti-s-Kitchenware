@@ -87,6 +87,7 @@ export default async function AdminOrderDetailPage({
     .filter(Boolean)
     .join(", ");
   const shippingAmount = Number(order.shipping_amount ?? 0);
+  const discountAmount = Number(order.discount_amount ?? 0);
   const customerStep = customerTrackIndex(status);
   const pieceCount = data.items.reduce((sum, item) => sum + item.quantity, 0);
   const danger = allowed.filter((value) => {
@@ -373,6 +374,12 @@ export default async function AdminOrderDetailPage({
                 <dt className="text-muted">Subtotal</dt>
                 <dd className="font-serif tabular-nums">{money(order.subtotal)}</dd>
               </div>
+              {discountAmount > 0 ? (
+                <div className="flex justify-between">
+                  <dt className="text-muted">Code {text(order.coupon_code)}</dt>
+                  <dd className="font-serif tabular-nums">−{money(discountAmount)}</dd>
+                </div>
+              ) : null}
               <div className="flex justify-between">
                 <dt className="text-muted">Delivery</dt>
                 <dd className={shippingAmount > 0 ? "font-serif tabular-nums" : "text-muted"}>

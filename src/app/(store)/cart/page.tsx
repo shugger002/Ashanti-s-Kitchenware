@@ -96,9 +96,9 @@ export default function CartPage() {
             Subtotal <span className="price">{formatGhs(subtotal)}</span>
           </p>
           <p className="text-sm text-muted">
-            Prices and stock are checked again at checkout. Delivery, if you choose it, is quoted on WhatsApp, not
-            added here. Payment is taken only when online checkout is configured. Returns reminder: 7 days for faulty,
-            damaged, or incorrect items.
+            Prices and stock are checked again at checkout. A published delivery rate is added there. If none is
+            published, the shop confirms delivery on WhatsApp. Payment is taken only when online checkout is configured.
+            Returns reminder: 7 days for faulty, damaged, or incorrect items.
           </p>
           <div className="hidden gap-3 lg:flex">
             <CheckoutLink label={`Checkout · ${formatGhs(subtotal)}`} />

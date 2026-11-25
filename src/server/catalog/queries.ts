@@ -3,6 +3,7 @@ import { query } from "@/server/db/pool";
 import { likeContains, sql, sqlAnd } from "@/server/db/sql";
 import type { Category, ProductCard, ProductColorOption, ProductDetail, ProductImage, ProductVariant } from "@/server/catalog/types";
 import { filterDemoProducts, getDemoProduct } from "@/content/demo-catalog";
+import { sharpCatalogPhoto } from "@/lib/catalog-photos";
 import { colorsFromVariants, normalizeHex } from "@/lib/product-color";
 import { isUuid } from "@/lib/utils";
 
@@ -365,15 +366,27 @@ async function searchProductsLive(filters: ShopFilters): Promise<{
       colors: parseColors(row.colors),
       reviewCount: Number(row.review_count),
       ratingAverage: row.rating_average == null ? null : Number(row.rating_average),
-      primaryImage: row.image_id
-        ? {
-            id: row.image_id,
-            url: row.image_url ?? "",
-            alt: row.image_alt ?? row.name,
+      primaryImage: (() => {
+        const sharp = sharpCatalogPhoto(row.slug);
+        if (sharp) {
+          return {
+            id: row.image_id ?? row.id,
+            url: sharp.url,
+            alt: sharp.alt,
             isPrimary: true,
             storageKey: row.storage_key ?? "",
-          }
-        : null,
+          };
+        }
+        return row.image_id
+          ? {
+              id: row.image_id,
+              url: row.image_url ?? "",
+              alt: row.image_alt ?? row.name,
+              isPrimary: true,
+              storageKey: row.storage_key ?? "",
+            }
+          : null;
+      })(),
     })),
   };
 }
@@ -565,13 +578,27 @@ async function loadProductBySlug(slug: string, opts?: { includeInactive?: boolea
     `),
   ]);
 
-  const imageList: ProductImage[] = images.rows.map((img) => ({
-    id: img.id,
-    url: img.url,
-    alt: img.alt,
-    isPrimary: img.is_primary,
-    storageKey: img.storage_key,
-  }));
+  const sharp = sharpCatalogPhoto(row.slug);
+  const imageList: ProductImage[] = [
+    ...(sharp
+      ? [
+          {
+            id: `sharp-${row.id}`,
+            url: sharp.url,
+            alt: sharp.alt,
+            isPrimary: true,
+            storageKey: "",
+          },
+        ]
+      : []),
+    ...images.rows.map((img) => ({
+      id: img.id,
+      url: img.url,
+      alt: img.alt,
+      isPrimary: sharp ? false : img.is_primary,
+      storageKey: img.storage_key,
+    })),
+  ];
 
   const variantList: ProductVariant[] = variants.rows.map((v) => ({
     id: v.id,

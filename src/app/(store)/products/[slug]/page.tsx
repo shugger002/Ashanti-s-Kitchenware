@@ -39,7 +39,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
   const faqs = [
     {
       q: "When will it arrive?",
-      a: "Collection is at the Accra shop. Delivery charge and timing are confirmed on WhatsApp after you order. Checkout does not add a delivery fee.",
+      a: "Collection is at the Accra shop. If a delivery rate is published, checkout adds it. Otherwise the shop confirms the charge and timing on WhatsApp after you order.",
     },
     {
       q: "Can I return it?",

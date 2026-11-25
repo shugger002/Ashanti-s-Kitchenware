@@ -1,8 +1,19 @@
 "use server";
 
 import { placeOrder } from "@/server/checkout/service";
+import { quoteCoupon } from "@/server/coupons/service";
 import { readStoreCustomer } from "@/server/customers/session";
 import { shopperError } from "@/lib/user-error";
+
+export async function previewCoupon(code: string, subtotal: number) {
+  try {
+    const quote = await quoteCoupon(code, subtotal);
+    if (!quote) return { ok: false as const, error: "Enter a code." };
+    return { ok: true as const, code: quote.code, discount: quote.discount };
+  } catch (error) {
+    return { ok: false as const, error: shopperError(error, "That code could not be applied.") };
+  }
+}
 
 export async function submitCheckout(formData: FormData) {
   const items = JSON.parse(String(formData.get("items") ?? "[]")) as {
@@ -24,6 +35,7 @@ export async function submitCheckout(formData: FormData) {
         region: String(formData.get("region") ?? ""),
         deliveryInstructions: String(formData.get("deliveryInstructions") ?? ""),
         shippingRateId: String(formData.get("shippingRateId") || "") || undefined,
+        couponCode: String(formData.get("couponCode") ?? "").trim() || undefined,
         idempotencyKey: String(formData.get("idempotencyKey") ?? ""),
         paymentProvider: (["hubtel", "moolre", "paystack"] as const).find(
           (id) => id === formData.get("paymentProvider"),

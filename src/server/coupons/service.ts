@@ -92,6 +92,39 @@ export async function updateCoupon(id: string, input: CouponWrite, actorId: stri
   });
 }
 
+export class CouponError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "CouponError";
+  }
+}
+
+export async function quoteCoupon(code: string, subtotal: number) {
+  const normalized = code.trim().toUpperCase();
+  if (!normalized) return null;
+  const result = await query<Coupon>(sql`
+    SELECT id, code, description, discount_type, discount_value::text, max_discount::text,
+            min_spend::text, max_uses, uses, is_active, created_at
+     FROM coupons
+     WHERE upper(code) = ${normalized}
+  `);
+  const coupon = result.rows[0];
+  if (!coupon || !coupon.is_active) throw new CouponError("That code is not active.");
+  if (coupon.max_uses != null && coupon.uses >= coupon.max_uses) {
+    throw new CouponError("That code has been used up.");
+  }
+  const minSpend = Number(coupon.min_spend);
+  if (subtotal + 0.001 < minSpend) {
+    throw new CouponError(`This code needs a basket of at least GH₵${minSpend.toFixed(2)}.`);
+  }
+  const value = Number(coupon.discount_value);
+  let discount = coupon.discount_type === "percent" ? (subtotal * value) / 100 : value;
+  if (coupon.max_discount != null) discount = Math.min(discount, Number(coupon.max_discount));
+  discount = Math.min(Math.round(discount * 100) / 100, Math.round(subtotal * 100) / 100);
+  if (discount <= 0) throw new CouponError("That code does not change this order.");
+  return { id: coupon.id, code: coupon.code, discount };
+}
+
 export async function setCouponActive(id: string, isActive: boolean, actorId: string) {
   await query(sql`UPDATE coupons SET is_active = ${isActive} WHERE id = ${id}`);
   await writeAuditLog({

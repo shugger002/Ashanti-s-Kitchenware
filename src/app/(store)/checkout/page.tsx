@@ -5,6 +5,7 @@ import { readStoreCustomer } from "@/server/customers/session";
 import { getStorefrontConfig, storefrontFallback } from "@/server/store/settings";
 import { DEFAULT_OPERATIONS, getOperationsConfig } from "@/server/ops/settings";
 import { listConfiguredPaymentProviders } from "@/server/payments";
+import { listActiveShippingRates } from "@/server/shipping/service";
 import Link from "next/link";
 import { buttonClass } from "@/components/ui/button";
 
@@ -18,12 +19,13 @@ export const metadata = pageMeta({
 });
 
 async function loadCheckoutPage() {
-  const [customer, config, ops] = await Promise.all([
+  const [customer, config, ops, shippingRates] = await Promise.all([
     readStoreCustomer(),
     getStorefrontConfig(),
     getOperationsConfig(),
+    listActiveShippingRates(),
   ]);
-  return { customer, config, ops };
+  return { customer, config, ops, shippingRates };
 }
 
 export default async function CheckoutPage() {
@@ -57,6 +59,7 @@ export default async function CheckoutPage() {
         customer={customer ? { fullName: customer.fullName, email: customer.email, phone: customer.phone } : null}
         fulfillment={config.fulfillment}
         paymentOptions={listConfiguredPaymentProviders()}
+        shippingRates={loaded?.shippingRates ?? []}
         whatsappE164={config.contact.whatsappE164}
       />
     </CheckoutShell>

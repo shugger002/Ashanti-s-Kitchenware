@@ -65,7 +65,7 @@ export const storefrontFallback: StorefrontConfig = {
   },
   announcement: {
     enabled: true,
-    text: "Collection in Dansoman-Sakaman, Accra. Delivery is quoted on WhatsApp after you order.",
+    text: "Collection in Dansoman-Sakaman, Accra. A published delivery rate is added at checkout.",
   },
   social: {
     instagram: "",
@@ -78,7 +78,7 @@ export const storefrontFallback: StorefrontConfig = {
     coverage: "accra",
     collectionEnabled: true,
     deliveryEnabled: true,
-    coverageNote: "Collection at 108 Dansoman-Sakaman, Alui Mahama Street, Blue Lagoon Loop, Accra. Delivery cost and timing are confirmed on WhatsApp after you order.",
+    coverageNote: "Collection at 108 Dansoman-Sakaman, Alui Mahama Street, Blue Lagoon Loop, Accra. A published delivery rate is added at checkout. Otherwise the shop confirms it on WhatsApp.",
   },
 };
 
@@ -99,9 +99,7 @@ async function readStorefrontConfig(): Promise<StorefrontConfig> {
     readJson("social", storefrontFallback.social),
     readJson("fulfillment", storefrontFallback.fulfillment),
   ]);
-  const fulfillment = storedFulfillment.coverageNote.includes("rate is published")
-    ? { ...storedFulfillment, coverageNote: storefrontFallback.fulfillment.coverageNote }
-    : storedFulfillment;
+  const fulfillment = storedFulfillment;
   const liveAnnouncement = /demo photograph|logo are on this site/i.test(announcement.text)
     ? storefrontFallback.announcement
     : announcement;

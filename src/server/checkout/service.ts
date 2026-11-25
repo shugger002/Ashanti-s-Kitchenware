@@ -10,6 +10,8 @@ import { writeAuditLog } from "@/server/auth/audit";
 import { isDemoListing } from "@/lib/listing";
 import { sendPaidOrderEmails } from "@/server/notifications/order-mail";
 import { assertCheckoutOpen } from "@/server/ops/settings";
+import { quoteCoupon } from "@/server/coupons/service";
+import { listActiveShippingRates, resolveShippingAmount } from "@/server/shipping/service";
 
 const noHeaderBreaks = (value: string) => !/[\r\n\0]/.test(value);
 
@@ -24,6 +26,7 @@ export const checkoutSchema = z.object({
   region: z.string().trim().max(80).optional(),
   deliveryInstructions: z.string().trim().max(500).optional(),
   shippingRateId: z.string().uuid().optional(),
+  couponCode: z.string().trim().max(40).optional(),
   idempotencyKey: z.string().min(8).max(80),
   paymentProvider: z.enum(["hubtel", "moolre", "paystack"]).optional(),
   momoChannel: z.enum(["13", "6", "7"]).optional(),
@@ -107,13 +110,19 @@ export async function placeOrder(input: CheckoutInput, sessionCustomerId?: strin
     };
   }
 
-  const shippingAmount = 0;
-  const deliveryInstructions =
-    parsed.deliveryMethod === "delivery"
-      ? [parsed.deliveryInstructions, "Delivery charge and timing to be confirmed on WhatsApp."]
-          .filter((part) => part && part.trim())
-          .join(" ")
-      : parsed.deliveryInstructions ?? null;
+  let shippingAmount = 0;
+  let deliveryInstructions = parsed.deliveryInstructions?.trim() || null;
+  if (parsed.deliveryMethod === "delivery") {
+    const rates = await listActiveShippingRates();
+    if (rates.length === 0) {
+      deliveryInstructions = [parsed.deliveryInstructions, "Delivery charge and timing to be confirmed on WhatsApp."]
+        .filter((part) => part && part.trim())
+        .join(" ");
+    } else {
+      const resolved = resolveShippingAmount(rates, parsed.shippingRateId);
+      shippingAmount = resolved.amount;
+    }
+  }
 
   const provider = getPaymentProvider(parsed.paymentProvider);
   if (provider.id === "disabled") {
@@ -204,15 +213,28 @@ export async function placeOrder(input: CheckoutInput, sessionCustomerId?: strin
       });
     }
 
-    const total = parseMoney(subtotal + shippingAmount);
+    const quoted = parsed.couponCode ? await quoteCoupon(parsed.couponCode, subtotal) : null;
+    const discountAmount = quoted?.discount ?? 0;
+    if (quoted) {
+      const used = await db.query(sql`
+        UPDATE coupons
+         SET uses = uses + 1
+         WHERE id = ${quoted.id}
+           AND is_active = TRUE
+           AND (max_uses IS NULL OR uses < max_uses)
+         RETURNING id
+      `);
+      if (!used.rows[0]) throw new Error("That code has been used up.");
+    }
+    const total = parseMoney(Math.max(0, subtotal - discountAmount + shippingAmount));
     await db.query(sql`
       INSERT INTO orders (
          id, public_ref, customer_id, email, full_name, phone, delivery_method,
          address_line1, address_line2, city, region, delivery_instructions,
-         status, payment_status, subtotal, shipping_amount, total, idempotency_key
+         status, payment_status, subtotal, discount_amount, coupon_code, shipping_amount, total, idempotency_key
        ) VALUES (
          ${orderId},${ref},${customerId},${parsed.email || null},${parsed.fullName},${parsed.phone},${parsed.deliveryMethod},${parsed.addressLine1 ?? null},${parsed.addressLine2 ?? null},${parsed.city ?? null},${parsed.region ?? null},${deliveryInstructions},
-         'pending_payment','pending',${subtotal},${shippingAmount},${total},${parsed.idempotencyKey}
+         'pending_payment','pending',${subtotal},${discountAmount},${quoted?.code ?? null},${shippingAmount},${total},${parsed.idempotencyKey}
        )
     `);
     for (const item of parsed.items) {

@@ -18,7 +18,7 @@ const faqs = [
   },
   {
     q: "Do you offer free shipping over a set amount?",
-    a: "No published free-shipping threshold. If you choose delivery, the shop confirms the charge and timing on WhatsApp after you order.",
+    a: "No published free-shipping threshold. If a delivery rate is turned on, checkout adds it. If none is turned on, the shop confirms the charge and timing on WhatsApp after you order.",
   },
   {
     q: "How do I pay?",

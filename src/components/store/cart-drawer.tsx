@@ -119,7 +119,7 @@ export function CartDrawer() {
               <span className="font-serif text-xl tabular-nums tracking-tight">{formatGhs(subtotal)}</span>
             </p>
             <p className="mt-2 text-pretty text-xs leading-relaxed text-muted">
-              Delivery is quoted on WhatsApp after checkout. Returns for faulty items within 7 days.
+              Delivery is added at checkout when a rate is published. Otherwise the shop confirms it on WhatsApp. Returns for faulty items within 7 days.
             </p>
             <CheckoutLink label={`Checkout · ${formatGhs(subtotal)}`} className="mt-4 h-12 w-full text-base" />
             <Link href="/cart" className="mt-1 block min-h-11 py-2 text-center text-sm text-muted">

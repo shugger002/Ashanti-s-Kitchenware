@@ -40,7 +40,7 @@ export function ProductCardView({
             <img
               src={product.primaryImage.url}
               alt={product.primaryImage.alt || product.name}
-              className={canAdd ? cn("h-full w-full", mediaZoomClass) : outOfStockImageClass()}
+              className={canAdd ? cn("h-full w-full bg-surface object-contain p-3", mediaZoomClass, "object-contain") : outOfStockImageClass("object-contain")}
               loading={priority ? "eager" : "lazy"}
               fetchPriority={priority ? "high" : "auto"}
               decoding="async"

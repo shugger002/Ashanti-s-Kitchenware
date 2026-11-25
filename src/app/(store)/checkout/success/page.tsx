@@ -26,8 +26,11 @@ export default async function SuccessPage({
           payment_status: string;
           delivery_method: string;
           total: string;
+          shipping_amount: string;
+          discount_amount: string;
+          coupon_code: string | null;
         }>(
-          sql`SELECT payment_status, delivery_method, total::text FROM orders WHERE public_ref = ${ref}`,
+          sql`SELECT payment_status, delivery_method, total::text, shipping_amount::text, discount_amount::text, coupon_code FROM orders WHERE public_ref = ${ref}`,
         )
       ).rows[0]
     : null;
@@ -88,7 +91,14 @@ export default async function SuccessPage({
             ) : null}
             {order ? (
               <p className="mt-3 text-sm text-muted">
-                {order.delivery_method === "collection" ? "Collection at the shop." : "Delivery quoted on WhatsApp."}
+                {order.delivery_method === "collection"
+                  ? "Collection at the shop."
+                  : Number(order.shipping_amount) > 0
+                    ? `Delivery ${formatGhs(Number(order.shipping_amount))}.`
+                    : "Delivery quoted on WhatsApp."}
+                {Number(order.discount_amount) > 0
+                  ? ` Code ${order.coupon_code ?? ""} took ${formatGhs(Number(order.discount_amount))} off.`
+                  : ""}
               </p>
             ) : null}
             {lines.length > 0 ? (

@@ -76,7 +76,7 @@ export default async function PromotionsPage({
     <div>
       <AdminPageHeader
         title="Discounts"
-        description="Put a Ghana Cedi sale price on a piece. That is not a coupon. Delivery stays on WhatsApp."
+        description="Put a Ghana Cedi sale price on a piece. That is not a coupon. Coupons are entered at checkout."
         action={
           <Link href="/admin/coupons" className={buttonClass("secondary", "h-12 min-h-12 w-full sm:w-auto")}>
             Coupons

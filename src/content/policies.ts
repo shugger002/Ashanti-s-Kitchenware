@@ -75,7 +75,7 @@ export const termsPolicy = {
     },
     {
       heading: "Delivery",
-      body: `Collection is available at the Accra shop. If you choose delivery, we will confirm the charge, route, and timing with you on WhatsApp after the order. Checkout does not add a delivery fee and does not publish a free-shipping threshold. Risk in the goods passes to you on delivery.`,
+      body: `Collection is available at the Accra shop. If a delivery rate is published, checkout adds that fee to a delivery order. If no rate is published, we confirm the charge, route, and timing with you on WhatsApp after the order. There is no free-shipping threshold. Risk in the goods passes to you on delivery.`,
     },
     {
       heading: "Returns and refunds",

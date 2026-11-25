@@ -99,7 +99,7 @@ export default async function CouponsPage({
     <div>
       <AdminPageHeader
         title="Coupons"
-        description="Checkout codes that take money off the basket. They do not make delivery free. Delivery stays on WhatsApp."
+        description="Checkout codes that take money off the pieces. Shoppers enter the code on the checkout page. A code does not pay for delivery."
         action={
           <Link href="/admin/promotions" className={buttonClass("secondary", "h-12 min-h-12 w-full sm:w-auto")}>
             Discounts

@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ChevronDown } from "lucide-react";
 import { useAfterHydrate, useCart } from "@/components/store/cart-provider";
-import { submitCheckout } from "@/app/(store)/checkout/actions";
+import { previewCoupon, submitCheckout } from "@/app/(store)/checkout/actions";
 import { formatGhs } from "@/lib/money";
 import { Button, buttonClass } from "@/components/ui/button";
 import { isDemoListing } from "@/lib/listing";
@@ -90,6 +90,7 @@ export function CheckoutForm({
   customer,
   fulfillment,
   paymentOptions,
+  shippingRates,
   whatsappE164,
 }: {
   customer?: { fullName: string; email: string; phone: string } | null;
@@ -100,6 +101,7 @@ export function CheckoutForm({
     coverage: "accra" | "nationwide";
   };
   paymentOptions: PaymentOption[];
+  shippingRates: { id: string; name: string; zoneName: string; amount: string }[];
   whatsappE164: string;
 }) {
   const { items, clear } = useCart();
@@ -130,6 +132,11 @@ export function CheckoutForm({
   const [addressLine2, setAddressLine2] = useState("");
   const [city, setCity] = useState("");
   const [notes, setNotes] = useState("");
+  const [rateId, setRateId] = useState(shippingRates[0]?.id ?? "");
+  const [couponInput, setCouponInput] = useState("");
+  const [coupon, setCoupon] = useState<{ code: string; discount: number } | null>(null);
+  const [couponError, setCouponError] = useState<string | null>(null);
+  const [couponPending, setCouponPending] = useState(false);
   const idempotencyKey = useMemo(() => crypto.randomUUID(), []);
 
   useEffect(() => {
@@ -184,7 +191,28 @@ export function CheckoutForm({
   const orderReady = live;
   const lines = orderReady ? items : [];
   const subtotal = lines.reduce((sum, line) => sum + line.unitPrice * line.quantity, 0);
-  const total = subtotal;
+  const quotedDelivery = method === "delivery" && shippingRates.length === 0;
+  const selectedRate = shippingRates.find((rate) => rate.id === rateId) ?? shippingRates[0];
+  const shipping = method === "delivery" && selectedRate && !quotedDelivery ? Number(selectedRate.amount) : 0;
+  const discount = coupon?.discount ?? 0;
+  const total = Math.max(0, subtotal - discount + shipping);
+  const appliedCode = coupon?.code ?? "";
+
+  useEffect(() => {
+    if (!appliedCode) return;
+    let cancelled = false;
+    previewCoupon(appliedCode, subtotal).then((result) => {
+      if (cancelled) return;
+      if (result.ok) setCoupon({ code: result.code, discount: result.discount });
+      else {
+        setCoupon(null);
+        setCouponError(result.error);
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [appliedCode, subtotal]);
 
   if (orderReady && items.length === 0) {
     return (
@@ -250,10 +278,16 @@ export function CheckoutForm({
           <dt>Subtotal</dt>
           <dd className="tabular-nums">{formatGhs(subtotal)}</dd>
         </div>
+        {discount > 0 ? (
+          <div className="flex justify-between gap-4">
+            <dt>Code {coupon?.code}</dt>
+            <dd className="tabular-nums text-accent">−{formatGhs(discount)}</dd>
+          </div>
+        ) : null}
         <div className="flex justify-between gap-4">
           <dt>Shipping</dt>
-          <dd className="text-right text-muted">
-            {method === "collection" ? formatGhs(0) : "Quoted on WhatsApp"}
+          <dd className={quotedDelivery ? "text-right text-muted" : "text-right tabular-nums"}>
+            {method === "collection" ? formatGhs(0) : quotedDelivery ? "Quoted on WhatsApp" : formatGhs(shipping)}
           </dd>
         </div>
         <div className="flex items-baseline justify-between pt-2 text-lg font-medium">
@@ -262,8 +296,10 @@ export function CheckoutForm({
         </div>
       </dl>
       <p className="text-pretty text-xs text-muted">
-        Item total is due now. Delivery, if you choose it, is confirmed on WhatsApp and is not included in this total.
-        Payment is taken only when Hubtel or Moolre confirms it.
+        {shippingRates.length > 0
+          ? "This total includes the delivery rate you choose. Collection stays free."
+          : "Collection is free. Delivery, if you choose it, is confirmed on WhatsApp and is not in this total."}{" "}
+        Payment is taken only after the provider confirms it.
       </p>
     </div>
   );
@@ -359,7 +395,9 @@ export function CheckoutForm({
         <header className="border-b border-border pb-8">
           <h1 className="font-sans text-3xl font-bold uppercase tracking-[0.12em]">Checkout</h1>
           <p className="mt-2 max-w-md text-pretty text-sm text-muted">
-            Pay for the pieces now. Delivery, if you want it, is quoted on WhatsApp after this order.
+            {shippingRates.length > 0
+              ? "Pay for the pieces now. A published delivery rate is added when you choose delivery."
+              : "Pay for the pieces now. Delivery, if you want it, is quoted on WhatsApp after this order."}
           </p>
         </header>
 
@@ -473,7 +511,9 @@ export function CheckoutForm({
                   />
                   <span>
                     <span className="block font-medium">Delivery</span>
-                    <span className="mt-0.5 block text-xs text-muted">Quoted on WhatsApp</span>
+                    <span className="mt-0.5 block text-xs text-muted">
+                      {shippingRates.length > 0 ? "Choose a rate below" : "Quoted on WhatsApp"}
+                    </span>
                   </span>
                 </span>
               </label>
@@ -493,13 +533,38 @@ export function CheckoutForm({
             </p>
           ) : (
             <>
-              <p className="text-pretty text-sm text-muted">
-                After you pay, we confirm the delivery charge and timing on{" "}
-                <a href={whatsappHref} className="text-accent">
-                  WhatsApp
-                </a>
-                . It is not in the total.
-              </p>
+              {shippingRates.length > 0 ? (
+                <div className="space-y-2">
+                  {shippingRates.map((rate) => (
+                    <label key={rate.id} className={cn(choiceClass, "justify-between")}>
+                      <span className="flex min-w-0 items-center gap-3">
+                        <input
+                          type="radio"
+                          name="shippingRateId"
+                          value={rate.id}
+                          checked={(selectedRate?.id ?? "") === rate.id}
+                          onChange={() => setRateId(rate.id)}
+                          className="accent-accent"
+                          required
+                        />
+                        <span>
+                          <span className="block font-medium">{rate.zoneName}</span>
+                          <span className="mt-0.5 block text-xs text-muted">{rate.name}</span>
+                        </span>
+                      </span>
+                      <span className="tabular-nums">{formatGhs(Number(rate.amount))}</span>
+                    </label>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-pretty text-sm text-muted">
+                  After you pay, we confirm the delivery charge and timing on{" "}
+                  <a href={whatsappHref} className="text-accent">
+                    WhatsApp
+                  </a>
+                  . It is not in the total.
+                </p>
+              )}
               <Field label="Address">
                 <input
                   required
@@ -549,6 +614,47 @@ export function CheckoutForm({
                 />
               </Field>
             </>
+          )}
+        </Section>
+
+        <Section title="Code">
+          <div className="flex gap-2">
+            <input
+              value={couponInput}
+              onChange={(event) => setCouponInput(event.target.value.toUpperCase())}
+              className="input min-w-0 uppercase"
+              placeholder="Coupon"
+              autoComplete="off"
+              aria-label="Coupon code"
+            />
+            <button
+              type="button"
+              className={buttonClass("secondary", "h-12 shrink-0 px-4")}
+              disabled={couponPending || couponInput.trim().length < 3}
+              onClick={async () => {
+                setCouponPending(true);
+                setCouponError(null);
+                const result = await previewCoupon(couponInput, subtotal);
+                setCouponPending(false);
+                if (!result.ok) {
+                  setCoupon(null);
+                  setCouponError(result.error);
+                  return;
+                }
+                setCoupon({ code: result.code, discount: result.discount });
+              }}
+            >
+              {couponPending ? "Checking…" : "Apply"}
+            </button>
+          </div>
+          <input type="hidden" name="couponCode" value={appliedCode} />
+          {couponError ? <p className="text-sm text-accent">{couponError}</p> : null}
+          {coupon ? (
+            <p className="text-sm text-muted">
+              {coupon.code} takes {formatGhs(coupon.discount)} off the pieces.
+            </p>
+          ) : (
+            <p className="text-sm text-muted">A code takes money off the pieces. It does not cover delivery.</p>
           )}
         </Section>
 
