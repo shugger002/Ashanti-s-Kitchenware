@@ -28,9 +28,8 @@ export default async function SuccessPage({
           total: string;
           shipping_amount: string;
           discount_amount: string;
-          coupon_code: string | null;
         }>(
-          sql`SELECT payment_status, delivery_method, total::text, shipping_amount::text, discount_amount::text, coupon_code FROM orders WHERE public_ref = ${ref}`,
+          sql`SELECT payment_status, delivery_method, total::text, shipping_amount::text, discount_amount::text FROM orders WHERE public_ref = ${ref}`,
         )
       ).rows[0]
     : null;
@@ -97,7 +96,7 @@ export default async function SuccessPage({
                     ? `Delivery ${formatGhs(Number(order.shipping_amount))}.`
                     : "Delivery quoted on WhatsApp."}
                 {Number(order.discount_amount) > 0
-                  ? ` Code ${order.coupon_code ?? ""} took ${formatGhs(Number(order.discount_amount))} off.`
+                  ? ` A code took ${formatGhs(Number(order.discount_amount))} off.`
                   : ""}
               </p>
             ) : null}

@@ -235,6 +235,10 @@ export async function setStaffPassword(input: { userId: string; actorUserId: str
   const passwordHash = await hashPassword(input.password);
   await query(sql`UPDATE users SET password_hash = ${passwordHash}, updated_at = now() WHERE id = ${input.userId}`);
   await query(sql`DELETE FROM sessions WHERE user_id = ${input.userId}`);
+  await query(sql`
+    UPDATE password_reset_tokens SET used_at = now()
+     WHERE user_id = ${input.userId} AND used_at IS NULL
+  `);
   await writeAuditLog({
     actorUserId: input.actorUserId,
     action: "staff.password",

@@ -24,6 +24,10 @@ export async function requestPasswordReset(email: string, ip: string | null): Pr
   }
   const token = generateOpaqueToken();
   await query(sql`
+    UPDATE password_reset_tokens SET used_at = now()
+     WHERE user_id = ${user.rows[0].id} AND used_at IS NULL
+  `);
+  await query(sql`
     INSERT INTO password_reset_tokens (user_id, token_hash, expires_at)
      VALUES (${user.rows[0].id}, ${hashToken(token)}, now() + interval '1 hour')
   `);
@@ -63,7 +67,10 @@ export async function completePasswordReset(input: {
     await db.query(
       sql`UPDATE users SET password_hash = ${passwordHash}, updated_at = now() WHERE id = ${row.rows[0].user_id}`,
     );
-    await db.query(sql`UPDATE password_reset_tokens SET used_at = now() WHERE id = ${row.rows[0].id}`);
+    await db.query(sql`
+      UPDATE password_reset_tokens SET used_at = now()
+       WHERE user_id = ${row.rows[0].user_id} AND used_at IS NULL
+    `);
     await db.query(sql`DELETE FROM sessions WHERE user_id = ${row.rows[0].user_id}`);
     await writeAuditLog(
       {

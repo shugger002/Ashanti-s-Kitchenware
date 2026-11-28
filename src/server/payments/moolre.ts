@@ -283,6 +283,7 @@ export class MoolreProvider implements PaymentProvider {
     if (!secretsEqual(payload.data?.secret ?? "", secret)) {
       throw new Error("Invalid Moolre callback secret");
     }
+    if (payload.data) delete payload.data.secret;
     const ref = payload.data?.externalref;
     if (!ref) throw new Error("Moolre callback missing externalref");
     const successful = payload.status === 1 && payload.code === "P01" && payload.data?.txstatus === 1;

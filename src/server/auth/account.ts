@@ -22,6 +22,10 @@ export async function changeOwnPassword(input: {
   }
   const passwordHash = await hashPassword(input.nextPassword);
   await query(sql`UPDATE users SET password_hash = ${passwordHash}, updated_at = now() WHERE id = ${input.userId}`);
+  await query(sql`
+    UPDATE password_reset_tokens SET used_at = now()
+     WHERE user_id = ${input.userId} AND used_at IS NULL
+  `);
   if (input.sessionToken) {
     const keep = hashToken(input.sessionToken);
     await query(sql`DELETE FROM sessions WHERE user_id = ${input.userId} AND token_hash <> ${keep}`);

@@ -5,7 +5,11 @@ import { hitRateLimit } from "@/server/auth/rate-limit";
 import { clientIp } from "@/server/http/client-ip";
 
 const schema = z.object({
-  path: z.string().min(1).max(180),
+  path: z
+    .string()
+    .min(1)
+    .max(180)
+    .refine((path) => path.startsWith("/") && !path.startsWith("//") && !path.includes("\\") && !path.includes("://")),
   referrer: z.string().max(400).optional().nullable(),
 });
 
