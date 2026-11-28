@@ -27,7 +27,7 @@ export const defaultContact = {
   email: "ashantiskitchenware@gmail.com",
   phoneDisplay: "+233 (0) 20 194 4235",
   phoneE164: "+233201944235",
-  whatsappE164: "+233201944235",
+  whatsappE164: "+233598948119",
   addressLine1: "108 Dansoman-Sakaman, Alui Mahama Street, Blue Lagoon Loop",
   city: "Accra",
   region: "Greater Accra",
