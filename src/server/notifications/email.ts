@@ -40,7 +40,7 @@ function brandedHtml(body: string) {
   <div style="max-width:560px;margin:0 auto;background:#fff;border:1px solid #e8e0d6;">
     <p style="margin:0;padding:14px 20px;background:#c8102e;color:#fff;font-size:16px;">Ashanti's Kitchenware</p>
     <div style="padding:20px;font-size:16px;line-height:1.5;">${body}</div>
-    <p style="margin:0;padding:14px 20px;border-top:1px solid #e8e0d6;font-size:13px;color:#5c5348;">108 Dansoman-Sakaman, Accra · +233 20 194 4235</p>
+    <p style="margin:0;padding:14px 20px;border-top:1px solid #e8e0d6;font-size:13px;color:#5c5348;">108 Dansoman-Sakaman, Accra · +233 53 368 8019</p>
   </div>
 </body>
 </html>`;

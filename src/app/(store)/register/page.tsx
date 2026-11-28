@@ -29,7 +29,7 @@ export default function RegisterPage() {
             required
             inputMode="tel"
             autoComplete="tel"
-            placeholder="020 194 4235"
+            placeholder="024 000 0000"
             defaultValue={state?.phone}
             className="input mt-1"
           />

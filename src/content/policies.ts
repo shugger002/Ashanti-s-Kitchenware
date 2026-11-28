@@ -12,7 +12,7 @@ export const privacyPolicy = {
   sections: [
     {
       heading: "Who we are",
-      body: `Ashanti's Kitchenware is the legal name used on this store ("we", "us", "our"). We sell home and kitchen appliances and household essentials as a retailer. We are the data controller for personal data collected through this site. You can reach us at ashantiskitchenware@gmail.com or +233 (0) 20 194 4235. The shop is at 108 Dansoman-Sakaman, Alui Mahama Street, Blue Lagoon Loop, Accra.`,
+      body: `Ashanti's Kitchenware is the legal name used on this store ("we", "us", "our"). We sell home and kitchen appliances and household essentials as a retailer. We are the data controller for personal data collected through this site. You can reach us at ashantiskitchenware@gmail.com or +233 (0) 53 368 8019. The shop is at 108 Dansoman-Sakaman, Alui Mahama Street, Blue Lagoon Loop, Accra.`,
     },
     {
       heading: "What data we collect",
@@ -59,7 +59,7 @@ export const termsPolicy = {
   sections: [
     {
       heading: "About us",
-      body: `This store is operated by Ashanti's Kitchenware, a kitchenware retailer. We are not the manufacturer of every product we sell. You can contact us at ashantiskitchenware@gmail.com or +233 (0) 20 194 4235. The shop is at 108 Dansoman-Sakaman, Alui Mahama Street, Blue Lagoon Loop, Accra. Ask the shop if you need this legal name on an invoice.`,
+      body: `This store is operated by Ashanti's Kitchenware, a kitchenware retailer. We are not the manufacturer of every product we sell. You can contact us at ashantiskitchenware@gmail.com or +233 (0) 53 368 8019. The shop is at 108 Dansoman-Sakaman, Alui Mahama Street, Blue Lagoon Loop, Accra. Ask the shop if you need this legal name on an invoice.`,
     },
     {
       heading: "Using our site",
@@ -122,7 +122,7 @@ export const refundPolicy = {
     },
     {
       heading: "How to start a return",
-      body: `Contact us at ashantiskitchenware@gmail.com or +233 (0) 20 194 4235 with your order number and the reason for the return. We will confirm whether your item qualifies and how to return it.`,
+      body: `Contact us at ashantiskitchenware@gmail.com or +233 (0) 53 368 8019 with your order number and the reason for the return. We will confirm whether your item qualifies and how to return it.`,
     },
     {
       heading: "Refunds",
