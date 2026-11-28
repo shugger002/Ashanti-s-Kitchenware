@@ -15,7 +15,12 @@ export function middleware(request: NextRequest) {
   }
 
   const { pathname } = request.nextUrl;
-  const publicAdmin = ["/admin/login", "/admin/forgot-password", "/admin/reset-password"];
+  const publicAdmin = [
+    "/admin/login",
+    "/admin/forgot-password",
+    "/admin/reset-password",
+    "/admin/manifest.webmanifest",
+  ];
   if (pathname.startsWith("/api/admin") && !request.cookies.get(COOKIE)?.value) {
     return NextResponse.json({ ok: false }, { status: 401 });
   }

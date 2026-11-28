@@ -31,6 +31,7 @@ import { brand } from "@/config/brand";
 import type { AdminUser, Permission } from "@/server/auth/types";
 import { hasPermission, isDeveloper, normalizeAdminRoles } from "@/server/auth/types";
 import { cn } from "@/lib/utils";
+import { AddToScreen } from "@/components/admin/add-to-screen";
 import { AdminMobileDock } from "@/components/admin/mobile-dock";
 
 type NavItem = {
@@ -286,6 +287,7 @@ export function AdminShell({ user: rawUser, children }: { user: AdminUser; child
                 <Link href="/" className="inline-flex min-h-11 items-center text-white/80 hover:text-white">
                   View store
                 </Link>
+                <AddToScreen className="inline-flex min-h-11 items-center text-white/80 hover:text-white" />
                 <Link href="/admin/account" className="inline-flex min-h-11 items-center text-white/80 hover:text-white">
                   Change password
                 </Link>
@@ -322,6 +324,7 @@ export function AdminShell({ user: rawUser, children }: { user: AdminUser; child
               <Link href="/" className="text-white/80 hover:text-white">
                 View store
               </Link>
+              <AddToScreen className="text-white/80 hover:text-white" />
               <Link href="/admin/account" className="text-white/80 hover:text-white">
                 Change password
               </Link>

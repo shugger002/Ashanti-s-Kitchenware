@@ -1,7 +1,17 @@
+import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { AdminShell } from "@/components/admin/shell";
 import { requireUser } from "@/server/auth/authorize";
 import { readSessionUser } from "@/server/auth/session";
+
+export const metadata: Metadata = {
+  manifest: "/admin/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    title: "AK Desk",
+    statusBarStyle: "default",
+  },
+};
 
 const PUBLIC_DESK = new Set(["/admin/login", "/admin/forgot-password", "/admin/reset-password"]);
 
